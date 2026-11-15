@@ -90,6 +90,8 @@ The build expects required model files in `Resources/models` and will fail if an
 - `cent_table.bin`
 - `mel_filterbank.bin`
 
+The PC-NSF-HiFiGAN and GAME model weights are licensed CC BY-NC-SA 4.0, so Sonaria is for non-commercial use only. See [docs/reference/models.md](docs/reference/models.md) for every model's license.
+
 Other runtime assets live in `Resources/lang` and `Resources/fonts`.
 
 ## Build

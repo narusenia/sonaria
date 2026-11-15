@@ -130,11 +130,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 RMVPE model assets
-Source: https://github.com/yxlllc/RMVPE
-
-The RMVPE repository did not provide a LICENSE file when these notices were
-prepared. No redistribution license is asserted here. Confirm an explicit
-license or permission before distributing rmvpe.onnx.
+Source: https://github.com/Dream-High/RMVPE (original), https://github.com/yxlllc/RMVPE (fork)
+The original RMVPE repository is licensed under the Apache License, Version 2.0
+(http://www.apache.org/licenses/LICENSE-2.0). The license of the pretrained
+RMVPE weights is not stated. rmvpe.onnx is not included in this repository;
+confirm the origin and license of the weights before distributing it.
 
 ARA SDK
 Copyright (c) Celemony Software GmbH and contributors.

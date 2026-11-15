@@ -70,6 +70,8 @@ Sonaria のリリースはまだありません。下の手順でソースから
 - `cent_table.bin`
 - `mel_filterbank.bin`
 
+PC-NSF-HiFiGAN と GAME の重みは CC BY-NC-SA 4.0 のため、Sonaria は非商用に限って使えます。各モデルのライセンスは [docs/reference/models.md](docs/reference/models.md) にあります。
+
 ## ビルド
 
 ```bash
