@@ -1,19 +1,23 @@
-PitchNet 0.8.1
-Copyright (c) 2026 Session Loops and contributors.
+Sonaria
+Copyright (c) 2026 Narusenia and contributors.
 
-PitchNet is a modified derivative of HachiTune by the HachiTune contributors.
-PitchNet is distributed under the GNU Affero General Public License, version 3.
+Sonaria is a modified derivative of PitchNet 0.8.1 by Session Loops and
+contributors (Copyright (c) 2026 Session Loops and contributors,
+https://github.com/SessionLoops/PitchNet), which is itself a modified
+derivative of HachiTune by the HachiTune contributors
+(https://github.com/KCKT0112/HachiTune).
+Sonaria is distributed under the GNU Affero General Public License, version 3.
 The complete AGPLv3 text is provided in the installer License page.
 
 Corresponding source for this release is available at:
-https://github.com/SessionLoops/PitchNet
+https://github.com/narusenia/sonaria
 
 Third-party components
 ========================
 
 JUCE Framework
 Copyright (c) Raw Material Software Limited.
-PitchNet uses JUCE under the GNU Affero General Public License, version 3.
+Sonaria uses JUCE under the GNU Affero General Public License, version 3.
 The applicable AGPLv3 text is provided in the installer License page.
 
 r8brain-free-src

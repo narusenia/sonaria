@@ -1,31 +1,42 @@
-> **Sonaria** is a hard fork of PitchNet. It is imported from
-> [SessionLoops/PitchNet@dc2c1b3](https://github.com/SessionLoops/PitchNet/commit/dc2c1b362d17461c37cfab0fd468a3fa359750dd)
-> (2026-11-12) with full history. Upstream changes are cherry-picked by hand; each import is listed below.
->
-> | Upstream commit | Imported |
-> |---|---|
-> | `dc2c1b362d17461c37cfab0fd468a3fa359750dd` | 2026-11-15 (initial fork) |
->
-> The rest of this README is still PitchNet's and will be rewritten for Sonaria.
-
 <div align="center">
-  <h1>PitchNet</h1>
-  <p>A lightweight pitch editor built with JUCE, featuring neural pitch detection and vocoder resynthesis for real-time preview.</p>
+  <h1>Sonaria</h1>
+  <p>An open-source vocal pitch editor for fast correction, harmony creation and a hybrid synthesis engine.</p>
+  <p>English | <a href="README.ja.md">日本語</a></p>
 </div>
 
-![PitchNet editor screenshot](docs/images/pitchnet-editor.png)
+![Sonaria editor screenshot](docs/images/pitchnet-editor.png)
 
 ## Origin, attribution, and license
 
-PitchNet is a modified derivative of [HachiTune](https://github.com/KCKT0112/HachiTune), an open-source project developed by the HachiTune contributors. It includes substantial code derived from HachiTune, along with subsequent changes by Session Loops and other contributors. This repository does not claim sole authorship of the derived work.
+Sonaria is a hard fork of [PitchNet](https://github.com/SessionLoops/PitchNet) by Session Loops and contributors, which is itself a modified derivative of [HachiTune](https://github.com/KCKT0112/HachiTune) by the HachiTune contributors. Sonaria includes substantial code from both projects. This repository does not claim sole authorship of the derived work.
 
-PitchNet is distributed under the [GNU Affero General Public License, version 3](LICENSE) (AGPLv3). The complete license text is included in this repository. When conveying copies or modified versions, preserve all applicable copyright, license, and attribution notices, and make the corresponding source available as required by the AGPLv3.
+Sonaria is imported from
+[SessionLoops/PitchNet@dc2c1b3](https://github.com/SessionLoops/PitchNet/commit/dc2c1b362d17461c37cfab0fd468a3fa359750dd)
+(2026-11-12) with full history. Upstream changes are cherry-picked by hand; each import is listed below.
+
+| Upstream commit | Imported |
+|---|---|
+| `dc2c1b362d17461c37cfab0fd468a3fa359750dd` | 2026-11-15 (initial fork) |
+
+Sonaria is distributed under the [GNU Affero General Public License, version 3](LICENSE) (AGPLv3). When conveying copies or modified versions, preserve all applicable copyright, license, and attribution notices, and make the corresponding source available as required by the AGPLv3. Third-party components and model licenses are listed in [THIRD_PARTY_NOTICES.txt](THIRD_PARTY_NOTICES.txt).
+
+## Goals
+
+Sonaria keeps everything PitchNet does and works toward three things:
+
+- **Editing speed**: quantize / straighten, highlighting and jumping to off-pitch notes, keyboard-only editing, automatic scale application
+- **Harmony**: duplicate the lead, shift it by scale degree, and align it while other tracks are shown as ghosts
+- **Hybrid engine**: choose a neural vocoder, PSOLA or spectral-envelope engine per note, and later route notes automatically
+
+The plan is in [docs/implementation/roadmap.md](docs/implementation/roadmap.md).
 
 ## Overview
 
-PitchNet is a standalone app and audio plugin for editing vocal pitch in a piano roll. It analyzes audio using neural pitch detectors (RMVPE / FCPE), segments notes with the GAME model, and resynthesizes edits in real time through a neural vocoder (PC-NSF-HiFiGAN). Edits are previewed instantly with minimal latency and exported as audio or MIDI. The plugin supports both ARA hosts and a non-ARA capture workflow.
+Sonaria is a standalone app and audio plugin for editing vocal pitch in a piano roll. It analyzes audio using neural pitch detectors (RMVPE / FCPE), segments notes with the GAME model, and resynthesizes edits in real time through a neural vocoder (PC-NSF-HiFiGAN). Edits are previewed instantly with minimal latency and exported as audio or MIDI. The plugin supports both ARA hosts and a non-ARA capture workflow.
 
 ## Features
+
+Inherited from PitchNet:
 
 - Piano roll editing with select, split, pitch drawing, and timing modes
 - Neural pitch detection (FCPE default, RMVPE optional)
@@ -51,7 +62,8 @@ PitchNet is a standalone app and audio plugin for editing vocal pitch in a piano
 - Multi-language UI (English, Spanish, Japanese, Korean, Portuguese, Russian, Chinese Simplified, Chinese Traditional)
 
 ## Download
-To [Download PitchNet](https://sessionloops.com/pitchnet#downloads)
+
+There are no Sonaria releases yet. Build from source as described below.
 
 ## Requirements
 
@@ -72,7 +84,7 @@ To [Download PitchNet](https://sessionloops.com/pitchnet#downloads)
 The build expects required model files in `Resources/models` and will fail if any are missing:
 
 - `pc_nsf_hifigan.onnx` (vocoder)
-- `rmvpe.onnx` (pitch detection)
+- `rmvpe.onnx` (pitch detection; not in this repository, see [THIRD_PARTY_NOTICES.txt](THIRD_PARTY_NOTICES.txt))
 - `fcpe.onnx` (pitch detection, optional)
 - `GAME/` (note segmentation: `encoder.onnx`, `estimator.onnx`, `segmenter.onnx`, `dur2bd.onnx`, `bd2dur.onnx`, `config.json`)
 - `cent_table.bin`
@@ -129,13 +141,13 @@ Notes:
 
 ### Plugin modes
 
-- **ARA mode**: Direct audio access in supported hosts (e.g., Studio One, Cubase, Logic).
+- **ARA mode**: Direct audio access in supported hosts. Sonaria is tested in Cubase and Studio One; Logic is build-only.
 - **Non-ARA mode**: Auto-capture and process in hosts without ARA.
 
 ## Project Structure
 
 ```
-PitchNet/
+sonaria/
   Source/
     Audio/        # Audio engine, pitch detection, synthesis, vocoder
     Models/       # Project, note, and audio data models
