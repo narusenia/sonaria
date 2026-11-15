@@ -144,7 +144,7 @@ public:
 
     auto settingsFile =
         juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
-            .getChildFile("PitchNet")
+            .getChildFile("Sonaria")
             .getChildFile("settings.xml");
 
     if (settingsFile.existsAsFile()) {

@@ -1262,12 +1262,8 @@ MainComponent::MainComponent(bool enableAudioDevice)
   // Start timer for UI updates
   startTimerHz(60);
 
-  if (!isPluginMode())
-    juce::Timer::callAfterDelay(800, [safeThis = juce::Component::SafePointer<MainComponent>(this)]
-    {
-      if (safeThis != nullptr)
-        safeThis->checkForUpdatesOnLaunch();
-    });
+  // shortcut: launch update check disabled - it queries Session Loops' PitchNet feed;
+  // re-enable once Sonaria publishes releases with its own feed.
 
   LOG("MainComponent: constructor complete");
 }
@@ -1320,7 +1316,7 @@ void MainComponent::showUpdateAvailablePopup(const juce::String &latestVersion,
       },
       []
       {
-        juce::Process::openDocument("https://sessionloops.com/pitchnet#downloads", "");
+        juce::Process::openDocument("https://github.com/narusenia/sonaria/releases", "");
       });
 
   dialog->setVisible(true);
@@ -1887,14 +1883,14 @@ void MainComponent::saveProject(bool saveAs, std::function<void(bool)> onComplet
     // Default next to audio if possible
     auto audio = project->getFilePath();
     if (audio.existsAsFile())
-      target = audio.withFileExtension("pitchnet");
+      target = audio.withFileExtension("sonaria");
     else
       target =
           juce::File::getSpecialLocation(juce::File::userDocumentsDirectory)
-              .getChildFile("Untitled.pitchnet");
+              .getChildFile("Untitled.sonaria");
 
 #if JUCE_WINDOWS && JUCE_MODAL_LOOPS_PERMITTED
-    juce::FileChooser chooser(TR("dialog.save_project"), target, "*.pitchnet",
+    juce::FileChooser chooser(TR("dialog.save_project"), target, "*.sonaria",
                               true, false, this);
     if (!chooser.browseForFileToSave(true))
     {
@@ -1910,7 +1906,7 @@ void MainComponent::saveProject(bool saveAs, std::function<void(bool)> onComplet
     }
 
     if (file.getFileExtension().isEmpty())
-      file = file.withFileExtension("pitchnet");
+      file = file.withFileExtension("sonaria");
 
     toolbar.showProgress(TR("progress.saving"));
     toolbar.setProgress(-1.0f);
@@ -1928,7 +1924,7 @@ void MainComponent::saveProject(bool saveAs, std::function<void(bool)> onComplet
     return;
 #else
     fileChooser = std::make_unique<juce::FileChooser>(
-        TR("dialog.save_project"), target, "*.pitchnet");
+        TR("dialog.save_project"), target, "*.sonaria");
 
     auto chooserFlags = juce::FileBrowserComponent::saveMode |
                         juce::FileBrowserComponent::canSelectFiles |
@@ -1951,7 +1947,7 @@ void MainComponent::saveProject(bool saveAs, std::function<void(bool)> onComplet
       }
 
       if (file.getFileExtension().isEmpty())
-        file = file.withFileExtension("pitchnet");
+        file = file.withFileExtension("sonaria");
 
       safeThis->toolbar.showProgress(TR("progress.saving"));
       safeThis->toolbar.setProgress(-1.0f);
@@ -2012,7 +2008,7 @@ void MainComponent::openFile()
 
   fileChooser = std::make_unique<juce::FileChooser>(
       TR("dialog.select_audio"), juce::File{},
-      "*.pitchnet;*.wav;*.mp3;*.flac;*.aiff");
+      "*.sonaria;*.pitchnet;*.wav;*.mp3;*.flac;*.aiff");
 
   auto chooserFlags = juce::FileBrowserComponent::openMode |
                       juce::FileBrowserComponent::canSelectFiles;
@@ -2028,7 +2024,7 @@ void MainComponent::openFile()
         safeThis->fileChooser.reset(); // Allow next dialog to open
         if (file.existsAsFile()) {
           safeThis->addRecentFile(file);
-          if (file.hasFileExtension("pitchnet") || file.hasFileExtension(".pitchnet"))
+          if (file.hasFileExtension("sonaria;pitchnet"))
             safeThis->openProjectFile(file);
           else
             safeThis->loadAudioFile(file);
@@ -2142,7 +2138,7 @@ void MainComponent::openRecentFile(const juce::File &file)
     return;
   }
 
-  if (file.hasFileExtension("pitchnet") || file.hasFileExtension(".pitchnet"))
+  if (file.hasFileExtension("sonaria;pitchnet"))
     openProjectFile(file);
   else
     loadAudioFile(file);
@@ -2572,12 +2568,12 @@ juce::File MainComponent::createMidiDragFile()
     baseName = project->getName();
   baseName = juce::File::createLegalFileName(baseName.trim());
   if (baseName.isEmpty())
-    baseName = "PitchNet";
+    baseName = "Sonaria";
 
   // A fixed temp folder: each drag overwrites the previous file, so nothing
   // piles up. The DAW imports (copies) the MIDI on drop.
   auto dir = juce::File::getSpecialLocation(juce::File::tempDirectory)
-                 .getChildFile("PitchNet MIDI");
+                 .getChildFile("Sonaria MIDI");
   if (!dir.createDirectory())
     return {};
 
@@ -3418,7 +3414,7 @@ bool MainComponent::isInterestedInFileDrag(const juce::StringArray &files)
 
   for (const auto &file : files)
   {
-    if (file.endsWithIgnoreCase(".pitchnet") || file.endsWithIgnoreCase(".wav") ||
+    if (file.endsWithIgnoreCase(".sonaria") || file.endsWithIgnoreCase(".pitchnet") || file.endsWithIgnoreCase(".wav") ||
         file.endsWithIgnoreCase(".mp3") ||
         file.endsWithIgnoreCase(".flac") || file.endsWithIgnoreCase(".aiff") ||
         file.endsWithIgnoreCase(".ogg") || file.endsWithIgnoreCase(".m4a"))
@@ -3454,7 +3450,7 @@ void MainComponent::openFileFromPath(const juce::File &file)
     return;
   }
 
-  if (file.hasFileExtension("pitchnet") || file.hasFileExtension(".pitchnet"))
+  if (file.hasFileExtension("sonaria;pitchnet"))
     openProjectFile(file);
   else
     loadAudioFile(file);

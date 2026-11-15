@@ -7,19 +7,19 @@
  *
  * macOS:
  *   - Models: /Library/Application Support/<company>/<app>/models/
- *   - Logs: ~/Library/Logs/PitchNet/
- *   - Config: ~/Library/Application Support/PitchNet/
+ *   - Logs: ~/Library/Logs/Sonaria/
+ *   - Config: ~/Library/Application Support/Sonaria/
  *
  * Windows:
  *   - Models: %PROGRAMDATA%/<company>/<app>/models/
- *   - Logs: %APPDATA%/PitchNet/Logs/
- *   - Config: %APPDATA%/PitchNet/
+ *   - Logs: %APPDATA%/Sonaria/Logs/
+ *   - Config: %APPDATA%/Sonaria/
  *
  * Linux:
  *   - Models: ~/.local/share/<company>/<app>/models/ (per-user install)
  *             or /opt/<company>/<app>/models/ (system-wide install)
- *   - Logs: ~/.config/PitchNet/logs/
- *   - Config: ~/.config/PitchNet/
+ *   - Logs: ~/.config/Sonaria/logs/
+ *   - Config: ~/.config/Sonaria/
  */
 namespace PlatformPaths
 {
@@ -50,7 +50,7 @@ namespace PlatformPaths
 #if JUCE_LINUX
         // A per-user (no sudo) install takes precedence over a system-wide one.
         auto perUserResources = juce::File::getSpecialLocation(juce::File::userHomeDirectory)
-                                    .getChildFile(".local/share/Session Loops/PitchNet");
+                                    .getChildFile(".local/share/Narusenia/Sonaria");
         if (perUserResources.getChildFile("models").isDirectory())
             return perUserResources;
 #endif
@@ -58,8 +58,8 @@ namespace PlatformPaths
 #if JUCE_MAC
             .getChildFile("Application Support")
 #endif
-            .getChildFile("Session Loops")
-            .getChildFile("PitchNet");
+            .getChildFile("Narusenia")
+            .getChildFile("Sonaria");
 #endif
     }
 
@@ -221,17 +221,17 @@ namespace PlatformPaths
     inline juce::File getLogsDirectory()
     {
 #if JUCE_MAC
-        // macOS: ~/Library/Logs/PitchNet/
+        // macOS: ~/Library/Logs/Sonaria/
         return juce::File::getSpecialLocation(juce::File::userHomeDirectory)
-            .getChildFile("Library/Logs/PitchNet");
+            .getChildFile("Library/Logs/Sonaria");
 #elif JUCE_WINDOWS
-        // Windows: %APPDATA%/PitchNet/Logs/
+        // Windows: %APPDATA%/Sonaria/Logs/
         return juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
-            .getChildFile("PitchNet/Logs");
+            .getChildFile("Sonaria/Logs");
 #else
-        // Linux: ~/.config/PitchNet/logs/
+        // Linux: ~/.config/Sonaria/logs/
         return juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
-            .getChildFile("PitchNet/logs");
+            .getChildFile("Sonaria/logs");
 #endif
     }
 
@@ -239,7 +239,7 @@ namespace PlatformPaths
     {
         // All platforms use userApplicationDataDirectory
         return juce::File::getSpecialLocation(juce::File::userApplicationDataDirectory)
-            .getChildFile("PitchNet");
+            .getChildFile("Sonaria");
     }
 
     inline juce::File getLogFile(const juce::String &name)

@@ -14,8 +14,8 @@
   "canvas.timing": "Timing",
   "category.edit_mode": "Edit Mode",
   "category.transport": "Transport",
-  "command.about": "About PitchNet",
-  "command.about.desp": "About PitchNet and third-party notices",
+  "command.about": "About Sonaria",
+  "command.about.desp": "About Sonaria and third-party notices",
   "command.pitch_drawing_tool": "Pitch Drawing Tool",
   "command.pitch_drawing_tool.desp": "Activate the pitch drawing tool",
   "command.export_audio": "Export Audio...",
@@ -205,7 +205,7 @@
   "polylab.length": "length",
   "polylab.load_failed": "Could not read that audio file",
   "polylab.muted": "muted",
-  "polylab.no_audio": "Open an audio file, or load a song in PitchNet and click Project Audio.",
+  "polylab.no_audio": "Open an audio file, or load a song in Sonaria and click Project Audio.",
   "polylab.no_notes": "No notes found",
   "polylab.no_project_audio": "The open project has no audio yet",
   "polylab.notes": "notes",
@@ -335,7 +335,7 @@
   "tooltip.region_view_track": "Track mode: showing every clip on the track. Click to show only the selected clip's source.",
   "update.ask_later": "Ask Me Later",
   "update.download_now": "Download Now",
-  "update.message": "A new version of PitchNet is available. Would you like to download it?",
+  "update.message": "A new version of Sonaria is available. Would you like to download it?",
   "update.skip_version": "Skip This Version",
   "update.title": "Update Available"
 }

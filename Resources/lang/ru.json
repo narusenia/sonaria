@@ -14,8 +14,8 @@
   "canvas.timing": "Тайминг",
   "category.edit_mode": "Режим редактирования",
   "category.transport": "Транспорт",
-  "command.about": "О программе PitchNet",
-  "command.about.desp": "О PitchNet и уведомления о сторонних компонентах",
+  "command.about": "О программе Sonaria",
+  "command.about.desp": "О Sonaria и уведомления о сторонних компонентах",
   "command.pitch_drawing_tool": "Инструмент рисования высоты тона",
   "command.pitch_drawing_tool.desp": "Включить инструмент рисования высоты тона",
   "command.export_audio": "Экспорт аудио...",
@@ -205,7 +205,7 @@
   "polylab.length": "длительности",
   "polylab.load_failed": "Не удалось прочитать этот аудиофайл",
   "polylab.muted": "заглушена",
-  "polylab.no_audio": "Откройте аудиофайл или загрузите песню в PitchNet и нажмите «Аудио проекта».",
+  "polylab.no_audio": "Откройте аудиофайл или загрузите песню в Sonaria и нажмите «Аудио проекта».",
   "polylab.no_notes": "Ноты не найдены",
   "polylab.no_project_audio": "В открытом проекте пока нет аудио",
   "polylab.notes": "нот",
@@ -335,7 +335,7 @@
   "tooltip.region_view_track": "Режим дорожки: показаны все клипы на дорожке. Нажмите, чтобы показать только источник выбранного клипа.",
   "update.ask_later": "Напомнить позже",
   "update.download_now": "Скачать сейчас",
-  "update.message": "Доступна новая версия PitchNet. Скачать её?",
+  "update.message": "Доступна новая версия Sonaria. Скачать её?",
   "update.skip_version": "Пропустить эту версию",
   "update.title": "Доступно обновление"
 }

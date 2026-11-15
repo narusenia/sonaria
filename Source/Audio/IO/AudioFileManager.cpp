@@ -173,7 +173,7 @@ void AudioFileManager::showSaveDialog(
     return;
 
   fileChooser = std::make_unique<juce::FileChooser>(TR("dialog.save_project"),
-                                                    defaultPath, "*.pitchnet");
+                                                    defaultPath, "*.sonaria");
 
   auto chooserFlags = juce::FileBrowserComponent::saveMode |
                       juce::FileBrowserComponent::canSelectFiles |
@@ -185,7 +185,7 @@ void AudioFileManager::showSaveDialog(
         fileChooser.reset();
         if (file != juce::File{} && onFileSelected) {
           auto finalFile = file.getFileExtension().isEmpty()
-                               ? file.withFileExtension("pitchnet")
+                               ? file.withFileExtension("sonaria")
                                : file;
           onFileSelected(finalFile);
         }
@@ -285,7 +285,7 @@ bool AudioFileManager::isInterestedInFileDrag(const juce::StringArray &files) {
     juce::File file(f);
     auto ext = file.getFileExtension().toLowerCase();
     if (ext == ".wav" || ext == ".mp3" || ext == ".flac" || ext == ".aiff" ||
-        ext == ".pitchnet")
+        ext == ".sonaria" || ext == ".pitchnet")
       return true;
   }
   return false;
@@ -296,7 +296,7 @@ juce::File AudioFileManager::getFirstAudioFile(const juce::StringArray &files) {
     juce::File file(f);
     auto ext = file.getFileExtension().toLowerCase();
     if (ext == ".wav" || ext == ".mp3" || ext == ".flac" || ext == ".aiff" ||
-        ext == ".pitchnet")
+        ext == ".sonaria" || ext == ".pitchnet")
       return file;
   }
   return {};

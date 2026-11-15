@@ -229,7 +229,7 @@ endif()
 option(PITCHNET_DEV_BUILD "Build with a separate development plugin identity" OFF)
 
 # Diagnostic logging for the ARA model graph and render path. Writes through the
-# existing AppLogger to %APPDATA%/PitchNet/Logs/debug_<session>.log. Model-graph
+# existing AppLogger to %APPDATA%/Sonaria/Logs/debug_<session>.log. Model-graph
 # events are low frequency; the render report is one line per region, once. Off
 # by default - release builds contain none of it.
 option(PITCHNET_ARA_DIAGNOSTICS "Log ARA model-graph and render diagnostics" OFF)
@@ -241,17 +241,17 @@ option(PITCHNET_ARA_DIAGNOSTICS "Log ARA model-graph and render diagnostics" OFF
 option(PITCHNET_CAPTURE_DIAGNOSTICS "Log non-ARA capture lifecycle diagnostics" OFF)
 
 if(PITCHNET_DEV_BUILD)
-    set(PITCHNET_PRODUCT_NAME "PitchNet Dev")
-    set(PITCHNET_BUNDLE_ID "com.sessionloops.pitchnet.dev")
-    set(PITCHNET_PLUGIN_CODE PTD1)
+    set(PITCHNET_PRODUCT_NAME "Sonaria Dev")
+    set(PITCHNET_BUNDLE_ID "one.nxeu.sonaria.dev")
+    set(PITCHNET_PLUGIN_CODE Snd1)
     message(STATUS
         "PitchNet: side-by-side DEV build "
         "(product '${PITCHNET_PRODUCT_NAME}', plugin code ${PITCHNET_PLUGIN_CODE}, "
         "bundle id ${PITCHNET_BUNDLE_ID})")
 else()
-    set(PITCHNET_PRODUCT_NAME "PitchNet")
-    set(PITCHNET_BUNDLE_ID "com.sessionloops.pitchnet")
-    set(PITCHNET_PLUGIN_CODE PTE1)
+    set(PITCHNET_PRODUCT_NAME "Sonaria")
+    set(PITCHNET_BUNDLE_ID "one.nxeu.sonaria")
+    set(PITCHNET_PLUGIN_CODE Snr1)
 endif()
 
 # Per-dirty-note synthesis diagnostics. synthesizeRegion() always logs a few
@@ -266,8 +266,8 @@ option(PITCHNET_SYNTH_NOTE_DIAGNOSTICS "Log one line per dirty note on every syn
 # Create GUI application
 juce_add_gui_app(PitchNet
     PRODUCT_NAME "${PITCHNET_PRODUCT_NAME}"
-    COMPANY_NAME "Session Loops"
-    COMPANY_WEBSITE "https://sessionloops.com"
+    COMPANY_NAME "Narusenia"
+    COMPANY_WEBSITE "https://github.com/narusenia/sonaria"
     BUNDLE_ID "${PITCHNET_BUNDLE_ID}"
     COMPANY_COPYRIGHT "Copyright 2026"
     ICON_BIG "${CMAKE_CURRENT_SOURCE_DIR}/Resources/images/icon.png"
@@ -318,10 +318,10 @@ endif()
 # Create VST3 plugin
 juce_add_plugin(PitchNetPlugin
     PRODUCT_NAME "${PITCHNET_PRODUCT_NAME}"
-    COMPANY_NAME "Session Loops"
-    COMPANY_WEBSITE "https://sessionloops.com"
+    COMPANY_NAME "Narusenia"
+    COMPANY_WEBSITE "https://github.com/narusenia/sonaria"
     BUNDLE_ID "${PITCHNET_BUNDLE_ID}"
-    PLUGIN_MANUFACTURER_CODE SLPS
+    PLUGIN_MANUFACTURER_CODE Nrsn
     PLUGIN_CODE ${PITCHNET_PLUGIN_CODE}
     FORMATS ${PITCHNET_PLUGIN_FORMATS}
     AAX_CATEGORY AAX_ePlugInCategory_PitchShift
@@ -372,7 +372,7 @@ if(ARA_AVAILABLE)
         target_compile_definitions(PitchNetPlugin PRIVATE
             PITCHNET_ARA_DIAGNOSTICS=1)
         message(STATUS "PitchNet: ARA diagnostics ENABLED "
-                       "(logs to %APPDATA%/PitchNet/Logs/debug_<session>.log)")
+                       "(logs to %APPDATA%/Sonaria/Logs/debug_<session>.log)")
     endif()
 endif()
 if(AAX_AVAILABLE)

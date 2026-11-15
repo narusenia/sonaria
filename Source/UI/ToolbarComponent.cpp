@@ -172,7 +172,7 @@ juce::String ToolbarComponent::getTooltip()
 #else
     const juce::String version = "0.8.1";
 #endif
-    return "PitchNet v" + version;
+    return "Sonaria v" + version;
 }
 
 void ToolbarComponent::paint(juce::Graphics &g)

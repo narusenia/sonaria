@@ -14,8 +14,8 @@
   "canvas.timing": "Temporização",
   "category.edit_mode": "Modo de edição",
   "category.transport": "Transporte",
-  "command.about": "Sobre o PitchNet",
-  "command.about.desp": "Sobre o PitchNet e avisos de terceiros",
+  "command.about": "Sobre o Sonaria",
+  "command.about.desp": "Sobre o Sonaria e avisos de terceiros",
   "command.pitch_drawing_tool": "Ferramenta de desenho de afinação",
   "command.pitch_drawing_tool.desp": "Ativar a ferramenta de desenho de afinação",
   "command.export_audio": "Exportar áudio...",
@@ -205,7 +205,7 @@
   "polylab.length": "da duração",
   "polylab.load_failed": "Não foi possível ler esse arquivo de áudio",
   "polylab.muted": "silenciada",
-  "polylab.no_audio": "Abra um arquivo de áudio ou carregue uma música no PitchNet e clique em Áudio do projeto.",
+  "polylab.no_audio": "Abra um arquivo de áudio ou carregue uma música no Sonaria e clique em Áudio do projeto.",
   "polylab.no_notes": "Nenhuma nota encontrada",
   "polylab.no_project_audio": "O projeto aberto ainda não tem áudio",
   "polylab.notes": "notas",
@@ -335,7 +335,7 @@
   "tooltip.region_view_track": "Modo faixa: mostrando todos os clipes da faixa. Clique para mostrar apenas a origem do clipe selecionado.",
   "update.ask_later": "Perguntar depois",
   "update.download_now": "Baixar agora",
-  "update.message": "Uma nova versão do PitchNet está disponível. Deseja baixá-la?",
+  "update.message": "Uma nova versão do Sonaria está disponível. Deseja baixá-la?",
   "update.skip_version": "Pular esta versão",
   "update.title": "Atualização disponível"
 }
