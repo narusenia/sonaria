@@ -71,7 +71,11 @@ GAME model assets
 Source: https://github.com/openvpi/GAME
 Copyright (c) 2026 Team OpenVPI
 
-The GAME source repository is licensed under the MIT License:
+The GAME source repository is licensed under the MIT License. The pretrained
+GAME model files (GAME/*.onnx) are released under the Creative Commons
+Attribution-NonCommercial-ShareAlike 4.0 International license
+(https://creativecommons.org/licenses/by-nc-sa/4.0/) and may not be used
+commercially. The MIT License of the source repository:
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -95,9 +99,11 @@ PC-NSF-HiFiGAN vocoder model assets
 Source: https://github.com/openvpi/vocoders
 
 The openvpi/vocoders source repository is licensed under the GNU Affero
-General Public License, version 3. The complete AGPLv3 text is provided in the
-installer License page. Corresponding source is available from the repository
-above.
+General Public License, version 3. The pretrained PC-NSF-HiFiGAN weights
+(pc_nsf_hifigan.onnx) are released separately under the Creative Commons
+Attribution-NonCommercial-ShareAlike 4.0 International license
+(https://creativecommons.org/licenses/by-nc-sa/4.0/). The weights may not be
+used commercially.
 
 FCPE model assets
 Source: https://github.com/CNChTu/FCPE
