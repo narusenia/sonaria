@@ -1,0 +1,11 @@
+[tools]
+cmake = "3.31"
+
+[tasks.configure]
+description = "Configure a Release build with Ninja"
+run = "cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release"
+
+[tasks.build]
+description = "Build Standalone, VST3 and AU"
+depends = ["configure"]
+run = "cmake --build build --config Release"
