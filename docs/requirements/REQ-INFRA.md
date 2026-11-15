@@ -59,7 +59,7 @@ AGPL-3.0 で公開し、PitchNet と HachiTune の帰属表示を残す。
 
 ### 受入条件
 
-- [ ] `LICENSE` と `THIRD_PARTY_NOTICES.txt` が更新されている
+- [x] `LICENSE` に AGPL-3.0 の原文があり、`THIRD_PARTY_NOTICES.txt` と README に Sonaria・PitchNet・HachiTune の著作権と帰属が書かれている
 - [ ] 各モデルのライセンスと出典が `docs/reference/models.md` に記録されている
 - [ ] 配布できないモデルがある場合、取得手順か代替が決まっている
 
