@@ -11,7 +11,15 @@ mise exec -- cmake -B build-dev -G Ninja -DCMAKE_BUILD_TYPE=Release -DPITCHNET_D
 mise exec -- cmake --build build-dev --config Release
 cp -R "build-dev/PitchNetPlugin_artefacts/Release/VST3/Sonaria Dev.vst3" ~/Library/Audio/Plug-Ins/VST3/
 cp -R "build-dev/PitchNetPlugin_artefacts/Release/AU/Sonaria Dev.component" ~/Library/Audio/Plug-Ins/Components/
+
+# リリースビルドはバンドル内の Contents/Resources/models からモデルを読む。ビルドはコピーしない
+V="$HOME/Library/Audio/Plug-Ins/VST3/Sonaria Dev.vst3"
+mkdir -p "$V/Contents/Resources/models"
+cp -R Resources/models/. "$V/Contents/Resources/models/"
+codesign --force --deep -s - "$V"
 ```
+
+モデルを入れ忘れると「モデルファイルがありません」というダイアログが出る。AU は Logic のビルド確認だけなので、モデルは入れない。
 
 `mlmodelc` が `Resources/models` にない場合は、先に `docs/implementation/M0-foundation/README.md` の M0-05 を見る。ビルドはプラグインを自動でインストールしない。CI の成果物（ZIP）を使うときは、展開後に `xattr -dr com.apple.quarantine <path>` で隔離属性を外す。
 
