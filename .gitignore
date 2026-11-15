@@ -52,3 +52,4 @@ sign.local.bat
 
 # Evaluation datasets (downloaded, not committed)
 tools/f0_compare/vocadito.zip
+build-dev/

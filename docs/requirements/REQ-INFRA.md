@@ -82,7 +82,7 @@ ARA の検証は Cubase と Studio One（Fender Studio Pro）で行う。Logic P
 ### 受入条件
 
 - [ ] 各マイルストーンの完了時に、Cubase と Studio One で ARA の読み込み・編集・保存・再読み込みを確認している
-- [ ] 確認手順が `docs/dev/host-check.md` にある
+- [x] 確認手順が `docs/dev/host-check.md` にある
 
 ### 依存要件
 
