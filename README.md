@@ -1,3 +1,13 @@
+> **Sonaria** is a hard fork of PitchNet. It is imported from
+> [SessionLoops/PitchNet@dc2c1b3](https://github.com/SessionLoops/PitchNet/commit/dc2c1b362d17461c37cfab0fd468a3fa359750dd)
+> (2026-11-12) with full history. Upstream changes are cherry-picked by hand; each import is listed below.
+>
+> | Upstream commit | Imported |
+> |---|---|
+> | `dc2c1b362d17461c37cfab0fd468a3fa359750dd` | 2026-11-15 (initial fork) |
+>
+> The rest of this README is still PitchNet's and will be rewritten for Sonaria.
+
 <div align="center">
   <h1>PitchNet</h1>
   <p>A lightweight pitch editor built with JUCE, featuring neural pitch detection and vocoder resynthesis for real-time preview.</p>

@@ -6,7 +6,7 @@
 
 | ID | 単位 | REQ | 規模 | 依存 | 状態 |
 |---|---|---|---|---|---|
-| M0-01 | PitchNet の取り込み（submodule 含む）、取り込み元コミットの記録 | INFRA-001 | S | — | 未着手 |
+| M0-01 | PitchNet の取り込み（submodule 含む）、取り込み元コミットの記録 | INFRA-001 | S | — | 完了（`dc2c1b3` を全履歴で取り込み、本家は `upstream` リモート） |
 | M0-02 | 名前変更: 製品名・プラグインコード・バンドル ID・ウィンドウタイトル・言語ファイル | INFRA-001 | M | M0-01 | 未着手 |
 | M0-03 | README（英日）・LICENSE・THIRD_PARTY_NOTICES の更新（帰属表示を残す） | INFRA-003 | S | M0-01 | 未着手 |
 | M0-04 | 同梱 ONNX モデルのライセンス確認、`docs/reference/models.md` | INFRA-003 | S | — | 未着手 |
