@@ -1,24 +1,60 @@
-name: Build PitchNet
+name: Build
 
 on:
   push:
-    branches: [main, master, refactor]
-    tags:
-      - "v*"
+    branches: [main]
   pull_request:
-    branches: [main, master, refactor]
+    branches: [main]
   workflow_dispatch:
 
 env:
   BUILD_TYPE: Release
-  ONNXRUNTIME_VERSION: "1.17.3"
-  DIRECTML_VERSION: "1.15.4"
 
 jobs:
-  # ===========================================
-  # Windows CPU Build
-  # ===========================================
-  build-windows-cpu:
+  build-macos:
+    runs-on: macos-15
+    name: macOS (arm64 + x86_64)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Download Core ML vocoder
+        # Not in the repo. Published by PitchNet; the checksum pins the content.
+        run: |
+          curl -fL -o pc_nsf_hifigan.mlmodelc.zip "https://github.com/SessionLoops/PitchNet/releases/download/models/pc_nsf_hifigan.mlmodelc.zip"
+          echo "e511eca773fd4fc484da1ee5a5ff2bf745156587194e0dceb90f4b5c6227e341  pc_nsf_hifigan.mlmodelc.zip" | shasum -a 256 -c -
+          unzip -q pc_nsf_hifigan.mlmodelc.zip -d Resources/models/
+          rm pc_nsf_hifigan.mlmodelc.zip
+
+      - name: Configure
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+            -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
+            -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+
+      - name: Build
+        run: cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
+
+      - name: Package
+        run: |
+          mkdir package
+          cp -R "build/PitchNet_artefacts/${{ env.BUILD_TYPE }}/Sonaria.app" package/
+          cp -R "build/PitchNetPlugin_artefacts/${{ env.BUILD_TYPE }}/VST3/Sonaria.vst3" package/
+          cp -R "build/PitchNetPlugin_artefacts/${{ env.BUILD_TYPE }}/AU/Sonaria.component" package/
+          ditto -c -k --keepParent package Sonaria-macOS.zip
+
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: Sonaria-macOS
+          path: Sonaria-macOS.zip
+          retention-days: 30
+
+  build-windows:
     runs-on: windows-latest
     name: Windows (CPU)
 
@@ -28,632 +64,22 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Download Models
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force -Path "Resources/models"
-          Invoke-WebRequest -Uri "https://github.com/mdkrain/HachiTune/releases/download/Resources%2Fmodels/rmvpe.onnx" -OutFile "Resources/models/rmvpe.onnx"
-
-      - name: Configure CMake
-        run: cmake -B build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DUSE_DIRECTML=OFF -DUSE_ASIO=ON -DENABLE_NOTE_STRETCH=OFF
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DUSE_DIRECTML=OFF
 
       - name: Build
         run: cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
 
-      - name: Prepare Package
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force -Path package
-
-          # Copy standalone app
-          Copy-Item -Path "build/PitchNet_artefacts/${{ env.BUILD_TYPE }}/*" -Destination "package/" -Recurse -Force
-
-          # Move VST3 binary next to the exe (avoid the VST3 folder packaging)
-          $vst3Binary = "build/PitchNetPlugin_artefacts/${{ env.BUILD_TYPE }}/VST3/PitchNet.vst3/Contents/x86_64-win/PitchNet.vst3"
-          if (Test-Path $vst3Binary) {
-            Copy-Item -Path $vst3Binary -Destination "package/PitchNet.vst3" -Force
-          } else {
-            Write-Warning "VST3 binary not found at $vst3Binary"
-          }
-
-          if (Test-Path "package/VST3") {
-            Remove-Item -Recurse -Force "package/VST3"
-          }
-
-          # Create no-models package (keep models dirs, remove files)
-          New-Item -ItemType Directory -Force -Path package-nomodels
-          Copy-Item -Path "package/*" -Destination "package-nomodels" -Recurse -Force
-          Get-ChildItem -Path "package-nomodels" -Recurse -Directory -Filter models | ForEach-Object {
-            Get-ChildItem -Path $_.FullName -Force | Remove-Item -Recurse -Force
-            New-Item -ItemType Directory -Force -Path $_.FullName | Out-Null
-          }
-          if (-not (Test-Path "package-nomodels/models")) {
-            New-Item -ItemType Directory -Force -Path "package-nomodels/models" | Out-Null
-          }
-
-      - name: Upload Artifact
+      - name: Upload standalone
         uses: actions/upload-artifact@v4
         with:
-          name: PitchNet-Windows-CPU
-          path: package/
+          name: Sonaria-Windows-Standalone
+          path: build/PitchNet_artefacts/${{ env.BUILD_TYPE }}/
           retention-days: 30
 
-      - name: Upload Artifact (No Models)
+      - name: Upload VST3
         uses: actions/upload-artifact@v4
         with:
-          name: PitchNet-Windows-CPU-NoModels
-          path: package-nomodels/
+          name: Sonaria-Windows-VST3
+          path: build/PitchNetPlugin_artefacts/${{ env.BUILD_TYPE }}/VST3/
           retention-days: 30
-
-  # ===========================================
-  # Windows DirectML Build
-  # ===========================================
-  build-windows-directml:
-    runs-on: windows-latest
-    name: Windows (DirectML)
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-        with:
-          submodules: recursive
-
-      - name: Download Models
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force -Path "Resources/models"
-          Invoke-WebRequest -Uri "https://github.com/mdkrain/HachiTune/releases/download/Resources%2Fmodels/rmvpe.onnx" -OutFile "Resources/models/rmvpe.onnx"
-
-      - name: Download DirectML Runtime
-        shell: pwsh
-        run: |
-          # Download DirectML NuGet package
-          $dmlUrl = "https://www.nuget.org/api/v2/package/Microsoft.AI.DirectML/${{ env.DIRECTML_VERSION }}"
-          Invoke-WebRequest -Uri $dmlUrl -OutFile "directml.nupkg"
-
-          # Extract (nupkg is just a zip)
-          Expand-Archive -Path "directml.nupkg" -DestinationPath "directml_pkg" -Force
-
-          # Create vendor directory and copy DLL
-          New-Item -ItemType Directory -Force -Path "vendor/directml/bin"
-          Copy-Item -Path "directml_pkg/bin/x64-win/DirectML.dll" -Destination "vendor/directml/bin/"
-
-          Write-Host "DirectML ${{ env.DIRECTML_VERSION }} downloaded successfully"
-          Get-ChildItem "vendor/directml/bin/"
-
-      - name: Configure CMake
-        run: cmake -B build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DUSE_DIRECTML=ON -DUSE_BUNDLED_DIRECTML_RUNTIME=ON -DUSE_ASIO=ON -DENABLE_NOTE_STRETCH=OFF
-
-      - name: Build
-        run: cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
-
-      - name: Prepare Package
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force -Path package
-
-          # Copy standalone app
-          Copy-Item -Path "build/PitchNet_artefacts/${{ env.BUILD_TYPE }}/*" -Destination "package/" -Recurse -Force
-
-          # Move VST3 binary next to the exe (avoid the VST3 folder packaging)
-          $vst3Binary = "build/PitchNetPlugin_artefacts/${{ env.BUILD_TYPE }}/VST3/PitchNet.vst3/Contents/x86_64-win/PitchNet.vst3"
-          if (Test-Path $vst3Binary) {
-            Copy-Item -Path $vst3Binary -Destination "package/PitchNet.vst3" -Force
-          } else {
-            Write-Warning "VST3 binary not found at $vst3Binary"
-          }
-
-          if (Test-Path "package/VST3") {
-            Remove-Item -Recurse -Force "package/VST3"
-          }
-
-          # Create no-models package (keep models dirs, remove files)
-          New-Item -ItemType Directory -Force -Path package-nomodels
-          Copy-Item -Path "package/*" -Destination "package-nomodels" -Recurse -Force
-          Get-ChildItem -Path "package-nomodels" -Recurse -Directory -Filter models | ForEach-Object {
-            Get-ChildItem -Path $_.FullName -Force | Remove-Item -Recurse -Force
-            New-Item -ItemType Directory -Force -Path $_.FullName | Out-Null
-          }
-          if (-not (Test-Path "package-nomodels/models")) {
-            New-Item -ItemType Directory -Force -Path "package-nomodels/models" | Out-Null
-          }
-
-          # Verify DirectML.dll is included
-          if (Test-Path "package/DirectML.dll") {
-            Write-Host "DirectML.dll included in package"
-          } else {
-            Write-Warning "DirectML.dll NOT found in package!"
-          }
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: PitchNet-Windows-DirectML
-          path: package/
-          retention-days: 30
-
-      - name: Upload Artifact (No Models)
-        uses: actions/upload-artifact@v4
-        with:
-          name: PitchNet-Windows-DirectML-NoModels
-          path: package-nomodels/
-          retention-days: 30
-
-  # Windows CUDA build is disabled for now: CMakeLists.txt requests an ONNX
-  # Runtime gpu_cuda13 package that does not exist for ONNXRUNTIME_VERSION.
-
-  # ===========================================
-  # macOS Build (Apple Silicon)
-  # ===========================================
-  build-macos:
-    runs-on: macos-15
-    name: macOS (ARM64)
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-        with:
-          submodules: recursive
-
-      - name: Download Models
-        run: |
-          mkdir -p Resources/models
-          curl -L -o Resources/models/rmvpe.onnx "https://github.com/mdkrain/HachiTune/releases/download/Resources%2Fmodels/rmvpe.onnx"
-
-          # The Core ML vocoder is not in the repo; it is published on the
-          # "models" release of this repository (mixed-precision export).
-          curl -fL -o pc_nsf_hifigan.mlmodelc.zip "https://github.com/${{ github.repository }}/releases/download/models/pc_nsf_hifigan.mlmodelc.zip"
-          echo "e511eca773fd4fc484da1ee5a5ff2bf745156587194e0dceb90f4b5c6227e341  pc_nsf_hifigan.mlmodelc.zip" | shasum -a 256 -c -
-          unzip -q pc_nsf_hifigan.mlmodelc.zip -d Resources/models/
-          rm pc_nsf_hifigan.mlmodelc.zip
-
-      - name: Configure CMake
-        run: |
-          cmake -B build -G Ninja \
-            -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
-            -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
-            -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
-            -DENABLE_NOTE_STRETCH=OFF
-
-      - name: Build
-        run: cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
-
-      - name: Prepare Package
-        run: |
-          mkdir -p package
-
-          # Copy standalone app
-          cp -R "build/PitchNet_artefacts/${{ env.BUILD_TYPE }}/PitchNet.app" package/
-
-          # Copy VST3 plugin
-          if [ -d "build/PitchNetPlugin_artefacts/${{ env.BUILD_TYPE }}/VST3" ]; then
-            cp -R "build/PitchNetPlugin_artefacts/${{ env.BUILD_TYPE }}/VST3/PitchNet.vst3" package/
-          fi
-
-          # Copy AU plugin
-          if [ -d "build/PitchNetPlugin_artefacts/${{ env.BUILD_TYPE }}/AU" ]; then
-            cp -R "build/PitchNetPlugin_artefacts/${{ env.BUILD_TYPE }}/AU/PitchNet.component" package/
-          fi
-
-          # Create no-models package (keep models dirs, remove files)
-          rm -rf package-nomodels
-          cp -R package package-nomodels
-          find package-nomodels -type d -name models -exec sh -c 'rm -rf "$1"/*' _ {} \;
-          mkdir -p package-nomodels/PitchNet.app/Contents/Resources/models
-          if [ -d "package-nomodels/PitchNet.vst3" ]; then
-            mkdir -p package-nomodels/PitchNet.vst3/Contents/Resources/models
-          fi
-          if [ -d "package-nomodels/PitchNet.component" ]; then
-            mkdir -p package-nomodels/PitchNet.component/Contents/Resources/models
-          fi
-
-      - name: Ad-hoc Code Sign
-        run: |
-          codesign --force --deep -s - package/PitchNet.app || true
-          codesign --force --deep -s - package/PitchNet.vst3 || true
-          codesign --force --deep -s - package/PitchNet.component || true
-          codesign --force --deep -s - package-nomodels/PitchNet.app || true
-          codesign --force --deep -s - package-nomodels/PitchNet.vst3 || true
-          codesign --force --deep -s - package-nomodels/PitchNet.component || true
-
-      - name: Create DMG
-        run: |
-          for volume in "PitchNet" "PitchNet-NoModels"; do
-            if [ -d "/Volumes/$volume" ]; then
-              hdiutil detach "/Volumes/$volume" || hdiutil detach -force "/Volumes/$volume"
-            fi
-          done
-
-          rm -f PitchNet-macOS.dmg PitchNet-macOS-NoModels.dmg
-
-          hdiutil create -volname "PitchNet" \
-            -srcfolder package \
-            -ov -format UDZO \
-            PitchNet-macOS.dmg
-          hdiutil create -volname "PitchNet-NoModels" \
-            -srcfolder package-nomodels \
-            -ov -format UDZO \
-            PitchNet-macOS-NoModels.dmg
-
-      - name: Create App ZIP
-        run: |
-          cd package
-          zip -r ../PitchNet-macOS-App.zip PitchNet.app
-          cd ../package-nomodels
-          zip -r ../PitchNet-macOS-App-NoModels.zip PitchNet.app
-
-      - name: Create Plugin ZIPs
-        run: |
-          # VST3 with models
-          if [ -d "package/PitchNet.vst3" ]; then
-            cd package && zip -r ../PitchNet-macOS-VST3.zip PitchNet.vst3 && cd ..
-          fi
-          # AU with models
-          if [ -d "package/PitchNet.component" ]; then
-            cd package && zip -r ../PitchNet-macOS-AU.zip PitchNet.component && cd ..
-          fi
-
-      - name: Upload Artifact (DMG)
-        uses: actions/upload-artifact@v4
-        with:
-          name: PitchNet-macOS
-          path: PitchNet-macOS.dmg
-          retention-days: 30
-
-      - name: Upload Artifact (DMG, No Models)
-        uses: actions/upload-artifact@v4
-        with:
-          name: PitchNet-macOS-NoModels
-          path: PitchNet-macOS-NoModels.dmg
-          retention-days: 30
-
-      - name: Upload Artifact (App ZIP)
-        uses: actions/upload-artifact@v4
-        with:
-          name: PitchNet-macOS-App
-          path: PitchNet-macOS-App.zip
-          retention-days: 30
-
-      - name: Upload Artifact (App ZIP, No Models)
-        uses: actions/upload-artifact@v4
-        with:
-          name: PitchNet-macOS-App-NoModels
-          path: PitchNet-macOS-App-NoModels.zip
-          retention-days: 30
-
-      - name: Upload Artifact (Unpacked)
-        uses: actions/upload-artifact@v4
-        with:
-          name: PitchNet-macOS-Unpacked
-          path: package/
-          retention-days: 30
-
-      - name: Upload Artifact (Unpacked, No Models)
-        uses: actions/upload-artifact@v4
-        with:
-          name: PitchNet-macOS-Unpacked-NoModels
-          path: package-nomodels/
-          retention-days: 30
-
-      - name: Upload Artifact (VST3)
-        uses: actions/upload-artifact@v4
-        with:
-          name: PitchNet-macOS-VST3
-          path: PitchNet-macOS-VST3.zip
-          retention-days: 30
-          if-no-files-found: ignore
-
-      - name: Upload Artifact (AU)
-        uses: actions/upload-artifact@v4
-        with:
-          name: PitchNet-macOS-AU
-          path: PitchNet-macOS-AU.zip
-          retention-days: 30
-          if-no-files-found: ignore
-
-  # ===========================================
-  # Linux Build
-  # ===========================================
-  build-linux:
-    runs-on: ubuntu-22.04
-    name: Linux (CPU)
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-        with:
-          submodules: recursive
-
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            build-essential \
-            cmake \
-            ninja-build \
-            pkg-config \
-            gobjc++ \
-            libasound2-dev \
-            libjack-jackd2-dev \
-            libfreetype6-dev \
-            libx11-dev \
-            libxcomposite-dev \
-            libxcursor-dev \
-            libxext-dev \
-            libxi-dev \
-            libxinerama-dev \
-            libxrandr-dev \
-            libxrender-dev \
-            libwebkit2gtk-4.0-dev \
-            libcurl4-openssl-dev \
-            libglu1-mesa-dev \
-            libegl-dev \
-            mesa-common-dev
-
-      - name: Download Models
-        run: |
-          mkdir -p Resources/models
-          curl -L -o Resources/models/rmvpe.onnx "https://github.com/mdkrain/HachiTune/releases/download/Resources%2Fmodels/rmvpe.onnx"
-
-      - name: Configure CMake
-        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DENABLE_NOTE_STRETCH=OFF
-
-      - name: Build
-        run: cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
-
-      - name: Prepare Package
-        run: |
-          mkdir -p package/PitchNet
-
-          # Copy standalone app
-          cp -R build/PitchNet_artefacts/${{ env.BUILD_TYPE }}/* package/PitchNet/
-
-          # Copy VST3 plugin
-          if [ -d "build/PitchNetPlugin_artefacts/${{ env.BUILD_TYPE }}/VST3" ]; then
-            cp -R build/PitchNetPlugin_artefacts/${{ env.BUILD_TYPE }}/VST3 package/PitchNet/
-          fi
-
-          # Create launch script
-          cat > package/PitchNet/run.sh << 'EOF'
-          #!/bin/bash
-          SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-          export LD_LIBRARY_PATH="$SCRIPT_DIR:$LD_LIBRARY_PATH"
-          exec "$SCRIPT_DIR/PitchNet" "$@"
-          EOF
-          chmod +x package/PitchNet/run.sh
-
-          # Create no-models tarball (keep models dirs, remove files)
-          rm -rf package-nomodels
-          cp -R package package-nomodels
-          find package-nomodels -type d -name models -exec sh -c 'rm -rf "$1"/*' _ {} \;
-          mkdir -p package-nomodels/PitchNet/models
-
-          # Create tarball
-          cd package
-          tar -czvf ../PitchNet-Linux.tar.gz PitchNet
-
-          cd ../package-nomodels
-          tar -czvf ../PitchNet-Linux-NoModels.tar.gz PitchNet
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: PitchNet-Linux
-          path: PitchNet-Linux.tar.gz
-          retention-days: 30
-
-      - name: Upload Artifact (No Models)
-        uses: actions/upload-artifact@v4
-        with:
-          name: PitchNet-Linux-NoModels
-          path: PitchNet-Linux-NoModels.tar.gz
-          retention-days: 30
-
-  # ===========================================
-  # Linux GPU Build
-  # ===========================================
-  build-linux-gpu:
-    runs-on: ubuntu-22.04
-    name: Linux (GPU)
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v5
-        with:
-          submodules: recursive
-
-      - name: Install Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            build-essential \
-            cmake \
-            ninja-build \
-            pkg-config \
-            gobjc++ \
-            libasound2-dev \
-            libjack-jackd2-dev \
-            libfreetype6-dev \
-            libx11-dev \
-            libxcomposite-dev \
-            libxcursor-dev \
-            libxext-dev \
-            libxi-dev \
-            libxinerama-dev \
-            libxrandr-dev \
-            libxrender-dev \
-            libwebkit2gtk-4.0-dev \
-            libcurl4-openssl-dev \
-            libglu1-mesa-dev \
-            libegl-dev \
-            mesa-common-dev
-
-      - name: Download Models
-        run: |
-          mkdir -p Resources/models
-          curl -L -o Resources/models/rmvpe.onnx "https://github.com/mdkrain/HachiTune/releases/download/Resources%2Fmodels/rmvpe.onnx"
-
-      - name: Configure CMake
-        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DUSE_GPU=ON -DENABLE_NOTE_STRETCH=OFF
-
-      - name: Build
-        run: cmake --build build --config ${{ env.BUILD_TYPE }} --parallel
-
-      - name: Prepare Package
-        run: |
-          mkdir -p package/PitchNet
-
-          # Copy standalone app
-          cp -R build/PitchNet_artefacts/${{ env.BUILD_TYPE }}/* package/PitchNet/
-
-          # Copy VST3 plugin
-          if [ -d "build/PitchNetPlugin_artefacts/${{ env.BUILD_TYPE }}/VST3" ]; then
-            cp -R build/PitchNetPlugin_artefacts/${{ env.BUILD_TYPE }}/VST3 package/PitchNet/
-          fi
-
-          # Create launch script
-          cat > package/PitchNet/run.sh << 'EOF'
-          #!/bin/bash
-          SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-          export LD_LIBRARY_PATH="$SCRIPT_DIR:$LD_LIBRARY_PATH"
-          exec "$SCRIPT_DIR/PitchNet" "$@"
-          EOF
-          chmod +x package/PitchNet/run.sh
-
-          # Create no-models tarball (keep models dirs, remove files)
-          rm -rf package-nomodels
-          cp -R package package-nomodels
-          find package-nomodels -type d -name models -exec sh -c 'rm -rf "$1"/*' _ {} \;
-          mkdir -p package-nomodels/PitchNet/models
-
-          # Create tarball
-          cd package
-          tar -czvf ../PitchNet-Linux-GPU.tar.gz PitchNet
-
-          cd ../package-nomodels
-          tar -czvf ../PitchNet-Linux-GPU-NoModels.tar.gz PitchNet
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: PitchNet-Linux-GPU
-          path: PitchNet-Linux-GPU.tar.gz
-          retention-days: 30
-
-      - name: Upload Artifact (No Models)
-        uses: actions/upload-artifact@v4
-        with:
-          name: PitchNet-Linux-GPU-NoModels
-          path: PitchNet-Linux-GPU-NoModels.tar.gz
-          retention-days: 30
-
-  # ===========================================
-  # Create Release
-  # ===========================================
-  release:
-    name: Create Release
-    needs:
-      - build-windows-cpu
-      - build-windows-directml
-      - build-macos
-      - build-linux
-      - build-linux-gpu
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
-
-    steps:
-      - name: Download All Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
-      - name: Prepare Release Files
-        run: |
-          cd artifacts
-
-          # Windows packages
-          if [ -d "PitchNet-Windows-CPU" ]; then
-            cd PitchNet-Windows-CPU && zip -r ../PitchNet-Windows-CPU.zip . && cd ..
-          fi
-
-          if [ -d "PitchNet-Windows-CPU-NoModels" ]; then
-            cd PitchNet-Windows-CPU-NoModels && zip -r ../PitchNet-Windows-CPU-NoModels.zip . && cd ..
-          fi
-
-          if [ -d "PitchNet-Windows-DirectML" ]; then
-            cd PitchNet-Windows-DirectML && zip -r ../PitchNet-Windows-DirectML.zip . && cd ..
-          fi
-
-          if [ -d "PitchNet-Windows-DirectML-NoModels" ]; then
-            cd PitchNet-Windows-DirectML-NoModels && zip -r ../PitchNet-Windows-DirectML-NoModels.zip . && cd ..
-          fi
-
-          # macOS DMG is already ready
-          if [ -d "PitchNet-macOS" ]; then
-            mv PitchNet-macOS/*.dmg ./PitchNet-macOS.dmg || true
-          fi
-
-          if [ -d "PitchNet-macOS-NoModels" ]; then
-            mv PitchNet-macOS-NoModels/*.dmg ./PitchNet-macOS-NoModels.dmg || true
-          fi
-
-          # macOS App ZIP is already ready
-          if [ -d "PitchNet-macOS-App" ]; then
-            mv PitchNet-macOS-App/*.zip ./PitchNet-macOS-App.zip || true
-          fi
-
-          if [ -d "PitchNet-macOS-App-NoModels" ]; then
-            mv PitchNet-macOS-App-NoModels/*.zip ./PitchNet-macOS-App-NoModels.zip || true
-          fi
-
-          # macOS plugin ZIPs
-          if [ -d "PitchNet-macOS-VST3" ]; then
-            mv PitchNet-macOS-VST3/*.zip ./PitchNet-macOS-VST3.zip || true
-          fi
-
-          if [ -d "PitchNet-macOS-AU" ]; then
-            mv PitchNet-macOS-AU/*.zip ./PitchNet-macOS-AU.zip || true
-          fi
-
-          # Linux tarballs are already ready
-          if [ -d "PitchNet-Linux" ]; then
-            mv PitchNet-Linux/*.tar.gz ./PitchNet-Linux.tar.gz || true
-          fi
-
-          if [ -d "PitchNet-Linux-NoModels" ]; then
-            mv PitchNet-Linux-NoModels/*.tar.gz ./PitchNet-Linux-NoModels.tar.gz || true
-          fi
-
-          if [ -d "PitchNet-Linux-GPU" ]; then
-            mv PitchNet-Linux-GPU/*.tar.gz ./PitchNet-Linux-GPU.tar.gz || true
-          fi
-
-          if [ -d "PitchNet-Linux-GPU-NoModels" ]; then
-            mv PitchNet-Linux-GPU-NoModels/*.tar.gz ./PitchNet-Linux-GPU-NoModels.tar.gz || true
-          fi
-
-          ls -la
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            artifacts/PitchNet-Windows-CPU.zip
-            artifacts/PitchNet-Windows-CPU-NoModels.zip
-            artifacts/PitchNet-Windows-DirectML.zip
-            artifacts/PitchNet-Windows-DirectML-NoModels.zip
-            artifacts/PitchNet-macOS.dmg
-            artifacts/PitchNet-macOS-NoModels.dmg
-            artifacts/PitchNet-macOS-App.zip
-            artifacts/PitchNet-macOS-App-NoModels.zip
-            artifacts/PitchNet-macOS-VST3.zip
-            artifacts/PitchNet-macOS-AU.zip
-            artifacts/PitchNet-Linux.tar.gz
-            artifacts/PitchNet-Linux-NoModels.tar.gz
-            artifacts/PitchNet-Linux-GPU.tar.gz
-            artifacts/PitchNet-Linux-GPU-NoModels.tar.gz
-          draft: true
-          generate_release_notes: true
-          fail_on_unmatched_files: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
