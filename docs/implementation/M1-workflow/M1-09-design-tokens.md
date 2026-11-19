@@ -27,3 +27,18 @@
 
 - 作業前後で Standalone の画面を撮り、差分がないことを確かめる
 - macOS のビルドと CI が通る
+
+## 結果（2026-11-19）
+
+- 直書きの色 249 か所を `APP_COLOR_*` に置き換え、定数を 138 個足した。フォント名の直書き 3 か所は `AppFont` を通した（`getRegularFont` を追加）。余白は変更なし
+- 色の値が変わっていないことを差分から機械的に確認し、空のプロジェクトの画面が作業前とピクセル単位で一致することを確認した
+- 残した直書き: デバッグ表示（`PianoRollComponent.cpp` の GAME オーバーレイ、`OverviewPanel.cpp` の `showSegmentsDebug`、`PitchCurveRenderer.cpp` の F0 デバッグ曲線）、描画の計算に使う白黒（`MainComponent.cpp` の明るさ補正）、DAW から来るトラック色、SVG の置換元の黒、`noteRenderer` がないときの白、使われていない `FourierFilterDialog`、フォント名を指定しない既定フォント 4 か所
+
+## M1-11 への引き継ぎ
+
+- 配色が 2 系統ある。`DarkLookAndFeel` の既定（コンボボックス・入力欄・リスト・アラート・メニュー）は青みのある `SURFACE` / `BORDER` 系、独自の部品の多くはニュートラルな灰色。M1-11 で 1 系統にまとめる
+- 古い青系の `PIANO_WHITE` / `PIANO_BLACK` / `PIANO_TEXT*` / `TIMELINE` / `NOTE_NORMAL` は PolyLab だけが使っている。`SELECTION_OVERLAY` は未使用
+- 近い灰色が多数ある（`#171717`・`#191818`・`#191717`・`#151515` など）。役割ごとに別の定数にしてあるので、M1-11 で値を寄せる
+- 差し色は実際にはオレンジ（`TOOLBAR_PROGRESS` = `#FF5600` など）で、`APP_COLOR_PRIMARY` の紫は画面にほぼ出ていない
+- `CustomTitleBar.cpp` の `TitleBarColors` は、ファイルの外側で定数を値コピーしている（upstream 由来）。初期化順序によっては未初期化の値を拾う恐れがある
+- `TimingHandler.cpp` の境界の色は、ハイライト時も選択時も白で、選択の分岐が効いていない
