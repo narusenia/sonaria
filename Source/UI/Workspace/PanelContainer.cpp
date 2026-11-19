@@ -7,12 +7,12 @@ PanelContainer::PanelContainer()
 
 void PanelContainer::paint(juce::Graphics& g)
 {
-    g.fillAll(juce::Colour(0xFF232323u));
+    g.fillAll(APP_COLOR_PANEL_BACKGROUND);
 }
 
 void PanelContainer::paintOverChildren(juce::Graphics& g)
 {
-    g.setColour(juce::Colour(0xFF3C3C3Cu));
+    g.setColour(APP_COLOR_PANEL_BORDER);
     g.drawRect(getLocalBounds(), 1);
 }
 

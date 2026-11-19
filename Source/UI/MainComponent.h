@@ -36,7 +36,7 @@ public:
   }
 
   void paint(juce::Graphics &g) override {
-    g.fillAll(juce::Colours::black.withAlpha(0.40f));
+    g.fillAll(APP_COLOR_MODAL_BACKDROP.withAlpha(0.40f));
   }
 };
 
@@ -49,10 +49,10 @@ public:
 
   void paint(juce::Graphics &g) override {
     auto bounds = getLocalBounds().toFloat();
-    g.setColour(juce::Colour(0xFF333333u));
+    g.setColour(APP_COLOR_MODAL_BACKGROUND);
     g.fillRoundedRectangle(bounds, 7.0f);
 
-    g.setColour(juce::Colour(0xFFEFEFEFu));
+    g.setColour(APP_COLOR_MODAL_TEXT);
     g.setFont(AppFont::getFont(16.0f));
     g.drawText(TR("progress.analyzing_title"),
                getLocalBounds().withHeight(44).translated(0, 4),
@@ -60,17 +60,17 @@ public:
 
     auto bar = juce::Rectangle<float>(29.0f, 53.0f, bounds.getWidth() - 58.0f, 20.0f);
     const auto barRadius = bar.getHeight() * 0.5f;
-    g.setColour(juce::Colour(0xFF191717u));
+    g.setColour(APP_COLOR_PROGRESS_TRACK);
     g.fillRoundedRectangle(bar, barRadius);
 
     auto fillBounds = bar.reduced(2.0f);
     auto fill = fillBounds.withWidth(fillBounds.getWidth() * static_cast<float>(progress));
     if (fill.getWidth() > 0.0f) {
-      g.setColour(juce::Colour(0xFF9A9A9Au));
+      g.setColour(APP_COLOR_PROGRESS_FILL);
       g.fillRoundedRectangle(fill, fillBounds.getHeight() * 0.5f);
     }
 
-    g.setColour(juce::Colour(0xFFEFEFEFu));
+    g.setColour(APP_COLOR_MODAL_TEXT);
     g.setFont(juce::Font(juce::FontOptions(12.0f)).boldened());
     g.drawText(juce::String(static_cast<int>(std::round(progress * 100.0))) + "%",
                bar.toNearestInt(), juce::Justification::centred, false);

@@ -15,7 +15,7 @@
 
 void PianoRollWorkspaceView::FloatingControlBackground::paint(juce::Graphics &g)
 {
-  g.setColour(juce::Colour(0xFF0D0B0B));
+  g.setColour(APP_COLOR_FLOATING_CONTROL_BACKGROUND);
   g.fillRoundedRectangle(getLocalBounds().toFloat(), 5.0f);
 }
 
@@ -29,8 +29,8 @@ PianoRollWorkspaceView::PianoRollWorkspaceView(PianoRollComponent &piano)
 
   overviewCard.setPadding(0);
   overviewCard.setCornerRadius(0.0f);
-  overviewCard.setBackgroundColour(juce::Colour(0xFF191717u));
-  overviewCard.setBorderColour(juce::Colour(0xFF0D0B0Bu));
+  overviewCard.setBackgroundColour(APP_COLOR_OVERVIEW_BACKGROUND);
+  overviewCard.setBorderColour(APP_COLOR_OVERVIEW_BORDER);
   overviewCard.setContentComponent(&overviewPanel);
   overviewPanel.setDrawBackground(false);
 

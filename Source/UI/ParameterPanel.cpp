@@ -169,7 +169,7 @@ public:
         setColour(juce::PopupMenu::backgroundColourId, juce::Colours::transparentBlack);
         setColour(juce::PopupMenu::textColourId, APP_COLOR_TEXT_PRIMARY);
         setColour(juce::PopupMenu::highlightedBackgroundColourId,
-                  juce::Colour(0xFF171717u));
+                  APP_COLOR_MENU_ITEM_HIGHLIGHT);
         setColour(juce::PopupMenu::highlightedTextColourId, APP_COLOR_TEXT_PRIMARY);
     }
 
@@ -181,9 +181,9 @@ public:
         juce::Path shape;
         shape.addRoundedRectangle(area, 9.0f);
 
-        g.setColour(juce::Colour(0xFF30302Eu));
+        g.setColour(APP_COLOR_MENU_BACKGROUND);
         g.fillPath(shape);
-        g.setColour(juce::Colour(0xFF3E3E3Eu));
+        g.setColour(APP_COLOR_MENU_BORDER);
         g.strokePath(shape, juce::PathStrokeType(1.0f));
     }
 
@@ -226,13 +226,13 @@ public:
         const auto area = getLocalBounds().toFloat();
         if (isItemHighlighted())
         {
-            g.setColour(juce::Colour(0xFF171717u));
+            g.setColour(APP_COLOR_MENU_ITEM_HIGHLIGHT);
             g.fillRoundedRectangle(area.reduced(2.0f, 1.0f), 5.0f);
         }
 
         if (isSelected)
         {
-            g.setColour(juce::Colour(0xFFEFEFEFu));
+            g.setColour(APP_COLOR_MENU_TICK);
             g.fillEllipse(8.0f, area.getCentreY() - 3.5f, 7.0f, 7.0f);
         }
 
@@ -266,7 +266,7 @@ private:
 ParameterPanel::ParameterPanel()
 {
     addAndMakeVisible(pitchSectionLabel);
-    pitchSectionLabel.setColour(juce::Label::textColourId, juce::Colour(0xFF9B9B9Bu));
+    pitchSectionLabel.setColour(juce::Label::textColourId, APP_COLOR_PANEL_SECTION_TITLE);
     pitchSectionLabel.setFont(AppFont::getBoldFont(16.0f));
     addAndMakeVisible(doubleClickSnapLabel);
     doubleClickSnapLabel.setFont(AppFont::getFont(14.0f));
@@ -276,18 +276,18 @@ ParameterPanel::ParameterPanel()
     doubleClickSnapBox.setEnabled(false);
     doubleClickSnapBox.onClick = [this] { showDoubleClickSnapModeMenu(); };
     addAndMakeVisible(timeSectionLabel);
-    timeSectionLabel.setColour(juce::Label::textColourId, juce::Colour(0xFF9B9B9Bu));
+    timeSectionLabel.setColour(juce::Label::textColourId, APP_COLOR_PANEL_SECTION_TITLE);
     timeSectionLabel.setFont(AppFont::getBoldFont(16.0f));
     addAndMakeVisible(synthesisSectionLabel);
-    synthesisSectionLabel.setColour(juce::Label::textColourId, juce::Colour(0xFF9B9B9Bu));
+    synthesisSectionLabel.setColour(juce::Label::textColourId, APP_COLOR_PANEL_SECTION_TITLE);
     synthesisSectionLabel.setFont(AppFont::getBoldFont(16.0f));
     addAndMakeVisible(uiSectionLabel);
     uiSectionLabel.setColour(juce::Label::textColourId,
-                             juce::Colour(0xFF9B9B9Bu));
+                             APP_COLOR_PANEL_SECTION_TITLE);
     uiSectionLabel.setFont(AppFont::getBoldFont(16.0f));
 
     addAndMakeVisible(midiReferenceSectionLabel);
-    midiReferenceSectionLabel.setColour(juce::Label::textColourId, juce::Colour(0xFF9B9B9Bu));
+    midiReferenceSectionLabel.setColour(juce::Label::textColourId, APP_COLOR_PANEL_SECTION_TITLE);
     midiReferenceSectionLabel.setFont(AppFont::getBoldFont(16.0f));
     addAndMakeVisible(midiReferenceFileButton);
     midiReferenceFileButton.onClick = [this]
@@ -323,7 +323,7 @@ ParameterPanel::ParameterPanel()
 
     // Language card: always present, directly below Rendering.
     addAndMakeVisible(languageSectionLabel);
-    languageSectionLabel.setColour(juce::Label::textColourId, juce::Colour(0xFF9B9B9Bu));
+    languageSectionLabel.setColour(juce::Label::textColourId, APP_COLOR_PANEL_SECTION_TITLE);
     languageSectionLabel.setFont(AppFont::getBoldFont(16.0f));
     addAndMakeVisible(languageSelectorButton);
     languageSelectorButton.addListener(this);
@@ -355,7 +355,7 @@ ParameterPanel::ParameterPanel()
     // engine is AI Resynthesis and there is more than one device to run it on
     // (see setRenderDeviceOptions).
     addChildComponent(renderDeviceLabel);
-    renderDeviceLabel.setColour(juce::Label::textColourId, juce::Colour(0xFFE6E6E6u));
+    renderDeviceLabel.setColour(juce::Label::textColourId, APP_COLOR_PANEL_LABEL);
     renderDeviceLabel.setFont(AppFont::getFont(15.0f));
     addChildComponent(renderDeviceButton);
     renderDeviceButton.addListener(this);
@@ -370,7 +370,7 @@ ParameterPanel::ParameterPanel()
     for (auto* label : { &referenceLabel, &timelineBeatLabel,
                          &timelineTempoLabel, &timelineGridLabel, &brightnessLabel })
     {
-        label->setColour(juce::Label::textColourId, juce::Colour(0xFFE6E6E6u));
+        label->setColour(juce::Label::textColourId, APP_COLOR_PANEL_LABEL);
         label->setFont(AppFont::getFont(16.0f));
     }
     referenceLabel.setFont(AppFont::getFont(15.0f));
@@ -392,15 +392,15 @@ ParameterPanel::ParameterPanel()
     referenceSlider.setHideSuffixWhileEditing(true);
     referenceSlider.setTextBoxStyle(juce::Slider::TextBoxLeft, false, 64, 22);
     referenceSlider.setColour(juce::Slider::backgroundColourId,
-                              juce::Colour(0xFF30302Eu));
+                              APP_COLOR_CONTROL_FILL);
     referenceSlider.setColour(juce::Slider::trackColourId,
-                              juce::Colour(0xFF30302Eu));
+                              APP_COLOR_CONTROL_FILL);
     referenceSlider.setColour(juce::Slider::textBoxBackgroundColourId,
                               juce::Colours::transparentBlack);
     referenceSlider.setColour(juce::Slider::textBoxOutlineColourId,
                               juce::Colours::transparentBlack);
     referenceSlider.setColour(juce::Slider::textBoxTextColourId,
-                              juce::Colour(0xFFE6E6E6u));
+                              APP_COLOR_CONTROL_TEXT);
     referenceSlider.onValueChange = [this]()
     {
         if (!isUpdating)
@@ -414,15 +414,15 @@ ParameterPanel::ParameterPanel()
     timelineTempoSlider.setNumDecimalPlacesToDisplay(2);
     timelineTempoSlider.setTextBoxStyle(juce::Slider::TextBoxLeft, false, 54, 22);
     timelineTempoSlider.setColour(juce::Slider::backgroundColourId,
-                                  juce::Colour(0xFF30302Eu));
+                                  APP_COLOR_CONTROL_FILL);
     timelineTempoSlider.setColour(juce::Slider::trackColourId,
-                                  juce::Colour(0xFF30302Eu));
+                                  APP_COLOR_CONTROL_FILL);
     timelineTempoSlider.setColour(juce::Slider::textBoxBackgroundColourId,
                                   juce::Colours::transparentBlack);
     timelineTempoSlider.setColour(juce::Slider::textBoxOutlineColourId,
                                   juce::Colours::transparentBlack);
     timelineTempoSlider.setColour(juce::Slider::textBoxTextColourId,
-                                  juce::Colour(0xFFE6E6E6u));
+                                  APP_COLOR_CONTROL_TEXT);
     timelineTempoSlider.onValueChange = [this]()
     {
         if (!isUpdating)
@@ -501,7 +501,7 @@ void ParameterPanel::paint(juce::Graphics& g)
     if (!pitchCardBounds.isEmpty())
     {
         auto pitchRect = pitchCardBounds.toFloat();
-        g.setColour(juce::Colour(0xFF171717u));
+        g.setColour(APP_COLOR_PANEL_CARD);
         g.fillRoundedRectangle(pitchRect, radius);
         g.setColour(APP_COLOR_BORDER.withAlpha(0.4f));
         g.drawRoundedRectangle(pitchRect.reduced(0.5f), radius, 0.75f);
@@ -510,7 +510,7 @@ void ParameterPanel::paint(juce::Graphics& g)
     if (!timeCardBounds.isEmpty())
     {
         auto timeRect = timeCardBounds.toFloat();
-        g.setColour(juce::Colour(0xFF171717u));
+        g.setColour(APP_COLOR_PANEL_CARD);
         g.fillRoundedRectangle(timeRect, radius);
         g.setColour(APP_COLOR_BORDER.withAlpha(0.4f));
         g.drawRoundedRectangle(timeRect.reduced(0.5f), radius, 0.75f);
@@ -519,7 +519,7 @@ void ParameterPanel::paint(juce::Graphics& g)
     if (!synthesisCardBounds.isEmpty())
     {
         auto synthesisRect = synthesisCardBounds.toFloat();
-        g.setColour(juce::Colour(0xFF171717u));
+        g.setColour(APP_COLOR_PANEL_CARD);
         g.fillRoundedRectangle(synthesisRect, radius);
         g.setColour(APP_COLOR_BORDER.withAlpha(0.4f));
         g.drawRoundedRectangle(synthesisRect.reduced(0.5f), radius, 0.75f);
@@ -528,7 +528,7 @@ void ParameterPanel::paint(juce::Graphics& g)
     if (!languageCardBounds.isEmpty())
     {
         auto languageRect = languageCardBounds.toFloat();
-        g.setColour(juce::Colour(0xFF171717u));
+        g.setColour(APP_COLOR_PANEL_CARD);
         g.fillRoundedRectangle(languageRect, radius);
         g.setColour(APP_COLOR_BORDER.withAlpha(0.4f));
         g.drawRoundedRectangle(languageRect.reduced(0.5f), radius, 0.75f);
@@ -537,7 +537,7 @@ void ParameterPanel::paint(juce::Graphics& g)
     if (!uiCardBounds.isEmpty())
     {
         auto uiRect = uiCardBounds.toFloat();
-        g.setColour(juce::Colour(0xFF171717u));
+        g.setColour(APP_COLOR_PANEL_CARD);
         g.fillRoundedRectangle(uiRect, radius);
         g.setColour(APP_COLOR_BORDER.withAlpha(0.4f));
         g.drawRoundedRectangle(uiRect.reduced(0.5f), radius, 0.75f);
@@ -546,7 +546,7 @@ void ParameterPanel::paint(juce::Graphics& g)
     if (!midiReferenceCardBounds.isEmpty())
     {
         const auto rect = midiReferenceCardBounds.toFloat();
-        g.setColour(juce::Colour(0xFF171717u));
+        g.setColour(APP_COLOR_PANEL_CARD);
         g.fillRoundedRectangle(rect, radius);
         g.setColour(APP_COLOR_BORDER.withAlpha(0.4f));
         g.drawRoundedRectangle(rect.reduced(0.5f), radius, 0.75f);

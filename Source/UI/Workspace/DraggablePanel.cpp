@@ -31,7 +31,7 @@ void DraggablePanel::paint(juce::Graphics& g)
     g.reduceClipRegion(clipPath);
 
     // Side-panel background
-    g.setColour(juce::Colour(0xFF232323u));
+    g.setColour(APP_COLOR_PANEL_BACKGROUND);
     g.fillRect(bounds);
 
     // Gutter behind the scrollbar, as the canvas paints behind its own: the

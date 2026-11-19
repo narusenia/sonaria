@@ -113,6 +113,27 @@ const juce::Colour APP_COLOR_TITLEBAR_BUTTON_ICON  = juce::Colour(0xFF000000u); 
 const juce::Colour APP_COLOR_SIDEBAR_ICON          = juce::Colour(0xFFFFFFFFu);  // Sidebar SVG icon tint
 const juce::Colour APP_COLOR_SPLASH_TITLE          = juce::Colour(0xFFFFFFFFu);  // Splash screen title
 
+// ── Panels & dialogs ──────────────────────────────────────────────
+const juce::Colour APP_COLOR_PANEL_BACKGROUND            = juce::Colour(0xFF232323u);  // Side panel fill
+const juce::Colour APP_COLOR_PANEL_BORDER                = juce::Colour(0xFF3C3C3Cu);  // Side panel outline
+const juce::Colour APP_COLOR_PANEL_CARD                  = juce::Colour(0xFF171717u);  // Cards inside the parameter panel
+const juce::Colour APP_COLOR_PANEL_SECTION_TITLE         = juce::Colour(0xFF9B9B9Bu);  // Parameter panel section titles
+const juce::Colour APP_COLOR_PANEL_LABEL                 = juce::Colour(0xFFE6E6E6u);  // Parameter panel row labels
+const juce::Colour APP_COLOR_DIALOG_BACKGROUND           = juce::Colour(0xFF232323u);  // Settings and export dialog fill
+const juce::Colour APP_COLOR_DIALOG_CARD                 = juce::Colour(0xFF151515u);  // Cards inside settings and export dialogs
+const juce::Colour APP_COLOR_POPOVER_BACKGROUND          = juce::Colour(0xFF181818u);  // Small popover dialogs (quantize pitch)
+const juce::Colour APP_COLOR_MODAL_BACKDROP              = juce::Colour(0xFF000000u);  // Dimmed backdrop behind modal popups
+const juce::Colour APP_COLOR_MODAL_BACKGROUND            = juce::Colour(0xFF333333u);  // Modal popup fill (update, about, analysis)
+const juce::Colour APP_COLOR_MODAL_TEXT                  = juce::Colour(0xFFEFEFEFu);  // Modal popup text
+const juce::Colour APP_COLOR_MODAL_TEXT_AREA             = juce::Colour(0xFF191717u);  // Read-only text areas inside modal popups
+const juce::Colour APP_COLOR_PROGRESS_TRACK              = juce::Colour(0xFF191717u);  // Analysis progress bar track
+const juce::Colour APP_COLOR_PROGRESS_FILL               = juce::Colour(0xFF9A9A9Au);  // Analysis progress bar fill
+const juce::Colour APP_COLOR_TOOLBAR_DIVIDER             = juce::Colour(0xFF3C3C3Cu);  // Line under the toolbar above the main view
+const juce::Colour APP_COLOR_FLOATING_CONTROL_BACKGROUND = juce::Colour(0xFF0D0B0Bu);  // Controls floating over the piano roll
+const juce::Colour APP_COLOR_OVERVIEW_BACKGROUND         = juce::Colour(0xFF191717u);  // Overview strip fill
+const juce::Colour APP_COLOR_OVERVIEW_BORDER             = juce::Colour(0xFF0D0B0Bu);  // Overview strip outline
+const juce::Colour APP_COLOR_CANVAS_PROMPT_BACKGROUND    = juce::Colour(0xFF2E2E2Du);  // Prompt panels over the canvas (pitch drawing)
+
 // ── Scrollbars ────────────────────────────────────────────────────
 const juce::Colour APP_COLOR_SCROLLBAR_THUMB      = juce::Colour(0xFF565656u);  // Thumb
 const juce::Colour APP_COLOR_SCROLLBAR_TRACK      = juce::Colour(0xFF0D0B0Bu);  // Recessed gutter

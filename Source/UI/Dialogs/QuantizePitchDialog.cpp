@@ -79,7 +79,7 @@ public:
 
   void paint(juce::Graphics &g) override
   {
-    g.setColour(juce::Colour(0xFF181818));
+    g.setColour(APP_COLOR_POPOVER_BACKGROUND);
     g.fillRoundedRectangle(getLocalBounds().toFloat(), 10.0f);
     g.setColour(APP_COLOR_BORDER.withAlpha(0.55f));
     g.drawRoundedRectangle(getLocalBounds().toFloat().reduced(0.5f), 10.0f, 1.0f);
@@ -109,9 +109,9 @@ private:
   {
     button.setButtonText(text);
     button.setLookAndFeel(&DarkLookAndFeel::getInstance());
-    button.setColour(juce::TextButton::buttonColourId, juce::Colour(0xFF5B5B5B));
-    button.setColour(juce::TextButton::buttonOnColourId, juce::Colour(0xFF3E3E3E));
-    button.setColour(juce::TextButton::textColourOffId, juce::Colour(0xFFEFEFEF));
+    button.setColour(juce::TextButton::buttonColourId, APP_COLOR_BUTTON_FILL);
+    button.setColour(juce::TextButton::buttonOnColourId, APP_COLOR_BUTTON_FILL_DOWN);
+    button.setColour(juce::TextButton::textColourOffId, APP_COLOR_BUTTON_TEXT);
     button.setMouseCursor(juce::MouseCursor::PointingHandCursor);
   }
 

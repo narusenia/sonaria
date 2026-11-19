@@ -151,10 +151,10 @@ std::optional<UpdateInfo> fetchLatestUpdateInfo(juce::WebInputStream &request)
 void styleUpdateButton(juce::TextButton &button)
 {
   button.setLookAndFeel(&DarkLookAndFeel::getInstance());
-  button.setColour(juce::TextButton::buttonColourId, juce::Colour(0xFF5B5B5Bu));
-  button.setColour(juce::TextButton::buttonOnColourId, juce::Colour(0xFF3E3E3Eu));
-  button.setColour(juce::TextButton::textColourOffId, juce::Colour(0xFFEFEFEFu));
-  button.setColour(juce::TextButton::textColourOnId, juce::Colour(0xFFEFEFEFu));
+  button.setColour(juce::TextButton::buttonColourId, APP_COLOR_BUTTON_FILL);
+  button.setColour(juce::TextButton::buttonOnColourId, APP_COLOR_BUTTON_FILL_DOWN);
+  button.setColour(juce::TextButton::textColourOffId, APP_COLOR_BUTTON_TEXT);
+  button.setColour(juce::TextButton::textColourOnId, APP_COLOR_BUTTON_TEXT);
   button.setMouseCursor(juce::MouseCursor::PointingHandCursor);
 }
 
@@ -192,11 +192,11 @@ public:
 
   void paint(juce::Graphics &g) override
   {
-    g.fillAll(juce::Colours::black.withAlpha(0.40f));
+    g.fillAll(APP_COLOR_MODAL_BACKDROP.withAlpha(0.40f));
     const auto card = cardBounds();
-    g.setColour(juce::Colour(0xFF333333u));
+    g.setColour(APP_COLOR_MODAL_BACKGROUND);
     g.fillRoundedRectangle(card.toFloat(), 7.0f);
-    g.setColour(juce::Colour(0xFFEFEFEFu));
+    g.setColour(APP_COLOR_MODAL_TEXT);
     g.setFont(AppFont::getFont(18.0f));
     g.drawFittedText(TR("dialog.unsaved_message"), card.getX() + padding,
                      card.getY() + padding, card.getWidth() - padding * 2,
@@ -283,7 +283,7 @@ public:
     releaseNotesEditor.setText(releaseNotes, juce::dontSendNotification);
     releaseNotesEditor.applyFontToAllText(AppFont::getFont(updateSubtitleFontSize));
     releaseNotesEditor.setColour(juce::TextEditor::backgroundColourId,
-                                 juce::Colour(0xFF191717u));
+                                 APP_COLOR_MODAL_TEXT_AREA);
     releaseNotesEditor.setColour(juce::TextEditor::textColourId,
                                  APP_COLOR_TEXT_PRIMARY);
     releaseNotesEditor.setColour(juce::TextEditor::outlineColourId,
@@ -347,10 +347,10 @@ public:
   void paint(juce::Graphics &g) override
   {
     auto bounds = getLocalBounds().toFloat();
-    g.setColour(juce::Colour(0xFF333333u));
+    g.setColour(APP_COLOR_MODAL_BACKGROUND);
     g.fillRoundedRectangle(bounds, 7.0f);
 
-    g.setColour(juce::Colour(0xFFEFEFEFu));
+    g.setColour(APP_COLOR_MODAL_TEXT);
     g.setFont(AppFont::getFont(16.0f));
     g.drawText(TR("update.title"), 24, 24, getWidth() - 48, 24,
                juce::Justification::centred, false);
@@ -482,7 +482,7 @@ public:
         juce::dontSendNotification);
     noticesEditor.applyFontToAllText(AppFont::getFont(aboutNoticesFontSize));
     noticesEditor.setColour(juce::TextEditor::backgroundColourId,
-                            juce::Colour(0xFF191717u));
+                            APP_COLOR_MODAL_TEXT_AREA);
     noticesEditor.setColour(juce::TextEditor::textColourId,
                             APP_COLOR_TEXT_PRIMARY);
     noticesEditor.setColour(juce::TextEditor::outlineColourId,
@@ -529,7 +529,7 @@ public:
   void paint(juce::Graphics &g) override
   {
     auto bounds = getLocalBounds().toFloat();
-    g.setColour(juce::Colour(0xFF333333u));
+    g.setColour(APP_COLOR_MODAL_BACKGROUND);
     g.fillRoundedRectangle(bounds, 7.0f);
   }
 
@@ -1576,7 +1576,7 @@ void MainComponent::paintOverChildren(juce::Graphics &g)
   {
     const int viewLeft = workspace.getX() + workspace.getMainViewX();
     const int viewRight = workspace.getX() + workspace.getMainViewRight();
-    g.setColour(juce::Colour(0xFF3C3C3Cu));
+    g.setColour(APP_COLOR_TOOLBAR_DIVIDER);
     g.fillRect(viewLeft, y,
                juce::jmax(0, viewRight - scrollBarWidth - viewLeft), 1);
   }

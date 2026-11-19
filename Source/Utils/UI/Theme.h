@@ -89,6 +89,27 @@ extern const juce::Colour APP_COLOR_TITLEBAR_BUTTON_ICON;
 extern const juce::Colour APP_COLOR_SIDEBAR_ICON;
 extern const juce::Colour APP_COLOR_SPLASH_TITLE;
 
+// ── Panels & dialogs ──────────────────────────────────────────────
+extern const juce::Colour APP_COLOR_PANEL_BACKGROUND;
+extern const juce::Colour APP_COLOR_PANEL_BORDER;
+extern const juce::Colour APP_COLOR_PANEL_CARD;
+extern const juce::Colour APP_COLOR_PANEL_SECTION_TITLE;
+extern const juce::Colour APP_COLOR_PANEL_LABEL;
+extern const juce::Colour APP_COLOR_DIALOG_BACKGROUND;
+extern const juce::Colour APP_COLOR_DIALOG_CARD;
+extern const juce::Colour APP_COLOR_POPOVER_BACKGROUND;
+extern const juce::Colour APP_COLOR_MODAL_BACKDROP;
+extern const juce::Colour APP_COLOR_MODAL_BACKGROUND;
+extern const juce::Colour APP_COLOR_MODAL_TEXT;
+extern const juce::Colour APP_COLOR_MODAL_TEXT_AREA;
+extern const juce::Colour APP_COLOR_PROGRESS_TRACK;
+extern const juce::Colour APP_COLOR_PROGRESS_FILL;
+extern const juce::Colour APP_COLOR_TOOLBAR_DIVIDER;
+extern const juce::Colour APP_COLOR_FLOATING_CONTROL_BACKGROUND;
+extern const juce::Colour APP_COLOR_OVERVIEW_BACKGROUND;
+extern const juce::Colour APP_COLOR_OVERVIEW_BORDER;
+extern const juce::Colour APP_COLOR_CANVAS_PROMPT_BACKGROUND;
+
 // ── Scrollbars ────────────────────────────────────────────────────
 // One look for every scrollbar in the app: a dim grey rounded thumb over a
 // recessed gutter. The piano-roll canvas set the look; styleCanvasScrollBar()

@@ -389,7 +389,7 @@ void SettingsComponent::paint(juce::Graphics &g)
   g.reduceClipRegion(rounded);
 
   // Flat background fill
-  g.setColour(juce::Colour(0xFF232323u));
+  g.setColour(APP_COLOR_DIALOG_BACKGROUND);
   g.fillRoundedRectangle(getLocalBounds().toFloat(), cornerRadius);
 
   if (!sidebarBounds.isEmpty())
@@ -403,7 +403,7 @@ void SettingsComponent::paint(juce::Graphics &g)
   if (!tabListBounds.isEmpty())
   {
     auto tabCard = tabListBounds.toFloat();
-    g.setColour(juce::Colour(0xFF151515u));
+    g.setColour(APP_COLOR_DIALOG_CARD);
     g.fillRoundedRectangle(tabCard, 10.0f);
     g.setColour(APP_COLOR_BORDER.withAlpha(0.55f));
     g.drawRoundedRectangle(tabCard.reduced(0.5f), 10.0f, 0.75f);
@@ -412,7 +412,7 @@ void SettingsComponent::paint(juce::Graphics &g)
   if (!cardBounds.isEmpty())
   {
     auto card = cardBounds.toFloat();
-    g.setColour(juce::Colour(0xFF151515u));
+    g.setColour(APP_COLOR_DIALOG_CARD);
     g.fillRoundedRectangle(card, 8.0f);
 
     g.setColour(APP_COLOR_BORDER.withAlpha(0.55f));
