@@ -50,7 +50,7 @@ namespace PlatformPaths
 #if JUCE_LINUX
         // A per-user (no sudo) install takes precedence over a system-wide one.
         auto perUserResources = juce::File::getSpecialLocation(juce::File::userHomeDirectory)
-                                    .getChildFile(".local/share/Narusenia/Sonaria");
+                                    .getChildFile(".local/share/NXE/Sonaria");
         if (perUserResources.getChildFile("models").isDirectory())
             return perUserResources;
 #endif
@@ -58,7 +58,7 @@ namespace PlatformPaths
 #if JUCE_MAC
             .getChildFile("Application Support")
 #endif
-            .getChildFile("Narusenia")
+            .getChildFile("NXE")
             .getChildFile("Sonaria");
 #endif
     }

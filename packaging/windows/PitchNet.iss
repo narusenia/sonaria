@@ -2,7 +2,7 @@
 
 #define MyAppName "Sonaria"
 #define MyAppVersion "0.8.1"
-#define MyAppPublisher "Narusenia"
+#define MyAppPublisher "NXE"
 #define MyAppURL "https://github.com/narusenia/sonaria"
 #define MyAppExeName "Sonaria.exe"
 

@@ -14,7 +14,7 @@ BUILD_DIR="$(cd "${1:-$ROOT_DIR/build}" && pwd)"
 VERSION="$(grep -oP 'project\(PitchNet VERSION \K[0-9.]+' "$ROOT_DIR/CMakeLists.txt")"
 ARCH="x86_64"
 APP_NAME="Sonaria"
-COMPANY_DIR="Narusenia"
+COMPANY_DIR="NXE"
 
 STANDALONE_BIN="$BUILD_DIR/PitchNet_artefacts/Release/Sonaria"
 VST3_BUNDLE="$BUILD_DIR/PitchNetPlugin_artefacts/Release/VST3/Sonaria.vst3"

@@ -266,7 +266,7 @@ option(PITCHNET_SYNTH_NOTE_DIAGNOSTICS "Log one line per dirty note on every syn
 # Create GUI application
 juce_add_gui_app(PitchNet
     PRODUCT_NAME "${PITCHNET_PRODUCT_NAME}"
-    COMPANY_NAME "Narusenia"
+    COMPANY_NAME "NXE"
     COMPANY_WEBSITE "https://github.com/narusenia/sonaria"
     BUNDLE_ID "${PITCHNET_BUNDLE_ID}"
     COMPANY_COPYRIGHT "Copyright 2026"
@@ -318,7 +318,7 @@ endif()
 # Create VST3 plugin
 juce_add_plugin(PitchNetPlugin
     PRODUCT_NAME "${PITCHNET_PRODUCT_NAME}"
-    COMPANY_NAME "Narusenia"
+    COMPANY_NAME "NXE"
     COMPANY_WEBSITE "https://github.com/narusenia/sonaria"
     BUNDLE_ID "${PITCHNET_BUNDLE_ID}"
     PLUGIN_MANUFACTURER_CODE Nrsn
