@@ -57,7 +57,7 @@ void CustomTitleBar::WindowButton::paintButton(juce::Graphics& g, bool isMouseOv
 
     // Draw icon on hover
     if (isMouseOver) {
-        g.setColour(juce::Colours::black.withAlpha(0.6f));
+        g.setColour(APP_COLOR_TITLEBAR_BUTTON_ICON.withAlpha(0.6f));
         auto center = bounds.getCentre();
         float iconSize = bounds.getWidth() * 0.35f;
 

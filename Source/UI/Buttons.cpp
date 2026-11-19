@@ -9,6 +9,7 @@
 */
 
 #include "Buttons.h"
+#include "../Utils/UI/Theme.h"
 
 Button::Button(juce::Image img)
 :image(img), textX(0), textY(0)
@@ -31,7 +32,7 @@ void Button::paintButton (juce::Graphics &g, bool shouldDrawButtonAsHighlighted,
         g.fillRoundedRectangle(0, 0, getWidth(), getHeight(), getWidth() > 40 ? 13.f : 3.5f);
     }
     g.setFont(getLookAndFeel().getTextButtonFont(*this, getHeight()));
-    g.setColour(isEnabled() ? findColour(shouldDrawButtonAsHighlighted ? juce::TextButton::textColourOnId : juce::TextButton::textColourOffId) : juce::Colour(0xFF3E3E3E));
+    g.setColour(isEnabled() ? findColour(shouldDrawButtonAsHighlighted ? juce::TextButton::textColourOnId : juce::TextButton::textColourOffId) : APP_COLOR_BUTTON_TEXT_DISABLED);
     g.drawText(getButtonText(), getLocalBounds().withX(textX).withY(textY), juce::Justification::centred);
 }
 

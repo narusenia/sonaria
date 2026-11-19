@@ -85,7 +85,7 @@ public:
     const auto titleFont = AppFont::getBoldFont(34.0f);
     const auto subtitleFont = AppFont::getFont(15.0f);
 
-    g.setColour(juce::Colours::white);
+    g.setColour(APP_COLOR_SPLASH_TITLE);
     g.setFont(titleFont);
     g.drawText("Sonaria", getLocalBounds().reduced(24, 20),
                juce::Justification::centredTop);

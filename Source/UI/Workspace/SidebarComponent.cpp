@@ -104,7 +104,7 @@ void SidebarComponent::addButton(const juce::String& id, const juce::String& too
     if (svgData.isNotEmpty())
     {
         // Use tint to ensure icon is white for dark theme
-        auto icon = SvgUtils::createDrawableFromSvg(svgData, juce::Colours::white);
+        auto icon = SvgUtils::createDrawableFromSvg(svgData, APP_COLOR_SIDEBAR_ICON);
         button->setIcon(std::move(icon));
     }
 

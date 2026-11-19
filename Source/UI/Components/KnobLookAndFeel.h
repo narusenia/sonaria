@@ -103,7 +103,7 @@ public:
         {
             auto hlRadius = knobR * 0.72f;
             auto hlY = centreY - knobR * 0.25f;
-            g.setColour(juce::Colour(0x0AFFFFFF).withAlpha(alpha));
+            g.setColour(APP_COLOR_KNOB_HIGHLIGHT.withAlpha(alpha));
             g.fillEllipse(centreX - hlRadius, hlY - hlRadius, hlRadius * 2.0f, hlRadius * 2.0f);
         }
 

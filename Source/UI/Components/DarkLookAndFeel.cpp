@@ -20,10 +20,10 @@ DarkLookAndFeel::DarkLookAndFeel()
     setColour(juce::Label::backgroundColourId, juce::Colours::transparentBlack);
 
     // ── TextButton ────────────────────────────────────────────────
-    setColour(juce::TextButton::buttonColourId, juce::Colour(0xFF5B5B5Bu));
-    setColour(juce::TextButton::buttonOnColourId, juce::Colour(0xFF3E3E3Eu));
-    setColour(juce::TextButton::textColourOffId, juce::Colour(0xFFEFEFEFu));
-    setColour(juce::TextButton::textColourOnId, juce::Colour(0xFFEFEFEFu));
+    setColour(juce::TextButton::buttonColourId, APP_COLOR_BUTTON_FILL);
+    setColour(juce::TextButton::buttonOnColourId, APP_COLOR_BUTTON_FILL_DOWN);
+    setColour(juce::TextButton::textColourOffId, APP_COLOR_BUTTON_TEXT);
+    setColour(juce::TextButton::textColourOnId, APP_COLOR_BUTTON_TEXT);
 
     // ── ListBox ───────────────────────────────────────────────────
     setColour(juce::ListBox::backgroundColourId, APP_COLOR_SURFACE);
@@ -51,9 +51,9 @@ DarkLookAndFeel::DarkLookAndFeel()
     setColour(juce::ProgressBar::foregroundColourId, APP_COLOR_PRIMARY);
 
     // ── TooltipWindow ────────────────────────────────────────────
-    setColour(juce::TooltipWindow::backgroundColourId, juce::Colour(0xFF232323u));
-    setColour(juce::TooltipWindow::outlineColourId, juce::Colour(0xFF3C3C3Cu));
-    setColour(juce::TooltipWindow::textColourId, juce::Colour(0xFF9B9B9Bu));
+    setColour(juce::TooltipWindow::backgroundColourId, APP_COLOR_TOOLTIP_BACKGROUND);
+    setColour(juce::TooltipWindow::outlineColourId, APP_COLOR_TOOLTIP_BORDER);
+    setColour(juce::TooltipWindow::textColourId, APP_COLOR_TOOLTIP_TEXT);
 
     // Keep JUCE's standard tooltip renderer, but give its default text layout
     // the same Montserrat face used by the rest of the application.
@@ -87,7 +87,7 @@ void DarkLookAndFeel::drawPopupMenuBackground(juce::Graphics& g, int width, int 
     auto corner = 8.0f;
 
     // Outer shadow (two layers for soft spread)
-    g.setColour(juce::Colour(0x30000000u));
+    g.setColour(APP_COLOR_MENU_SHADOW);
     g.fillRoundedRectangle(bounds.expanded(1.0f), corner + 1.0f);
 
     // Background fill
@@ -95,7 +95,7 @@ void DarkLookAndFeel::drawPopupMenuBackground(juce::Graphics& g, int width, int 
     g.fillRoundedRectangle(bounds, corner);
 
     // Subtle 1px inner highlight along the top edge
-    g.setColour(juce::Colour(0x0CFFFFFF));
+    g.setColour(APP_COLOR_MENU_INNER_HIGHLIGHT);
     g.drawHorizontalLine(1, bounds.getX() + corner, bounds.getRight() - corner);
 
     // Border
@@ -205,12 +205,12 @@ void DarkLookAndFeel::drawTickBox(juce::Graphics& g, juce::Component& component,
 
     if (ticked)
     {
-        g.setColour(juce::Colour(0xFF575757u).withMultipliedAlpha(alpha));
+        g.setColour(APP_COLOR_SWITCH_TRACK_ON.withMultipliedAlpha(alpha));
         g.fillRoundedRectangle(track, trackRadius);
     }
     else
     {
-        g.setColour(juce::Colour(0xFF30302Eu).withMultipliedAlpha(alpha));
+        g.setColour(APP_COLOR_SWITCH_TRACK_OFF.withMultipliedAlpha(alpha));
         g.fillRoundedRectangle(track, trackRadius);
     }
 
@@ -220,7 +220,7 @@ void DarkLookAndFeel::drawTickBox(juce::Graphics& g, juce::Component& component,
     const float thumbX = ticked ? (trackX + trackW - thumbD - thumbPad) : (trackX + thumbPad);
     const float thumbY = trackY + thumbPad;
 
-    g.setColour((ticked ? juce::Colours::white : juce::Colour(0xFF575757u))
+    g.setColour((ticked ? APP_COLOR_SWITCH_THUMB_ON : APP_COLOR_SWITCH_THUMB_OFF)
                     .withMultipliedAlpha(alpha));
     g.fillEllipse(thumbX, thumbY, thumbD, thumbD);
 }

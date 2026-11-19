@@ -64,6 +64,55 @@ const juce::Colour APP_COLOR_TITLEBAR_MINIMIZE_MAC = juce::Colour(0xFFFEBC2Eu);
 const juce::Colour APP_COLOR_TITLEBAR_MAXIMIZE_MAC = juce::Colour(0xFF28C840u);
 const juce::Colour APP_COLOR_TITLEBAR_CLOSE_HOVER  = juce::Colour(0xFFE81123u);
 
+// ── Buttons & toggles ─────────────────────────────────────────────
+const juce::Colour APP_COLOR_BUTTON_FILL           = juce::Colour(0xFF5B5B5Bu);  // Text button fill
+const juce::Colour APP_COLOR_BUTTON_FILL_DOWN      = juce::Colour(0xFF3E3E3Eu);  // Text button fill while pressed / on
+const juce::Colour APP_COLOR_BUTTON_TEXT           = juce::Colour(0xFFEFEFEFu);  // Text button label
+const juce::Colour APP_COLOR_BUTTON_TEXT_DISABLED  = juce::Colour(0xFF3E3E3Eu);  // Disabled text button label
+const juce::Colour APP_COLOR_CLOSE_BUTTON_TEXT_ON  = juce::Colour(0xFFFFFFFFu);  // Settings close button label while on
+const juce::Colour APP_COLOR_TEXT_ON_PRIMARY       = juce::Colour(0xFFFFFFFFu);  // Label on a primary-coloured button
+const juce::Colour APP_COLOR_SWITCH_TRACK_ON       = juce::Colour(0xFF575757u);  // Switch track, on
+const juce::Colour APP_COLOR_SWITCH_TRACK_OFF      = juce::Colour(0xFF30302Eu);  // Switch track, off
+const juce::Colour APP_COLOR_SWITCH_THUMB_ON       = juce::Colour(0xFFFFFFFFu);  // Switch thumb, on
+const juce::Colour APP_COLOR_SWITCH_THUMB_OFF      = juce::Colour(0xFF575757u);  // Switch thumb, off
+const juce::Colour APP_COLOR_RADIO_SELECTED        = juce::Colour(0xFFFFFFFFu);  // Radio button ring and dot, selected
+const juce::Colour APP_COLOR_RADIO_LABEL_SELECTED  = juce::Colour(0xFFE6E6E6u);  // Radio button label, selected
+const juce::Colour APP_COLOR_KNOB_HIGHLIGHT        = juce::Colour(0x0AFFFFFFu);  // Knob top highlight crescent
+
+// ── Inputs & sliders ──────────────────────────────────────────────
+const juce::Colour APP_COLOR_CONTROL_FILL          = juce::Colour(0xFF30302Eu);  // Combo boxes, selector buttons, value boxes
+const juce::Colour APP_COLOR_CONTROL_TEXT          = juce::Colour(0xFFE6E6E6u);  // Text on CONTROL_FILL
+const juce::Colour APP_COLOR_CONTROL_FOCUS_OUTLINE = juce::Colour(0xFF3E3E3Eu);  // Focused combo box outline
+const juce::Colour APP_COLOR_COMBO_ARROW           = juce::Colour(0xFFE6E6E6u);  // Combo box arrow
+const juce::Colour APP_COLOR_SELECTOR_CHEVRON      = juce::Colour(0xFF9B9B9Bu);  // Chevron on combo-style selector buttons
+const juce::Colour APP_COLOR_MIDI_ICON             = juce::Colour(0xFF9B9B9Bu);  // MIDI file / drag button icon
+const juce::Colour APP_COLOR_TEXT_EDIT_HIGHLIGHT   = juce::Colour(0xFF7A7D8Bu);  // Selected text in inline value editors
+const juce::Colour APP_COLOR_TEXT_EDIT_OUTLINE     = juce::Colour(0xFF3C3C3Cu);  // Inline value editor outline
+const juce::Colour APP_COLOR_SLIDER_TRACK          = juce::Colour(0xFF494949u);  // Linear slider track
+const juce::Colour APP_COLOR_SLIDER_THUMB          = juce::Colour(0xFF9B9B9Bu);  // Linear slider thumb
+
+// ── Menus & tooltips ──────────────────────────────────────────────
+const juce::Colour APP_COLOR_MENU_BACKGROUND       = juce::Colour(0xFF30302Eu);  // Popup menu fill
+const juce::Colour APP_COLOR_MENU_BORDER           = juce::Colour(0xFF3E3E3Eu);  // Popup menu outline
+const juce::Colour APP_COLOR_MENU_SEPARATOR        = juce::Colour(0xFF3E3E3Eu);  // Popup menu separator line
+const juce::Colour APP_COLOR_MENU_ITEM_HIGHLIGHT   = juce::Colour(0xFF171717u);  // Hovered popup menu item
+const juce::Colour APP_COLOR_MENU_TICK             = juce::Colour(0xFFEFEFEFu);  // Ticked popup menu item dot
+const juce::Colour APP_COLOR_MENU_SHADOW           = juce::Colour(0x30000000u);  // Default popup menu outer shadow
+const juce::Colour APP_COLOR_MENU_INNER_HIGHLIGHT  = juce::Colour(0x0CFFFFFFu);  // Default popup menu top-edge highlight
+const juce::Colour APP_COLOR_MENU_BAR_HIGHLIGHT    = juce::Colour(0xFF191818u);  // Hovered / open menu bar item
+const juce::Colour APP_COLOR_TOOLTIP_BACKGROUND    = juce::Colour(0xFF232323u);  // Tooltip fill
+const juce::Colour APP_COLOR_TOOLTIP_BORDER        = juce::Colour(0xFF3C3C3Cu);  // Tooltip outline
+const juce::Colour APP_COLOR_TOOLTIP_TEXT          = juce::Colour(0xFF9B9B9Bu);  // Tooltip text
+
+// ── Toolbar, title bar & sidebar ──────────────────────────────────
+const juce::Colour APP_COLOR_TOOLBAR_BACKGROUND    = juce::Colour(0xFF0D0B0Bu);  // Toolbar fill
+const juce::Colour APP_COLOR_TOOLBAR_GROUP         = juce::Colour(0xFF191818u);  // Capsules grouping toolbar buttons
+const juce::Colour APP_COLOR_TOOLBAR_PROGRESS      = juce::Colour(0xFFFF5600u);  // Toolbar progress bar fill
+const juce::Colour APP_COLOR_TOOL_BUTTON_SHINE     = juce::Colour(0x18FFFFFFu);  // Inner top highlight on the active tool button
+const juce::Colour APP_COLOR_TITLEBAR_BUTTON_ICON  = juce::Colour(0xFF000000u);  // Glyph drawn on hovered title bar buttons
+const juce::Colour APP_COLOR_SIDEBAR_ICON          = juce::Colour(0xFFFFFFFFu);  // Sidebar SVG icon tint
+const juce::Colour APP_COLOR_SPLASH_TITLE          = juce::Colour(0xFFFFFFFFu);  // Splash screen title
+
 // ── Scrollbars ────────────────────────────────────────────────────
 const juce::Colour APP_COLOR_SCROLLBAR_THUMB      = juce::Colour(0xFF565656u);  // Thumb
 const juce::Colour APP_COLOR_SCROLLBAR_TRACK      = juce::Colour(0xFF0D0B0Bu);  // Recessed gutter

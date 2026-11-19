@@ -65,11 +65,11 @@ public:
                 const auto textColour =
                     editor->findColour(juce::TextEditor::textColourId);
                 editor->setColour(juce::TextEditor::highlightColourId,
-                                  juce::Colour(0xFF7A7D8Bu));
+                                  APP_COLOR_TEXT_EDIT_HIGHLIGHT);
                 editor->setColour(juce::TextEditor::outlineColourId,
-                                  juce::Colour(0xFF3C3C3Cu));
+                                  APP_COLOR_TEXT_EDIT_OUTLINE);
                 editor->setColour(juce::TextEditor::focusedOutlineColourId,
-                                  juce::Colour(0xFF3C3C3Cu));
+                                  APP_COLOR_TEXT_EDIT_OUTLINE);
                 editor->setColour(juce::CaretComponent::caretColourId, textColour);
             }
         };
@@ -85,14 +85,14 @@ public:
             static_cast<float>(width), static_cast<float>(height));
         const auto track = juce::Rectangle<float>(
             bounds.getX(), bounds.getCentreY() - 1.0f, bounds.getWidth(), 2.0f);
-        g.setColour(juce::Colour(0xFF494949u));
+        g.setColour(APP_COLOR_SLIDER_TRACK);
         g.fillRoundedRectangle(track, 1.0f);
 
         constexpr float thumbRadius = 4.5f;
         const auto thumbX = juce::jlimit(track.getX() + thumbRadius,
                                          track.getRight() - thumbRadius,
                                          sliderPos);
-        g.setColour(juce::Colour(0xFF9B9B9Bu));
+        g.setColour(APP_COLOR_SLIDER_THUMB);
         g.fillEllipse(thumbX - thumbRadius, bounds.getCentreY() - thumbRadius,
                       thumbRadius * 2.0f, thumbRadius * 2.0f);
     }
@@ -112,13 +112,13 @@ public:
         setSliderStyle(juce::Slider::LinearHorizontal);
         setTextBoxStyle(juce::Slider::TextBoxRight, false, 54, 22);
         setLookAndFeel(&MacroSliderLookAndFeel::getInstance());
-        setColour(juce::Slider::textBoxTextColourId, juce::Colour(0xFFE6E6E6u));
+        setColour(juce::Slider::textBoxTextColourId, APP_COLOR_CONTROL_TEXT);
         setColour(juce::Slider::textBoxBackgroundColourId,
-                  juce::Colour(0xFF30302Eu));
+                  APP_COLOR_CONTROL_FILL);
         setColour(juce::Slider::textBoxOutlineColourId,
                   juce::Colours::transparentBlack);
         setColour(juce::Slider::textBoxHighlightColourId,
-                  juce::Colour(0xFF7A7D8Bu));
+                  APP_COLOR_TEXT_EDIT_HIGHLIGHT);
     }
 
     ~MacroSlider() override
@@ -168,14 +168,14 @@ public:
     {
         setColour(juce::PopupMenu::backgroundColourId, juce::Colours::transparentBlack);
         setColour(juce::PopupMenu::textColourId, APP_COLOR_TEXT_PRIMARY);
-        setColour(juce::PopupMenu::highlightedBackgroundColourId, juce::Colour(0xFF171717u));
+        setColour(juce::PopupMenu::highlightedBackgroundColourId, APP_COLOR_MENU_ITEM_HIGHLIGHT);
         setColour(juce::PopupMenu::highlightedTextColourId, APP_COLOR_TEXT_PRIMARY);
 
-        setColour(juce::ComboBox::backgroundColourId, juce::Colour(0xFF30302Eu));
-        setColour(juce::ComboBox::textColourId, juce::Colour(0xFFE6E6E6u));
+        setColour(juce::ComboBox::backgroundColourId, APP_COLOR_CONTROL_FILL);
+        setColour(juce::ComboBox::textColourId, APP_COLOR_CONTROL_TEXT);
         setColour(juce::ComboBox::outlineColourId, juce::Colours::transparentBlack);
-        setColour(juce::ComboBox::arrowColourId, juce::Colour(0xFFE6E6E6u));
-        setColour(juce::ComboBox::focusedOutlineColourId, juce::Colour(0xFF3E3E3Eu));
+        setColour(juce::ComboBox::arrowColourId, APP_COLOR_COMBO_ARROW);
+        setColour(juce::ComboBox::focusedOutlineColourId, APP_COLOR_CONTROL_FOCUS_OUTLINE);
     }
 
     juce::Font getComboBoxFont(juce::ComboBox&) override
@@ -230,9 +230,9 @@ public:
         juce::Path shape;
         shape.addRoundedRectangle(area, 9.0f);
 
-        g.setColour(juce::Colour(0xFF30302Eu));
+        g.setColour(APP_COLOR_MENU_BACKGROUND);
         g.fillPath(shape);
-        g.setColour(juce::Colour(0xFF3E3E3Eu));
+        g.setColour(APP_COLOR_MENU_BORDER);
         g.strokePath(shape, juce::PathStrokeType(1.0f));
     }
 
@@ -247,7 +247,7 @@ public:
 
         if (isSeparator)
         {
-            g.setColour(juce::Colour(0xFF3E3E3Eu));
+            g.setColour(APP_COLOR_MENU_SEPARATOR);
             g.fillRect(area.reduced(10, 0).withHeight(1).withY(area.getCentreY()));
             return;
         }
@@ -255,13 +255,13 @@ public:
         const auto itemArea = area.toFloat();
         if (isHighlighted && isActive)
         {
-            g.setColour(juce::Colour(0xFF171717u));
+            g.setColour(APP_COLOR_MENU_ITEM_HIGHLIGHT);
             g.fillRoundedRectangle(itemArea.reduced(2.0f, 1.0f), 5.0f);
         }
 
         if (isTicked)
         {
-            g.setColour(juce::Colour(0xFFEFEFEFu));
+            g.setColour(APP_COLOR_MENU_TICK);
             g.fillEllipse(8.0f, itemArea.getCentreY() - 3.5f, 7.0f, 7.0f);
         }
 
@@ -299,11 +299,11 @@ public:
 
     void applyStyle()
     {
-        setColour(juce::ComboBox::backgroundColourId, juce::Colour(0xFF30302Eu));
-        setColour(juce::ComboBox::textColourId, juce::Colour(0xFFE6E6E6u));
+        setColour(juce::ComboBox::backgroundColourId, APP_COLOR_CONTROL_FILL);
+        setColour(juce::ComboBox::textColourId, APP_COLOR_CONTROL_TEXT);
         setColour(juce::ComboBox::outlineColourId, juce::Colours::transparentBlack);
-        setColour(juce::ComboBox::arrowColourId, juce::Colour(0xFFE6E6E6u));
-        setColour(juce::ComboBox::focusedOutlineColourId, juce::Colour(0xFF3E3E3Eu));
+        setColour(juce::ComboBox::arrowColourId, APP_COLOR_COMBO_ARROW);
+        setColour(juce::ComboBox::focusedOutlineColourId, APP_COLOR_CONTROL_FOCUS_OUTLINE);
         setLookAndFeel(&SidePanelComboLookAndFeel::getInstance());
     }
 
@@ -366,13 +366,13 @@ public:
             diameter, diameter);
 
         const bool selected = getToggleState();
-        g.setColour(selected ? juce::Colours::white
+        g.setColour(selected ? APP_COLOR_RADIO_SELECTED
                              : juce::Colour(highlighted ? 0xFF9B9B9Bu : 0xFF515151u));
         g.drawEllipse(circle, 1.0f);
         if (selected)
             g.fillEllipse(circle.reduced(3.0f));
 
-        g.setColour(selected ? juce::Colour(0xFFE6E6E6u)
+        g.setColour(selected ? APP_COLOR_RADIO_LABEL_SELECTED
                              : juce::Colour(highlighted ? 0xFF9B9B9Bu : 0xFF515151u));
         g.setFont(AppFont::getFont(15.0f));
         if (!isEnabled())
@@ -404,7 +404,7 @@ public:
 
     void paintButton(juce::Graphics& g, bool highlighted, bool down) override
     {
-        auto colour = juce::Colour(0xFF30302Eu);
+        auto colour = APP_COLOR_CONTROL_FILL;
         if (down)
             colour = colour.brighter(0.10f);
         else if (highlighted)
@@ -412,7 +412,7 @@ public:
 
         g.setColour(colour);
         g.fillRoundedRectangle(getLocalBounds().toFloat(), 5.0f);
-        g.setColour(juce::Colour(0xFFE6E6E6u)
+        g.setColour(APP_COLOR_CONTROL_TEXT
                         .withMultipliedAlpha(isEnabled() ? 1.0f : 0.5f));
         g.setFont(AppFont::getFont(13.0f));
         g.drawFittedText(getButtonText(), getLocalBounds().reduced(3, 0),
@@ -444,7 +444,7 @@ public:
 
     void paintButton(juce::Graphics& g, bool highlighted, bool down) override
     {
-        auto colour = juce::Colour(0xFF30302Eu);
+        auto colour = APP_COLOR_CONTROL_FILL;
         if (down)
             colour = colour.brighter(0.10f);
         else if (highlighted)
@@ -464,10 +464,10 @@ public:
         chevron.startNewSubPath(chevronX, chevronY);
         chevron.lineTo(chevronX + chevronWidth * 0.5f, chevronY + chevronHeight);
         chevron.lineTo(chevronX + chevronWidth, chevronY);
-        g.setColour(juce::Colour(0xFF9B9B9Bu).withMultipliedAlpha(alpha));
+        g.setColour(APP_COLOR_SELECTOR_CHEVRON.withMultipliedAlpha(alpha));
         g.strokePath(chevron, juce::PathStrokeType(1.2f));
 
-        g.setColour(juce::Colour(0xFFE6E6E6u).withMultipliedAlpha(alpha));
+        g.setColour(APP_COLOR_CONTROL_TEXT.withMultipliedAlpha(alpha));
         g.setFont(AppFont::getFont(13.0f));
         g.drawFittedText(getButtonText(),
                          getLocalBounds().withTrimmedLeft(9).withTrimmedRight(

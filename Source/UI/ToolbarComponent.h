@@ -36,7 +36,7 @@ public:
             g.fillRoundedRectangle(bounds, corner);
 
             // Soft inner highlight along top edge
-            g.setColour(juce::Colour(0x18FFFFFFu));
+            g.setColour(APP_COLOR_TOOL_BUTTON_SHINE);
             g.fillRoundedRectangle(bounds.removeFromTop(bounds.getHeight() * 0.45f), corner);
         }
         else if (isMouseOver())

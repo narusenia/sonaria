@@ -1,5 +1,6 @@
 #include "MidiDragButton.h"
 #include "AppFont.h"
+#include "../../Utils/UI/Theme.h"
 
 namespace
 {
@@ -9,7 +10,7 @@ constexpr int kDragThresholdPx = 4;
 void paintMidiIcon(juce::Graphics& g, juce::Rectangle<float> area, float alpha)
 {
     // A tiny piano-roll: three staggered note bars.
-    g.setColour(juce::Colour(0xFF9B9B9Bu).withMultipliedAlpha(alpha));
+    g.setColour(APP_COLOR_MIDI_ICON.withMultipliedAlpha(alpha));
     const float barH = 2.5f;
     const float rowStep = (area.getHeight() - barH) / 2.0f;
     const float w = area.getWidth();
@@ -26,7 +27,7 @@ void paintMidiButton(juce::Graphics& g, juce::Rectangle<int> bounds, const juce:
 {
     // Same look as the panel's other buttons (ComboSelectionButton): a flat
     // fill that brightens on hover and press, no border.
-    auto colour = juce::Colour(0xFF30302Eu);
+    auto colour = APP_COLOR_CONTROL_FILL;
     if (enabled && down)
         colour = colour.brighter(0.10f);
     else if (enabled && highlighted)
@@ -44,7 +45,7 @@ void paintMidiButton(juce::Graphics& g, juce::Rectangle<int> bounds, const juce:
         content.removeFromLeft(8);
     }
 
-    g.setColour(juce::Colour(0xFFE6E6E6u).withMultipliedAlpha(alpha));
+    g.setColour(APP_COLOR_CONTROL_TEXT.withMultipliedAlpha(alpha));
     g.setFont(AppFont::getFont(13.0f));
     g.drawFittedText(text, content, juce::Justification::centredLeft, 1);
 }

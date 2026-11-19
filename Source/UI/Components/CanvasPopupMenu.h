@@ -47,7 +47,7 @@ public:
         }
         if (isEnabled() && (over || down || hasKeyboardFocus(false)))
         {
-            g.setColour(juce::Colour(0xFF171717u));
+            g.setColour(APP_COLOR_MENU_ITEM_HIGHLIGHT);
             g.fillRoundedRectangle(getLocalBounds().toFloat().reduced(2, 1), 5);
         }
         g.setColour(APP_COLOR_TEXT_PRIMARY.withMultipliedAlpha(isEnabled() ? 1.0f : 0.4f));
@@ -108,7 +108,7 @@ public:
     void paint(juce::Graphics& g) override
     {
         pitchPopupMenu::getLookAndFeel().drawPopupMenuBackground(g, topWidth, topHeight);
-        g.setColour(juce::Colour(0xFF3E3E3Eu));
+        g.setColour(APP_COLOR_MENU_SEPARATOR);
         g.fillRect(8, padding + 2 * rowHeight + separatorHeight / 2,
                    topWidth - 16, 1);
     }

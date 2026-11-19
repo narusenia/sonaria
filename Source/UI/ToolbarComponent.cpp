@@ -137,7 +137,7 @@ ToolbarComponent::ToolbarComponent()
     addChildComponent(progressLabel);
 
     progressLabel.setVisible(false);
-    progressBar.setColour(juce::ProgressBar::foregroundColourId, juce::Colour(0xFFFF5600u));
+    progressBar.setColour(juce::ProgressBar::foregroundColourId, APP_COLOR_TOOLBAR_PROGRESS);
     progressBar.setColour(juce::ProgressBar::backgroundColourId, juce::Colours::transparentBlack);
     progressBar.setLookAndFeel(&DarkLookAndFeel::getInstance());
 
@@ -180,7 +180,7 @@ void ToolbarComponent::paint(juce::Graphics &g)
     auto bounds = getLocalBounds().toFloat();
 
     // Flat surface background
-    g.setColour(juce::Colour(0xFF0D0B0Bu));
+    g.setColour(APP_COLOR_TOOLBAR_BACKGROUND);
     g.fillRect(bounds);
 
     if (logoImage.isValid())
@@ -194,7 +194,7 @@ void ToolbarComponent::paint(juce::Graphics &g)
     // Left-panel group background
     if (!leftPanelCapsuleBounds.isEmpty())
     {
-        g.setColour(juce::Colour(0xFF191818u));
+        g.setColour(APP_COLOR_TOOLBAR_GROUP);
         g.fillRoundedRectangle(leftPanelCapsuleBounds.toFloat(), 8.0f);
     }
 
@@ -202,14 +202,14 @@ void ToolbarComponent::paint(juce::Graphics &g)
     if (!transportCapsuleBounds.isEmpty())
     {
         auto capsule = transportCapsuleBounds.toFloat();
-        g.setColour(juce::Colour(0xFF191818u));
+        g.setColour(APP_COLOR_TOOLBAR_GROUP);
         g.fillRoundedRectangle(capsule, 8.0f);
     }
 
     // Edit tools form their own capsule, matching the transport group.
     if (!toolContainerBounds.isEmpty())
     {
-        g.setColour(juce::Colour(0xFF191818u));
+        g.setColour(APP_COLOR_TOOLBAR_GROUP);
         g.fillRoundedRectangle(toolContainerBounds.toFloat(), 8.0f);
     }
 }

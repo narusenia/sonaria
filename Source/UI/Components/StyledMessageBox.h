@@ -37,7 +37,7 @@ public:
 
         // Style the button
         okButton->setColour(juce::TextButton::buttonColourId, APP_COLOR_PRIMARY);
-        okButton->setColour(juce::TextButton::textColourOffId, juce::Colours::white);
+        okButton->setColour(juce::TextButton::textColourOffId, APP_COLOR_TEXT_ON_PRIMARY);
         okButton->setColour(juce::TextButton::buttonOnColourId, APP_COLOR_PRIMARY.brighter(0.15f));
 
         setSize(400, 200);

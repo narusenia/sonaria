@@ -1,4 +1,5 @@
 #include "Sliders.h"
+#include "../Utils/UI/Theme.h"
 #include <cmath>
 
 namespace
@@ -26,11 +27,11 @@ public:
                 const auto textColour =
                     editor->findColour(juce::TextEditor::textColourId);
                 editor->setColour(juce::TextEditor::highlightColourId,
-                                  juce::Colour(0xFF7A7D8Bu));
+                                  APP_COLOR_TEXT_EDIT_HIGHLIGHT);
                 editor->setColour(juce::TextEditor::outlineColourId,
-                                  juce::Colour(0xFF3C3C3Cu));
+                                  APP_COLOR_TEXT_EDIT_OUTLINE);
                 editor->setColour(juce::TextEditor::focusedOutlineColourId,
-                                  juce::Colour(0xFF3C3C3Cu));
+                                  APP_COLOR_TEXT_EDIT_OUTLINE);
                 editor->setColour(juce::CaretComponent::caretColourId,
                                   textColour);
             }
@@ -72,9 +73,9 @@ SliderBox::SliderBox(juce::String helpText)
     setMouseCursor(juce::MouseCursor::UpDownResizeCursor);
     setLookAndFeel(&getSliderBoxLookAndFeel());
     setColour(juce::Slider::textBoxHighlightColourId,
-              juce::Colour(0xFF7A7D8Bu));
+              APP_COLOR_TEXT_EDIT_HIGHLIGHT);
     setColour(juce::Slider::textBoxOutlineColourId,
-              juce::Colour(0xFF3C3C3Cu));
+              APP_COLOR_TEXT_EDIT_OUTLINE);
 }
 
 SliderBox::~SliderBox()
@@ -135,13 +136,13 @@ void FloatingZoomSliderLookAndFeel::drawLinearSlider(
         trackHeight,
         juce::jmax(0.0f, bounds.getHeight()));
 
-    g.setColour(juce::Colour(0xFF494949));
+    g.setColour(APP_COLOR_SLIDER_TRACK);
     g.fillRoundedRectangle(track, trackHeight * 0.5f);
 
     const auto clampedSliderPos = juce::jlimit(track.getY() + thumbRadius,
                                                track.getBottom() - thumbRadius,
                                                sliderPos);
-    g.setColour(juce::Colour(0xFF9B9B9B));
+    g.setColour(APP_COLOR_SLIDER_THUMB);
     g.fillEllipse(bounds.getCentreX() - thumbRadius,
                   clampedSliderPos - thumbRadius,
                   thumbRadius * 2.0f,
@@ -154,13 +155,13 @@ void FloatingZoomSliderLookAndFeel::drawLinearSlider(
                                            juce::jmax(0.0f, bounds.getWidth()),
                                            trackHeight);
 
-  g.setColour(juce::Colour(0xFF494949));
+  g.setColour(APP_COLOR_SLIDER_TRACK);
   g.fillRoundedRectangle(track, trackHeight * 0.5f);
 
   const auto clampedSliderPos = juce::jlimit(track.getX() + thumbRadius,
                                              track.getRight() - thumbRadius,
                                              sliderPos);
-  g.setColour(juce::Colour(0xFF9B9B9B));
+  g.setColour(APP_COLOR_SLIDER_THUMB);
   g.fillEllipse(clampedSliderPos - thumbRadius,
                 bounds.getCentreY() - thumbRadius,
                 thumbRadius * 2.0f,

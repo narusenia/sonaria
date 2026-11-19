@@ -22,7 +22,7 @@ SettingsOverlay::SettingsOverlay(SettingsManager *settingsManager,
                         APP_COLOR_TEXT_PRIMARY);
   closeButton.setColour(juce::TextButton::buttonOnColourId,
                         APP_COLOR_SURFACE_RAISED);
-  closeButton.setColour(juce::TextButton::textColourOnId, juce::Colours::white);
+  closeButton.setColour(juce::TextButton::textColourOnId, APP_COLOR_CLOSE_BUTTON_TEXT_ON);
   closeButton.setLookAndFeel(&DarkLookAndFeel::getInstance());
   closeButton.setMouseCursor(juce::MouseCursor::PointingHandCursor);
   closeButton.onClick = [this]() { closeIfPossible(); };

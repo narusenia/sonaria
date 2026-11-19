@@ -40,6 +40,55 @@ extern const juce::Colour APP_COLOR_TITLEBAR_MINIMIZE_MAC;
 extern const juce::Colour APP_COLOR_TITLEBAR_MAXIMIZE_MAC;
 extern const juce::Colour APP_COLOR_TITLEBAR_CLOSE_HOVER;
 
+// ── Buttons & toggles ─────────────────────────────────────────────
+extern const juce::Colour APP_COLOR_BUTTON_FILL;
+extern const juce::Colour APP_COLOR_BUTTON_FILL_DOWN;
+extern const juce::Colour APP_COLOR_BUTTON_TEXT;
+extern const juce::Colour APP_COLOR_BUTTON_TEXT_DISABLED;
+extern const juce::Colour APP_COLOR_CLOSE_BUTTON_TEXT_ON;
+extern const juce::Colour APP_COLOR_TEXT_ON_PRIMARY;
+extern const juce::Colour APP_COLOR_SWITCH_TRACK_ON;
+extern const juce::Colour APP_COLOR_SWITCH_TRACK_OFF;
+extern const juce::Colour APP_COLOR_SWITCH_THUMB_ON;
+extern const juce::Colour APP_COLOR_SWITCH_THUMB_OFF;
+extern const juce::Colour APP_COLOR_RADIO_SELECTED;
+extern const juce::Colour APP_COLOR_RADIO_LABEL_SELECTED;
+extern const juce::Colour APP_COLOR_KNOB_HIGHLIGHT;
+
+// ── Inputs & sliders ──────────────────────────────────────────────
+extern const juce::Colour APP_COLOR_CONTROL_FILL;
+extern const juce::Colour APP_COLOR_CONTROL_TEXT;
+extern const juce::Colour APP_COLOR_CONTROL_FOCUS_OUTLINE;
+extern const juce::Colour APP_COLOR_COMBO_ARROW;
+extern const juce::Colour APP_COLOR_SELECTOR_CHEVRON;
+extern const juce::Colour APP_COLOR_MIDI_ICON;
+extern const juce::Colour APP_COLOR_TEXT_EDIT_HIGHLIGHT;
+extern const juce::Colour APP_COLOR_TEXT_EDIT_OUTLINE;
+extern const juce::Colour APP_COLOR_SLIDER_TRACK;
+extern const juce::Colour APP_COLOR_SLIDER_THUMB;
+
+// ── Menus & tooltips ──────────────────────────────────────────────
+extern const juce::Colour APP_COLOR_MENU_BACKGROUND;
+extern const juce::Colour APP_COLOR_MENU_BORDER;
+extern const juce::Colour APP_COLOR_MENU_SEPARATOR;
+extern const juce::Colour APP_COLOR_MENU_ITEM_HIGHLIGHT;
+extern const juce::Colour APP_COLOR_MENU_TICK;
+extern const juce::Colour APP_COLOR_MENU_SHADOW;
+extern const juce::Colour APP_COLOR_MENU_INNER_HIGHLIGHT;
+extern const juce::Colour APP_COLOR_MENU_BAR_HIGHLIGHT;
+extern const juce::Colour APP_COLOR_TOOLTIP_BACKGROUND;
+extern const juce::Colour APP_COLOR_TOOLTIP_BORDER;
+extern const juce::Colour APP_COLOR_TOOLTIP_TEXT;
+
+// ── Toolbar, title bar & sidebar ──────────────────────────────────
+extern const juce::Colour APP_COLOR_TOOLBAR_BACKGROUND;
+extern const juce::Colour APP_COLOR_TOOLBAR_GROUP;
+extern const juce::Colour APP_COLOR_TOOLBAR_PROGRESS;
+extern const juce::Colour APP_COLOR_TOOL_BUTTON_SHINE;
+extern const juce::Colour APP_COLOR_TITLEBAR_BUTTON_ICON;
+extern const juce::Colour APP_COLOR_SIDEBAR_ICON;
+extern const juce::Colour APP_COLOR_SPLASH_TITLE;
+
 // ── Scrollbars ────────────────────────────────────────────────────
 // One look for every scrollbar in the app: a dim grey rounded thumb over a
 // recessed gutter. The piano-roll canvas set the look; styleCanvasScrollBar()
