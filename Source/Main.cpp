@@ -9,6 +9,7 @@
 #include "Utils/Localization.h"
 #include "Utils/PlatformUtils.h"
 #include "Utils/UI/WindowSizing.h"
+#include "Utils/UI/UILayout.h"
 #include "Utils/UI/TimecodeFont.h"
 
 #include <iostream>
@@ -158,6 +159,7 @@ public:
     LOG("Initializing fonts...");
     AppFont::initialize();
     TimecodeFont::initialize();
+    juce::Desktop::getInstance().setGlobalScaleFactor(UIConstants::kUiScale);
     LOG("Loading localization...");
     Localization::loadFromSettings();
     LOG("Localization loaded, showing splash...");

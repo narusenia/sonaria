@@ -220,6 +220,9 @@ namespace UIConstants
     constexpr int kComboBoxHeight = 24;
     constexpr int kScrollbarWidth = 12;
 
+    // Whole-UI zoom: every logical pixel above is drawn at this size.
+    constexpr float kUiScale = 0.85f;
+
     // Panels
     constexpr int kSidebarWidth = 200;
     constexpr int kParameterPanelWidth = 280;

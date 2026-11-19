@@ -3,6 +3,7 @@
 #include "../Models/Project.h"
 #include "../Utils/AppLogger.h"
 #include "../Utils/Constants.h"
+#include "../Utils/UI/UILayout.h"
 #include "../Undo/ContextUndoAction.h"
 #include "../Undo/PitchUndoManager.h"
 
@@ -1635,7 +1636,12 @@ void PitchNetAudioProcessorEditor::paint(juce::Graphics &) {
 
 void PitchNetAudioProcessorEditor::resized() {
   audioProcessor.setLastEditorSize(getWidth(), getHeight());
-  mainView->getComponent()->setBounds(getLocalBounds());
+  // Scale the view rather than the editor, so the host window keeps the size it asked for.
+  constexpr float scale = UIConstants::kUiScale;
+  auto *view = mainView->getComponent();
+  view->setTransform(juce::AffineTransform::scale(scale));
+  view->setBounds(0, 0, juce::roundToInt(getWidth() / scale),
+                  juce::roundToInt(getHeight() / scale));
   requestMainViewKeyboardFocusAsync();
 }
 
