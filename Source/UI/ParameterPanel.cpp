@@ -42,7 +42,7 @@ constexpr int kSynthesisCardHeight =
 constexpr int kRenderDeviceRowExtraHeight = (kRowGap + 1) + kControlRowHeight;
 constexpr int kTimeCardHeight =
     kInnerPadY + kSectionLabelHeight + kSectionLabelGap + kTimelineModeRowHeight +
-    (kRowGap + 1) + kControlRowHeight + kRowGap + kControlRowHeight + kInnerPadY;
+    (kRowGap + 1) + kControlRowHeight + (kRowGap + kControlRowHeight) * 2 + kInnerPadY;
 constexpr int kPitchCardHeight =
     kInnerPadY + kSectionLabelHeight + kSectionLabelGap + kRadioRowHeight +
     ((kRowGap + 1) + kControlRowHeight) * 3 + kInnerPadY;
@@ -356,7 +356,7 @@ ParameterPanel::ParameterPanel()
     // (see setRenderDeviceOptions).
     addChildComponent(renderDeviceLabel);
     renderDeviceLabel.setColour(juce::Label::textColourId, APP_COLOR_PANEL_LABEL);
-    renderDeviceLabel.setFont(AppFont::getFont(15.0f));
+    renderDeviceLabel.setFont(AppFont::getFont(14.0f));
     addChildComponent(renderDeviceButton);
     renderDeviceButton.addListener(this);
 
@@ -371,9 +371,8 @@ ParameterPanel::ParameterPanel()
                          &timelineTempoLabel, &timelineGridLabel, &brightnessLabel })
     {
         label->setColour(juce::Label::textColourId, APP_COLOR_PANEL_LABEL);
-        label->setFont(AppFont::getFont(16.0f));
+        label->setFont(AppFont::getFont(14.0f));
     }
-    referenceLabel.setFont(AppFont::getFont(15.0f));
 
     const std::array<juce::TextButton*, 3> textButtons {{
         &dragSnapModeButton, &timelineBeatButton, &timelineGridButton
@@ -565,6 +564,13 @@ void ParameterPanel::resized()
     constexpr int rowGap = kRowGap;
     constexpr int columnGap = kColumnGap;
 
+    // Label columns are as wide as their text, so translations are never cut off.
+    auto textWidth = [](const juce::Label& label)
+    {
+        return juce::GlyphArrangement::getStringWidthInt(label.getFont(), label.getText())
+               + label.getBorderSize().getLeftAndRight() + 6;
+    };
+
     auto cardArea = outerBounds.reduced(kCardPadX, cardPadY);
     // =========================================================================
     // SYNTHESIS CARD
@@ -664,22 +670,24 @@ void ParameterPanel::resized()
 
     // Beat / Tempo row
     auto beatTempoRow = bounds.removeFromTop(kControlRowHeight);
-    timelineBeatLabel.setBounds(beatTempoRow.removeFromLeft(38));
+    const int timeLabelWidth = juce::jmax(textWidth(timelineBeatLabel), textWidth(timelineGridLabel));
+    timelineBeatLabel.setBounds(beatTempoRow.removeFromLeft(timeLabelWidth));
     auto beatButtonArea = beatTempoRow.removeFromLeft(44);
     timelineBeatButton.setBounds(beatButtonArea.withSizeKeepingCentre(40, 22));
     beatTempoRow.removeFromLeft(10);
-    timelineTempoLabel.setBounds(beatTempoRow.removeFromLeft(50));
+    timelineTempoLabel.setBounds(beatTempoRow.removeFromLeft(textWidth(timelineTempoLabel)));
     timelineTempoSlider.setBounds(beatTempoRow.reduced(0, 2));
 
     bounds.removeFromTop(rowGap);
 
     // Grid / Snap Cycle row
     auto gridRow = bounds.removeFromTop(kControlRowHeight);
-    timelineGridLabel.setBounds(gridRow.removeFromLeft(38));
+    timelineGridLabel.setBounds(gridRow.removeFromLeft(timeLabelWidth));
     timelineGridButton.setBounds(
         gridRow.removeFromLeft(44).withSizeKeepingCentre(40, 22));
-    gridRow.removeFromLeft(10);
-    timelineSnapCycleToggle.setBounds(gridRow);
+
+    bounds.removeFromTop(rowGap);
+    timelineSnapCycleToggle.setBounds(bounds.removeFromTop(kControlRowHeight));
 
     int timeCardBottom = bounds.getY() + innerPadY;
     timeCardBounds = juce::Rectangle<int>(cardArea.getX(), timeCardStart,
@@ -705,7 +713,12 @@ void ParameterPanel::resized()
 
     bounds.removeFromTop(rowGap + 1);
 
-    constexpr int pitchLabelWidth = 120;
+    // The drag-snap toggle draws its switch (38px with gap) before the text.
+    const int toggleTextWidth = 38 + juce::GlyphArrangement::getStringWidthInt(
+        AppFont::getFont(14.0f), snapToSemitonesToggle.getButtonText()) + 6;
+    const int pitchLabelWidth = juce::jlimit(
+        80, juce::jmax(80, bounds.getWidth() - 96),
+        juce::jmax(textWidth(referenceLabel), textWidth(doubleClickSnapLabel), toggleTextWidth));
     constexpr int pitchControlOffsetX = 1;
 
     // Reference row
