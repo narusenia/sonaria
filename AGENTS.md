@@ -18,4 +18,5 @@ Sonaria is an open-source vocal pitch editor (VST3 / AU / ARA2 plugin and standa
 - **Hosts**: verify ARA behaviour in Cubase and Studio One. Logic is build-only (ADR-0007).
 - **Plan status** lives only in the table of each milestone `README.md`. Do not move files to express status.
 - **Language**: requirements, plans and ADRs in Japanese; code, comments, commit messages and README in English.
+- **Commits**: Conventional Commits (`feat:`, `fix:`, `docs:`, `ci:`, `build:`, `refactor:`, `test:`, `chore:`), one line with a concrete description. One commit per logical change. Commit directly to `main`; push only after the user agrees.
 - **Docs consistency**: when finishing a piece of work, check whether it affects the requirements, specifications or plans under `docs/`, and if it does, ask the user whether to update them.
