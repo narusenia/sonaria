@@ -1,5 +1,6 @@
 #include "PitchToolHandles.h"
 #include "BinaryData.h"
+#include "../../Utils/UI/Theme.h"
 
 #include <algorithm>
 #include <limits>
@@ -99,8 +100,8 @@ void PitchToolHandles::draw(juce::Graphics& g) const {
     const auto& handle = handles[i];
 
     const bool hovered = i == hoveredHandleIndex;
-    g.setColour(hovered ? juce::Colour(0xFF3B3B3Au)
-                        : juce::Colour(0xFF2E2E2Du));
+    g.setColour(hovered ? APP_COLOR_PITCH_HANDLE_HOVER
+                        : APP_COLOR_PITCH_HANDLE);
 
     const auto bounds = handle.bounds;
     g.fillRect(bounds);
@@ -192,18 +193,18 @@ juce::Colour PitchToolHandles::getColorForType(HandleType type) const {
   switch (type) {
     case HandleType::TiltLeft:
     case HandleType::TiltRight:
-      return juce::Colours::orange;
+      return APP_COLOR_PITCH_HANDLE_TILT;
       
     case HandleType::PitchDrift:
     case HandleType::FinePitch:
     case HandleType::Vibrato:
-      return juce::Colours::mediumpurple;
+      return APP_COLOR_PITCH_HANDLE_DRIFT;
       
     case HandleType::SmoothLeft:
     case HandleType::SmoothRight:
-      return juce::Colours::cyan; // "Smooth" implies liquid/soft -> cyan/blue
+      return APP_COLOR_PITCH_HANDLE_SMOOTH; // "Smooth" implies liquid/soft -> cyan/blue
       
     default:
-      return juce::Colours::white;
+      return APP_COLOR_PITCH_HANDLE_DEFAULT;
   }
 }

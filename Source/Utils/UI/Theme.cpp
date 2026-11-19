@@ -134,6 +134,71 @@ const juce::Colour APP_COLOR_OVERVIEW_BACKGROUND         = juce::Colour(0xFF1917
 const juce::Colour APP_COLOR_OVERVIEW_BORDER             = juce::Colour(0xFF0D0B0Bu);  // Overview strip outline
 const juce::Colour APP_COLOR_CANVAS_PROMPT_BACKGROUND    = juce::Colour(0xFF2E2E2Du);  // Prompt panels over the canvas (pitch drawing)
 
+// ── Piano roll canvas ─────────────────────────────────────────────
+const juce::Colour APP_COLOR_RULER_BACKGROUND         = juce::Colour(0xFF232323u);  // Timeline / loop ruler and canvas header fill
+const juce::Colour APP_COLOR_RULER_LINE               = juce::Colour(0xFF0D0B0Bu);  // Ruler markers and bottom edge
+const juce::Colour APP_COLOR_RULER_TEXT               = juce::Colour(0xFF9B9B9Bu);  // Ruler labels
+const juce::Colour APP_COLOR_LOOP_MARKER              = juce::Colour(0xFF888888u);  // Loop range edges, loop on
+const juce::Colour APP_COLOR_LOOP_MARKER_DISABLED     = juce::Colour(0xFF3E3E3Eu);  // Loop range edges, loop off
+const juce::Colour APP_COLOR_LOOP_OVERLAY             = juce::Colour(0xFFFFFFFFu);  // Loop range tint on the canvas
+const juce::Colour APP_COLOR_PIANO_KEY                = juce::Colour(0xFF232323u);  // Piano key, no scale overlay
+const juce::Colour APP_COLOR_PIANO_KEY_IN_SCALE       = juce::Colour(0xFF1C1C1Bu);  // Piano key inside the active scale
+const juce::Colour APP_COLOR_PIANO_KEY_OUT_OF_SCALE   = juce::Colour(0xFF151515u);  // Piano key outside the active scale
+const juce::Colour APP_COLOR_PIANO_KEY_SEPARATOR      = juce::Colour(0xFF0D0B0Bu);  // Line between piano keys
+const juce::Colour APP_COLOR_PIANO_KEY_TEXT           = juce::Colour(0xFF9A9A9Au);  // Piano key note names
+const juce::Colour APP_COLOR_PIANO_KEYS_EDGE          = juce::Colour(0xFF0D0B0Bu);  // Line between piano keys and the grid
+const juce::Colour APP_COLOR_GRID_ROW_WHITE_KEY       = juce::Colour(0xFF1C1C1Bu);  // Grid row for a white key / in-scale note
+const juce::Colour APP_COLOR_GRID_ROW_BLACK_KEY       = juce::Colour(0xFF151515u);  // Grid row for a black key / out-of-scale note
+const juce::Colour APP_COLOR_CANVAS_BORDER            = juce::Colour(0xFF3C3C3Cu);  // Outline around the piano roll canvas
+const juce::Colour APP_COLOR_SELECTION_BOX            = juce::Colour(0xFFFFFFFFu);  // Rubber-band selection fill and outline
+const juce::Colour APP_COLOR_REGION_OVERLAY           = juce::Colour(0xFFFFFFFFu);  // Clip / region range tint and edges
+const juce::Colour APP_COLOR_WAVEFORM_FILL            = juce::Colour(0xFFFFFFFFu);  // Background waveform behind notes
+const juce::Colour APP_COLOR_MIDI_REFERENCE           = juce::Colour(0xFF73D3E8u);  // Reference MIDI notes
+const juce::Colour APP_COLOR_TIMING_BOUNDARY_HOVER    = juce::Colour(0xFFFFFFFFu);  // Timing boundary, hovered or dragged
+const juce::Colour APP_COLOR_TIMING_BOUNDARY_SELECTED = juce::Colour(0xFFFFFFFFu);  // Timing boundary, selected
+
+// ── Notes & labels ────────────────────────────────────────────────
+const juce::Colour APP_COLOR_NOTE_GREYSCALE           = juce::Colour(0xFFCCCCCCu);  // Note body in greyscale mode
+const juce::Colour APP_COLOR_NOTE_GREYSCALE_EDGE      = juce::Colour(0xFF3A3A3Au);  // Note edge in greyscale mode
+const juce::Colour APP_COLOR_NOTE_HOVER_SHADOW        = juce::Colour(0xFFFFFFFFu);  // Hover highlight behind a note or breath
+const juce::Colour APP_COLOR_NOTE_PLAYBACK_PREVIEW    = juce::Colour(0xFFFFFFFFu);  // Note body while preview playback runs
+const juce::Colour APP_COLOR_NOTE_SELECTION_OUTLINE   = juce::Colour(0xFFFFFFFFu);  // Outline around selected notes
+const juce::Colour APP_COLOR_NOTE_BOUNDARY_GUIDE      = juce::Colour(0xFF9A9A9Au);  // Split / boundary guide lines between notes
+const juce::Colour APP_COLOR_VALUE_BADGE              = juce::Colour(0xFF2E2E2Du);  // Badge showing a dragged value (st, dB)
+const juce::Colour APP_COLOR_VALUE_BADGE_TEXT         = juce::Colour(0xFFEFEFEFu);  // Text on VALUE_BADGE
+const juce::Colour APP_COLOR_HOVER_LABEL              = juce::Colour(0xE6282828u);  // Hover info label fill
+const juce::Colour APP_COLOR_HOVER_LABEL_TEXT         = juce::Colour(0xFFF2F2F2u);  // Hover info label text
+const juce::Colour APP_COLOR_BREATH                   = juce::Colour(0xFF7FC8FFu);  // Breath capsules
+const juce::Colour APP_COLOR_SIBILANCE                = juce::Colour(0xFFFFC46Bu);  // Sibilance capsules
+const juce::Colour APP_COLOR_NOISE_HATCH              = juce::Colour(0xFF000000u);  // Hatching over noisy spans in notes
+const juce::Colour APP_COLOR_PITCH_HANDLE             = juce::Colour(0xFF2E2E2Du);  // Pitch tool handle
+const juce::Colour APP_COLOR_PITCH_HANDLE_HOVER       = juce::Colour(0xFF3B3B3Au);  // Pitch tool handle, hovered
+const juce::Colour APP_COLOR_PITCH_HANDLE_TILT        = juce::Colour(0xFFFFA500u);  // Tilt handle accent
+const juce::Colour APP_COLOR_PITCH_HANDLE_DRIFT       = juce::Colour(0xFF9370DBu);  // Drift / fine pitch / vibrato handle accent
+const juce::Colour APP_COLOR_PITCH_HANDLE_SMOOTH      = juce::Colour(0xFF00FFFFu);  // Smooth handle accent
+const juce::Colour APP_COLOR_PITCH_HANDLE_DEFAULT     = juce::Colour(0xFFFFFFFFu);  // Other handle accents
+
+// ── Scale accents ─────────────────────────────────────────────────
+const juce::Colour APP_COLOR_SCALE_MAJOR              = juce::Colour(0xFF74A9FFu);  // Major
+const juce::Colour APP_COLOR_SCALE_MINOR              = juce::Colour(0xFFB689FFu);  // Minor
+const juce::Colour APP_COLOR_SCALE_DORIAN             = juce::Colour(0xFF5BD0C0u);  // Dorian
+const juce::Colour APP_COLOR_SCALE_PHRYGIAN           = juce::Colour(0xFFFF8C77u);  // Phrygian
+const juce::Colour APP_COLOR_SCALE_LYDIAN             = juce::Colour(0xFFFFD166u);  // Lydian
+const juce::Colour APP_COLOR_SCALE_MIXOLYDIAN         = juce::Colour(0xFF75D0FFu);  // Mixolydian
+const juce::Colour APP_COLOR_SCALE_LOCRIAN            = juce::Colour(0xFF9FA9BFu);  // Locrian
+const juce::Colour APP_COLOR_SCALE_BLUES              = juce::Colour(0xFF4F86C6u);  // Blues
+const juce::Colour APP_COLOR_SCALE_HARMONIC_MINOR     = juce::Colour(0xFFC27BA0u);  // Harmonic minor
+const juce::Colour APP_COLOR_SCALE_MAJOR_PENTATONIC   = juce::Colour(0xFFF2C14Eu);  // Major pentatonic
+const juce::Colour APP_COLOR_SCALE_MELODIC_MINOR      = juce::Colour(0xFFA78BFAu);  // Melodic minor
+const juce::Colour APP_COLOR_SCALE_MINOR_PENTATONIC   = juce::Colour(0xFF8F7CC3u);  // Minor pentatonic
+const juce::Colour APP_COLOR_SCALE_PHRYGIAN_DOMINANT  = juce::Colour(0xFFE07A5Fu);  // Phrygian dominant
+const juce::Colour APP_COLOR_SCALE_WHOLE_TONE         = juce::Colour(0xFF81B29Au);  // Whole tone
+
+// ── Overview ──────────────────────────────────────────────────────
+const juce::Colour APP_COLOR_OVERVIEW_WAVEFORM        = juce::Colour(0xFF484546u);  // Overview waveform
+const juce::Colour APP_COLOR_OVERVIEW_VIEWPORT        = juce::Colour(0xFFEFEFEFu);  // Visible-range box in the overview
+const juce::Colour APP_COLOR_OVERVIEW_PLAYHEAD        = juce::Colour(0xFFC8C7C7u);  // Overview playhead
+
 // ── Scrollbars ────────────────────────────────────────────────────
 const juce::Colour APP_COLOR_SCROLLBAR_THUMB      = juce::Colour(0xFF565656u);  // Thumb
 const juce::Colour APP_COLOR_SCROLLBAR_TRACK      = juce::Colour(0xFF0D0B0Bu);  // Recessed gutter

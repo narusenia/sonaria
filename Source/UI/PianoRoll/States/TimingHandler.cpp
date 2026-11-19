@@ -504,8 +504,8 @@ void TimingHandler::draw(juce::Graphics& g)
                                   hoveredBoundaryFrame) < 0.001f;
     const bool highlighted = hovered || (dragging && selected);
     g.setColour(highlighted
-                    ? juce::Colour(0xFFFFFFFFu)
-                    : selected ? juce::Colour(0xFFFFFFFFu)
+                    ? APP_COLOR_TIMING_BOUNDARY_HOVER
+                    : selected ? APP_COLOR_TIMING_BOUNDARY_SELECTED
                                : APP_COLOR_TEXT_PRIMARY.withAlpha(0.72f));
     const float width = highlighted || selected ? 2.0f : 1.0f;
     g.fillRect(x - width * 0.5f, 0.0f, width, canvasHeight);
@@ -515,9 +515,9 @@ void TimingHandler::draw(juce::Graphics& g)
   {
     const float left = std::min(selectionStartX, selectionCurrentX);
     const float width = std::abs(selectionCurrentX - selectionStartX);
-    g.setColour(juce::Colours::white.withAlpha(0.12f));
+    g.setColour(APP_COLOR_SELECTION_BOX.withAlpha(0.12f));
     g.fillRect(left, 0.0f, width, canvasHeight);
-    g.setColour(juce::Colours::white.withAlpha(0.75f));
+    g.setColour(APP_COLOR_SELECTION_BOX.withAlpha(0.75f));
     g.drawRect(left, 0.0f, width, canvasHeight, 1.0f);
   }
 }

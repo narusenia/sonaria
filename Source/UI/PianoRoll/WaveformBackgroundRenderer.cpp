@@ -215,7 +215,7 @@ void WaveformBackgroundRenderer::draw(juce::Graphics &g,
 
     waveformPath.closeSubPath();
 
-    cacheGraphics.setColour(juce::Colours::white.withAlpha(0.05f));
+    cacheGraphics.setColour(APP_COLOR_WAVEFORM_FILL.withAlpha(0.05f));
     cacheGraphics.fillPath(waveformPath);
   };
 

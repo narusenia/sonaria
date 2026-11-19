@@ -136,7 +136,7 @@ bool isContinuousSplitPair(const Note &left, const Note &right)
 juce::Colour NoteRenderer::bodyColour(const Note &note) const
 {
   if (greyscale)
-    return juce::Colour(0xFFCCCCCCu);
+    return APP_COLOR_NOTE_GREYSCALE;
   const int pitchReferenceHz = project ? project->getPitchReferenceHz() : 440;
   return getNoteGradientColours(note.getAdjustedMidiNote(), pitchReferenceHz)
       .centre;
@@ -353,7 +353,7 @@ void NoteRenderer::draw(juce::Graphics &g, Pass pass, bool splitModeActive,
       const auto [leftLimit, rightLimit] = getSplitHoverLimits(note);
       shadowBounds.setX(std::max(shadowBounds.getX(), leftLimit));
       shadowBounds.setRight(std::min(shadowBounds.getRight(), rightLimit));
-      g.setColour(juce::Colours::white.withAlpha(0.08f));
+      g.setColour(APP_COLOR_NOTE_HOVER_SHADOW.withAlpha(0.08f));
       g.fillRoundedRectangle(shadowBounds.toFloat(), 3.0f);
       return;
     }
@@ -362,8 +362,8 @@ void NoteRenderer::draw(juce::Graphics &g, Pass pass, bool splitModeActive,
     {
       const NoteGradientColours noteColours =
           greyscale
-              ? NoteGradientColours{juce::Colour(0xFFCCCCCCu),
-                                    juce::Colour(0xFF3A3A3Au)}
+              ? NoteGradientColours{APP_COLOR_NOTE_GREYSCALE,
+                                    APP_COLOR_NOTE_GREYSCALE_EDGE}
               : getNoteGradientColours(note.getAdjustedMidiNote(),
                                        pitchReferenceHz);
       juce::Rectangle<float> noteVisualBounds(x, y, renderedWidth, h);
@@ -418,7 +418,7 @@ void NoteRenderer::draw(juce::Graphics &g, Pass pass, bool splitModeActive,
         if (numPoints < 2)
         {
           if (isPreviewPlaybackNote)
-            g.setColour(juce::Colours::white.withAlpha(0.20f));
+            g.setColour(APP_COLOR_NOTE_PLAYBACK_PREVIEW.withAlpha(0.20f));
           else
             setNoteGradientFill(g, noteVisualBounds,
                                 noteVisualBounds.getCentreY(), noteColours);
@@ -542,7 +542,7 @@ void NoteRenderer::draw(juce::Graphics &g, Pass pass, bool splitModeActive,
 
           if (isPreviewPlaybackNote)
           {
-            g.setColour(juce::Colours::white.withAlpha(0.20f));
+            g.setColour(APP_COLOR_NOTE_PLAYBACK_PREVIEW.withAlpha(0.20f));
             g.fillPath(waveformPath);
 
             const float previewProgressX =
@@ -571,7 +571,7 @@ void NoteRenderer::draw(juce::Graphics &g, Pass pass, bool splitModeActive,
       else
       {
         if (isPreviewPlaybackNote)
-          g.setColour(juce::Colours::white.withAlpha(0.20f));
+          g.setColour(APP_COLOR_NOTE_PLAYBACK_PREVIEW.withAlpha(0.20f));
         else
           setNoteGradientFill(g, noteVisualBounds, noteVisualBounds.getCentreY(),
                               noteColours);
@@ -615,7 +615,7 @@ void NoteRenderer::draw(juce::Graphics &g, Pass pass, bool splitModeActive,
       if (showSelectionStatus && note.isSelected())
       {
         const auto outlineBounds = noteVisualBounds.expanded(1.0f);
-        g.setColour(juce::Colours::white.withAlpha(0.72f));
+        g.setColour(APP_COLOR_NOTE_SELECTION_OUTLINE.withAlpha(0.72f));
         g.drawRoundedRectangle(outlineBounds, 2.0f, 1.5f);
       }
     }
@@ -727,9 +727,9 @@ void NoteRenderer::draw(juce::Graphics &g, Pass pass, bool splitModeActive,
       const float labelY =
           shadowBounds.toFloat().getY() - labelHeight + 5.0f;
 
-      g.setColour(juce::Colour(0xFF2E2E2Du));
+      g.setColour(APP_COLOR_VALUE_BADGE);
       g.fillRoundedRectangle(labelX, labelY, labelWidth, labelHeight, 4.0f);
-      g.setColour(juce::Colour(0xFFEFEFEFu));
+      g.setColour(APP_COLOR_VALUE_BADGE_TEXT);
       g.setFont(labelFont);
       g.drawFittedText(label, static_cast<int>(labelX),
                        static_cast<int>(labelY),
@@ -788,9 +788,9 @@ void NoteRenderer::draw(juce::Graphics &g, Pass pass, bool splitModeActive,
       if (labelY < viewportTop)
         labelY = hoverBounds.getBottom() + 3.0f;
 
-      g.setColour(juce::Colour(0xE6282828u));
+      g.setColour(APP_COLOR_HOVER_LABEL);
       g.fillRoundedRectangle(labelX, labelY, labelWidth, labelHeight, 4.0f);
-      g.setColour(juce::Colour(0xFFF2F2F2u));
+      g.setColour(APP_COLOR_HOVER_LABEL_TEXT);
       g.setFont(AppFont::getFont(11.0f));
       g.drawFittedText(label, static_cast<int>(labelX),
                        static_cast<int>(labelY),
@@ -834,7 +834,7 @@ void NoteRenderer::draw(juce::Graphics &g, Pass pass, bool splitModeActive,
       return -1;
     };
 
-    g.setColour(juce::Colour(0xFF9A9A9Au)); // Pitch-grid note-name colour
+    g.setColour(APP_COLOR_NOTE_BOUNDARY_GUIDE); // Pitch-grid note-name colour
     for (size_t i = 0; i + 1 < timelineNotes.size(); ++i)
     {
       const auto &left = *timelineNotes[i];
@@ -889,7 +889,7 @@ void NoteRenderer::draw(juce::Graphics &g, Pass pass, bool splitModeActive,
               note, noteX, noteY, renderedWidth, noteWidth, pixelsPerSemitone);
           shadowBounds.setX(std::max(shadowBounds.getX(), leftLimit));
           shadowBounds.setRight(std::min(shadowBounds.getRight(), rightLimit));
-          g.setColour(juce::Colours::white.withAlpha(0.08f));
+          g.setColour(APP_COLOR_NOTE_HOVER_SHADOW.withAlpha(0.08f));
           g.fillRoundedRectangle(shadowBounds.toFloat(), 3.0f);
         };
 
@@ -902,7 +902,7 @@ void NoteRenderer::draw(juce::Graphics &g, Pass pass, bool splitModeActive,
               first.getEndFrame() + second.getStartFrame()) * pixelsPerSecond;
           const float firstY = coordMapper->midiToY(first.getAdjustedMidiNote());
           const float secondY = coordMapper->midiToY(second.getAdjustedMidiNote());
-          g.setColour(juce::Colour(0xFF9A9A9Au));
+          g.setColour(APP_COLOR_NOTE_BOUNDARY_GUIDE);
           g.drawLine(adjacentBoundaryX, std::min(firstY, secondY),
                      adjacentBoundaryX,
                      std::max(firstY, secondY) + pixelsPerSemitone, 1.5f);
@@ -936,7 +936,7 @@ void NoteRenderer::draw(juce::Graphics &g, Pass pass, bool splitModeActive,
       const float noteY = coordMapper->midiToY(guideNote->getAdjustedMidiNote());
       const float noteH = pixelsPerSemitone;
 
-      g.setColour(juce::Colour(0xFF9A9A9Au));
+      g.setColour(APP_COLOR_NOTE_BOUNDARY_GUIDE);
       g.drawLine(guideX, noteY, guideX, noteY + noteH, 1.5f);
     }
   }

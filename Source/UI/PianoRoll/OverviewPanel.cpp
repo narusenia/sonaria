@@ -177,13 +177,13 @@ void OverviewPanel::paintStaticContent(juce::Graphics &g) {
       const float x1 = timeToOverviewX(hostToProject(region.startSeconds));
       const float x2 = timeToOverviewX(hostToProject(region.endSeconds));
       if (region.active) {
-        g.setColour(juce::Colours::white.withAlpha(0.06f));
+        g.setColour(APP_COLOR_REGION_OVERLAY.withAlpha(0.06f));
         g.fillRect(juce::Rectangle<float>(x1, content.getY(),
                                           std::max(1.0f, x2 - x1),
                                           content.getHeight()));
-        g.setColour(juce::Colours::white.withAlpha(0.25f));
+        g.setColour(APP_COLOR_REGION_OVERLAY.withAlpha(0.25f));
       } else {
-        g.setColour(juce::Colours::white.withAlpha(0.12f));
+        g.setColour(APP_COLOR_REGION_OVERLAY.withAlpha(0.12f));
       }
       g.fillRect(x1 - 0.5f, content.getY(), 1.0f, content.getHeight());
       g.fillRect(x2 - 0.5f, content.getY(), 1.0f, content.getHeight());
@@ -245,7 +245,7 @@ void OverviewPanel::paintStaticContent(juce::Graphics &g) {
       maxEnvelope = std::max(maxEnvelope, value);
   const float envelopeScale = maxEnvelope > 0.0f ? 1.0f / maxEnvelope : 1.0f;
 
-  g.setColour(juce::Colour(0xFF484546u));
+  g.setColour(APP_COLOR_OVERVIEW_WAVEFORM);
   for (const auto &waveform : waveforms) {
     const int count = static_cast<int>(waveform.envelope.size());
     juce::Path waveformPath;
@@ -404,7 +404,7 @@ void OverviewPanel::paintStaticContent(juce::Graphics &g) {
 void OverviewPanel::paintViewport(juce::Graphics &g) {
   auto viewport = computeViewport();
   if (viewport.valid) {
-    const juce::Colour selectionBoxColour(0xFFEFEFEFu);
+    const juce::Colour selectionBoxColour(APP_COLOR_OVERVIEW_VIEWPORT);
 
     g.setColour(selectionBoxColour.withAlpha(0.16f));
     g.fillRoundedRectangle(viewport.rect, 4.0f);
@@ -446,7 +446,7 @@ void OverviewPanel::paintPlayhead(juce::Graphics &g) {
         static_cast<float>((state.cursorTime / timelineDuration) *
                            content.getWidth());
 
-    g.setColour(juce::Colour(0xFFC8C7C7u));
+    g.setColour(APP_COLOR_OVERVIEW_PLAYHEAD);
     g.fillRect(playheadX - 0.5f, content.getY(), 1.0f, content.getHeight());
   }
 }

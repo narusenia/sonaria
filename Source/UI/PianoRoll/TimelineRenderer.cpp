@@ -8,8 +8,8 @@ void TimelineRenderer::drawTimeline(juce::Graphics &g, const TimelineParams &par
   if (!coordMapper)
     return;
 
-  const auto markerColour = juce::Colour(0xFF0D0B0Bu);
-  const auto markerTextColour = juce::Colour(0xFF9B9B9Bu);
+  const auto markerColour = APP_COLOR_RULER_LINE;
+  const auto markerTextColour = APP_COLOR_RULER_TEXT;
   constexpr int scrollBarSize = 8;
   const int pianoKeysWidth = CoordinateMapper::pianoKeysWidth;
   const int timelineHeight = CoordinateMapper::timelineHeight;
@@ -24,11 +24,11 @@ void TimelineRenderer::drawTimeline(juce::Graphics &g, const TimelineParams &par
   g.reduceClipRegion(timelineArea);
 
   // Background
-  g.setColour(juce::Colour(0xFF232323u));
+  g.setColour(APP_COLOR_RULER_BACKGROUND);
   g.fillRect(timelineArea);
 
   // Bottom border
-  g.setColour(juce::Colour(0xFF0D0B0Bu));
+  g.setColour(APP_COLOR_RULER_LINE);
   g.drawHorizontalLine(timelineHeight - 1, static_cast<float>(pianoKeysWidth),
                        static_cast<float>(params.componentWidth - scrollBarSize));
 
@@ -164,7 +164,7 @@ void TimelineRenderer::drawLoopTimeline(juce::Graphics &g, const LoopParams &par
     return;
 
   constexpr int scrollBarSize = 8;
-  const auto markerColour = juce::Colour(0xFF0D0B0Bu);
+  const auto markerColour = APP_COLOR_RULER_LINE;
   const int pianoKeysWidth = CoordinateMapper::pianoKeysWidth;
   const int timelineHeight = CoordinateMapper::timelineHeight;
   const int loopTimelineHeight = CoordinateMapper::loopTimelineHeight;
@@ -182,7 +182,7 @@ void TimelineRenderer::drawLoopTimeline(juce::Graphics &g, const LoopParams &par
   juce::Graphics::ScopedSaveState savedState(g);
   g.reduceClipRegion(loopClipArea);
 
-  g.setColour(juce::Colour(0xFF232323u));
+  g.setColour(APP_COLOR_RULER_BACKGROUND);
   g.fillRect(loopArea);
 
   g.setColour(markerColour);
@@ -190,9 +190,9 @@ void TimelineRenderer::drawLoopTimeline(juce::Graphics &g, const LoopParams &par
                        0.0f,
                        static_cast<float>(params.componentWidth - scrollBarSize));
 
-  const auto baseColor = juce::Colour(0xFF888888u);
+  const auto baseColor = APP_COLOR_LOOP_MARKER;
   const auto edgeColor =
-      params.loopEnabled ? baseColor : juce::Colour(0xFF3E3E3Eu);
+      params.loopEnabled ? baseColor : APP_COLOR_LOOP_MARKER_DISABLED;
   double loopStartSeconds = params.loopStartSeconds;
   double loopEndSeconds = params.loopEndSeconds;
   if (loopStartSeconds > loopEndSeconds)

@@ -14,33 +14,33 @@ inline juce::Colour getScaleAccentColour(ScaleMode mode)
   case ScaleMode::None:
     return APP_COLOR_PRIMARY;
   case ScaleMode::Major:
-    return juce::Colour(0xFF74A9FFu);
+    return APP_COLOR_SCALE_MAJOR;
   case ScaleMode::Minor:
-    return juce::Colour(0xFFB689FFu);
+    return APP_COLOR_SCALE_MINOR;
   case ScaleMode::Dorian:
-    return juce::Colour(0xFF5BD0C0u);
+    return APP_COLOR_SCALE_DORIAN;
   case ScaleMode::Phrygian:
-    return juce::Colour(0xFFFF8C77u);
+    return APP_COLOR_SCALE_PHRYGIAN;
   case ScaleMode::Lydian:
-    return juce::Colour(0xFFFFD166u);
+    return APP_COLOR_SCALE_LYDIAN;
   case ScaleMode::Mixolydian:
-    return juce::Colour(0xFF75D0FFu);
+    return APP_COLOR_SCALE_MIXOLYDIAN;
   case ScaleMode::Locrian:
-    return juce::Colour(0xFF9FA9BFu);
+    return APP_COLOR_SCALE_LOCRIAN;
   case ScaleMode::Blues:
-    return juce::Colour(0xFF4F86C6u);
+    return APP_COLOR_SCALE_BLUES;
   case ScaleMode::HarmonicMinor:
-    return juce::Colour(0xFFC27BA0u);
+    return APP_COLOR_SCALE_HARMONIC_MINOR;
   case ScaleMode::MajorPentatonic:
-    return juce::Colour(0xFFF2C14Eu);
+    return APP_COLOR_SCALE_MAJOR_PENTATONIC;
   case ScaleMode::MelodicMinor:
-    return juce::Colour(0xFFA78BFAu);
+    return APP_COLOR_SCALE_MELODIC_MINOR;
   case ScaleMode::MinorPentatonic:
-    return juce::Colour(0xFF8F7CC3u);
+    return APP_COLOR_SCALE_MINOR_PENTATONIC;
   case ScaleMode::PhrygianDominant:
-    return juce::Colour(0xFFE07A5Fu);
+    return APP_COLOR_SCALE_PHRYGIAN_DOMINANT;
   case ScaleMode::WholeTone:
-    return juce::Colour(0xFF81B29Au);
+    return APP_COLOR_SCALE_WHOLE_TONE;
   case ScaleMode::Chromatic:
     return APP_COLOR_PRIMARY;
   }

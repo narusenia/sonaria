@@ -48,16 +48,16 @@ void PianoKeysRenderer::draw(juce::Graphics &g,
     const auto toneState = pianoRollView::getScaleToneState(
         activeScaleMode, noteInOctave, activeScaleRootNote);
 
-    juce::Colour keyFill = juce::Colour(0xFF232323u);
+    juce::Colour keyFill = APP_COLOR_PIANO_KEY;
     if (showScaleOverlay)
       keyFill = toneState == pianoRollView::ScaleToneState::OutOfScale
-                    ? juce::Colour(0xFF151515u)
-                    : juce::Colour(0xFF1C1C1Bu);
+                    ? APP_COLOR_PIANO_KEY_OUT_OF_SCALE
+                    : APP_COLOR_PIANO_KEY_IN_SCALE;
 
     g.setColour(keyFill);
     g.fillRect(0.0f, y, static_cast<float>(pianoKeysWidth),
                pixelsPerSemitone - 1);
-    g.setColour(juce::Colour(0xFF0D0B0Bu));
+    g.setColour(APP_COLOR_PIANO_KEY_SEPARATOR);
     g.fillRect(0.0f, y + pixelsPerSemitone - 1.0f,
                static_cast<float>(pianoKeysWidth), 1.0f);
 
@@ -65,7 +65,7 @@ void PianoKeysRenderer::draw(juce::Graphics &g,
     juce::String noteName =
         juce::String(noteNames[noteInOctave]) + juce::String(octave);
 
-    juce::Colour textColour = juce::Colour(0xFF9A9A9Au);
+    juce::Colour textColour = APP_COLOR_PIANO_KEY_TEXT;
     if (showScaleOverlay)
     {
       if (toneState == pianoRollView::ScaleToneState::OutOfScale)

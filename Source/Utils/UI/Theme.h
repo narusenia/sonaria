@@ -110,6 +110,71 @@ extern const juce::Colour APP_COLOR_OVERVIEW_BACKGROUND;
 extern const juce::Colour APP_COLOR_OVERVIEW_BORDER;
 extern const juce::Colour APP_COLOR_CANVAS_PROMPT_BACKGROUND;
 
+// ── Piano roll canvas ─────────────────────────────────────────────
+extern const juce::Colour APP_COLOR_RULER_BACKGROUND;
+extern const juce::Colour APP_COLOR_RULER_LINE;
+extern const juce::Colour APP_COLOR_RULER_TEXT;
+extern const juce::Colour APP_COLOR_LOOP_MARKER;
+extern const juce::Colour APP_COLOR_LOOP_MARKER_DISABLED;
+extern const juce::Colour APP_COLOR_LOOP_OVERLAY;
+extern const juce::Colour APP_COLOR_PIANO_KEY;
+extern const juce::Colour APP_COLOR_PIANO_KEY_IN_SCALE;
+extern const juce::Colour APP_COLOR_PIANO_KEY_OUT_OF_SCALE;
+extern const juce::Colour APP_COLOR_PIANO_KEY_SEPARATOR;
+extern const juce::Colour APP_COLOR_PIANO_KEY_TEXT;
+extern const juce::Colour APP_COLOR_PIANO_KEYS_EDGE;
+extern const juce::Colour APP_COLOR_GRID_ROW_WHITE_KEY;
+extern const juce::Colour APP_COLOR_GRID_ROW_BLACK_KEY;
+extern const juce::Colour APP_COLOR_CANVAS_BORDER;
+extern const juce::Colour APP_COLOR_SELECTION_BOX;
+extern const juce::Colour APP_COLOR_REGION_OVERLAY;
+extern const juce::Colour APP_COLOR_WAVEFORM_FILL;
+extern const juce::Colour APP_COLOR_MIDI_REFERENCE;
+extern const juce::Colour APP_COLOR_TIMING_BOUNDARY_HOVER;
+extern const juce::Colour APP_COLOR_TIMING_BOUNDARY_SELECTED;
+
+// ── Notes & labels ────────────────────────────────────────────────
+extern const juce::Colour APP_COLOR_NOTE_GREYSCALE;
+extern const juce::Colour APP_COLOR_NOTE_GREYSCALE_EDGE;
+extern const juce::Colour APP_COLOR_NOTE_HOVER_SHADOW;
+extern const juce::Colour APP_COLOR_NOTE_PLAYBACK_PREVIEW;
+extern const juce::Colour APP_COLOR_NOTE_SELECTION_OUTLINE;
+extern const juce::Colour APP_COLOR_NOTE_BOUNDARY_GUIDE;
+extern const juce::Colour APP_COLOR_VALUE_BADGE;
+extern const juce::Colour APP_COLOR_VALUE_BADGE_TEXT;
+extern const juce::Colour APP_COLOR_HOVER_LABEL;
+extern const juce::Colour APP_COLOR_HOVER_LABEL_TEXT;
+extern const juce::Colour APP_COLOR_BREATH;
+extern const juce::Colour APP_COLOR_SIBILANCE;
+extern const juce::Colour APP_COLOR_NOISE_HATCH;
+extern const juce::Colour APP_COLOR_PITCH_HANDLE;
+extern const juce::Colour APP_COLOR_PITCH_HANDLE_HOVER;
+extern const juce::Colour APP_COLOR_PITCH_HANDLE_TILT;
+extern const juce::Colour APP_COLOR_PITCH_HANDLE_DRIFT;
+extern const juce::Colour APP_COLOR_PITCH_HANDLE_SMOOTH;
+extern const juce::Colour APP_COLOR_PITCH_HANDLE_DEFAULT;
+
+// ── Scale accents ─────────────────────────────────────────────────
+extern const juce::Colour APP_COLOR_SCALE_MAJOR;
+extern const juce::Colour APP_COLOR_SCALE_MINOR;
+extern const juce::Colour APP_COLOR_SCALE_DORIAN;
+extern const juce::Colour APP_COLOR_SCALE_PHRYGIAN;
+extern const juce::Colour APP_COLOR_SCALE_LYDIAN;
+extern const juce::Colour APP_COLOR_SCALE_MIXOLYDIAN;
+extern const juce::Colour APP_COLOR_SCALE_LOCRIAN;
+extern const juce::Colour APP_COLOR_SCALE_BLUES;
+extern const juce::Colour APP_COLOR_SCALE_HARMONIC_MINOR;
+extern const juce::Colour APP_COLOR_SCALE_MAJOR_PENTATONIC;
+extern const juce::Colour APP_COLOR_SCALE_MELODIC_MINOR;
+extern const juce::Colour APP_COLOR_SCALE_MINOR_PENTATONIC;
+extern const juce::Colour APP_COLOR_SCALE_PHRYGIAN_DOMINANT;
+extern const juce::Colour APP_COLOR_SCALE_WHOLE_TONE;
+
+// ── Overview ──────────────────────────────────────────────────────
+extern const juce::Colour APP_COLOR_OVERVIEW_WAVEFORM;
+extern const juce::Colour APP_COLOR_OVERVIEW_VIEWPORT;
+extern const juce::Colour APP_COLOR_OVERVIEW_PLAYHEAD;
+
 // ── Scrollbars ────────────────────────────────────────────────────
 // One look for every scrollbar in the app: a dim grey rounded thumb over a
 // recessed gutter. The piano-roll canvas set the look; styleCanvasScrollBar()

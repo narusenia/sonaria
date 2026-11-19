@@ -4,6 +4,7 @@
 #include "../../Audio/BreathSibilanceDetector.h"
 #include "../../Audio/NoteTiming.h"
 #include "VisualWaveformEnvelope.h"
+#include "../../Utils/UI/Theme.h"
 
 #include <algorithm>
 #include <cmath>
@@ -17,8 +18,8 @@ constexpr float kHatchSpacing = 5.0f;
 
 juce::Colour capsuleColour(std::uint8_t label)
 {
-  return label == breathsibilance::Breath ? juce::Colour(0xFF7FC8FFu)
-                                          : juce::Colour(0xFFFFC46Bu);
+  return label == breathsibilance::Breath ? APP_COLOR_BREATH
+                                          : APP_COLOR_SIBILANCE;
 }
 
 // 45-degree lines across `area`, clipped to it.
@@ -142,7 +143,7 @@ void hatchNoteBody(juce::Graphics &g, const AudioData &audioData,
   g.reduceClipRegion(bodyShape);
   forEachNoiseSpan(audioData, note, x, width, [&](float left, float right) {
     hatch(g, {left, bounds.getY(), right - left, bounds.getHeight()},
-          juce::Colours::black.withAlpha(0.32f));
+          APP_COLOR_NOISE_HATCH.withAlpha(0.32f));
   });
 }
 
@@ -310,9 +311,9 @@ void drawLevelLabel(juce::Graphics &g, float centreX, float top, float db)
   constexpr float height = 20.0f;
   const float x = centreX - width * 0.5f;
   const float y = top - height - 4.0f;
-  g.setColour(juce::Colour(0xFF2E2E2Du));
+  g.setColour(APP_COLOR_VALUE_BADGE);
   g.fillRoundedRectangle(x, y, width, height, 4.0f);
-  g.setColour(juce::Colour(0xFFEFEFEFu));
+  g.setColour(APP_COLOR_VALUE_BADGE_TEXT);
   g.setFont(font);
   g.drawFittedText(label, static_cast<int>(x), static_cast<int>(y),
                    static_cast<int>(width), static_cast<int>(height),
@@ -354,7 +355,7 @@ void drawOutsideNotes(juce::Graphics &g, const Project &project,
     // Hovered or dragged, its whole area is highlighted, as a hovered note's.
     if (hovered)
     {
-      g.setColour(juce::Colours::white.withAlpha(0.08f));
+      g.setColour(APP_COLOR_NOTE_HOVER_SHADOW.withAlpha(0.08f));
       g.fillRoundedRectangle(breathArea(body, mapper).expanded(2.0f, 1.0f),
                              3.0f);
     }

@@ -507,7 +507,7 @@ void PianoRollComponent::paint(juce::Graphics &g)
 
   // Background (solid to keep grid clean)
   g.fillAll(APP_COLOR_BACKGROUND);
-  g.setColour(juce::Colour(0xFF232323u));
+  g.setColour(APP_COLOR_RULER_BACKGROUND);
   g.fillRect(0, 0, getWidth(), headerHeight);
 
   const int horizontalScrollBarSize =
@@ -606,8 +606,8 @@ void PianoRollComponent::paint(juce::Graphics &g)
 
   if (trackGestureActive && trackBoxSelecting) {
     const auto rect = juce::Rectangle<float>(trackGestureStart, trackGestureEnd);
-    g.setColour(juce::Colours::white.withAlpha(0.05f)); g.fillRect(rect);
-    g.setColour(juce::Colours::white.withAlpha(0.25f)); g.drawRect(rect);
+    g.setColour(APP_COLOR_SELECTION_BOX.withAlpha(0.05f)); g.fillRect(rect);
+    g.setColour(APP_COLOR_SELECTION_BOX.withAlpha(0.25f)); g.drawRect(rect);
   }
   // Draw timeline (above grid, scrolls horizontally)
   drawTimeline(g);
@@ -635,14 +635,14 @@ void PianoRollComponent::paint(juce::Graphics &g)
   // Draw piano keys
   drawPianoKeys(g);
 
-  g.setColour(juce::Colour(0xFF0D0B0Bu));
+  g.setColour(APP_COLOR_PIANO_KEYS_EDGE);
   g.drawVerticalLine(pianoKeysWidth, 0.0f,
                      static_cast<float>(getHeight() - horizontalScrollBarSize));
 
   const auto canvasBorderBounds = getLocalBounds()
                                       .withTrimmedRight(verticalScrollBarSize)
                                       .withTrimmedBottom(horizontalScrollBarSize);
-  g.setColour(juce::Colour(0xFF3C3C3Cu));
+  g.setColour(APP_COLOR_CANVAS_BORDER);
   g.drawRect(canvasBorderBounds, 1);
 }
 
@@ -786,10 +786,10 @@ void PianoRollComponent::drawAudioSourceRegionOverlay(juce::Graphics &g)
       return;
     const float startX = timeToX(startSeconds);
     const float endX = timeToX(endSeconds);
-    g.setColour(juce::Colours::white.withAlpha(0.04f));
+    g.setColour(APP_COLOR_REGION_OVERLAY.withAlpha(0.04f));
     g.fillRect(startX, 0.0f, endX - startX, height);
     if (drawBoundaries) {
-      g.setColour(juce::Colours::white.withAlpha(0.25f));
+      g.setColour(APP_COLOR_REGION_OVERLAY.withAlpha(0.25f));
       g.fillRect(startX - 0.5f, 0.0f, 1.0f, height);
       g.fillRect(endX - 0.5f, 0.0f, 1.0f, height);
     }
@@ -1157,9 +1157,9 @@ void PianoRollComponent::drawRegionPreviews(juce::Graphics &g)
     const float x1 = hx(region.startSeconds);
     const float x2 = hx(region.endSeconds);
 
-    g.setColour(juce::Colours::white.withAlpha(0.04f));
+    g.setColour(APP_COLOR_REGION_OVERLAY.withAlpha(0.04f));
     g.fillRect(x1, 0.0f, x2 - x1, height);
-    g.setColour(juce::Colours::white.withAlpha(0.25f));
+    g.setColour(APP_COLOR_REGION_OVERLAY.withAlpha(0.25f));
     g.fillRect(x1 - 0.5f, 0.0f, 1.0f, height);
     g.fillRect(x2 - 0.5f, 0.0f, 1.0f, height);
 
@@ -1203,7 +1203,7 @@ void PianoRollComponent::drawLoopOverlay(juce::Graphics &g)
   const float height =
       (MAX_MIDI_NOTE - MIN_MIDI_NOTE + 1) * pixelsPerSemitone;
 
-  g.setColour(juce::Colours::white.withAlpha(0.04f));
+  g.setColour(APP_COLOR_LOOP_OVERLAY.withAlpha(0.04f));
   g.fillRect(startX, 0.0f, endX - startX, height);
 }
 
@@ -1278,7 +1278,7 @@ void PianoRollComponent::drawMidiReference(juce::Graphics &g) const
   const double visibleStart = std::max(origin, xToTime(static_cast<float>(clip.getX())));
   const double visibleEnd = std::min(end, xToTime(static_cast<float>(clip.getRight())));
   const float referenceOffset = ScaleUtils::getReferenceOffsetSemitones(pitchReferenceHz);
-  const auto referenceColour = juce::Colour(0xFF73D3E8u);
+  const auto referenceColour = APP_COLOR_MIDI_REFERENCE;
   const auto fillColour = referenceColour.withAlpha(0.13f);
   const auto borderColour = referenceColour.withAlpha(0.85f);
   constexpr float borderWidth = 1.0f;
@@ -4592,10 +4592,10 @@ void PianoRollComponent::drawSelectionRect(juce::Graphics &g)
   auto rect = boxSelector->getSelectionRect();
 
   // Draw semi-transparent fill
-  g.setColour(juce::Colours::white.withAlpha(0.05f));
+  g.setColour(APP_COLOR_SELECTION_BOX.withAlpha(0.05f));
   g.fillRect(rect);
 
   // Draw border
-  g.setColour(juce::Colours::white.withAlpha(0.25f));
+  g.setColour(APP_COLOR_SELECTION_BOX.withAlpha(0.25f));
   g.drawRect(rect, 1.0f);
 }
