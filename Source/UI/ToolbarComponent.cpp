@@ -12,25 +12,25 @@ ToolbarComponent::ToolbarComponent()
         return juce::ImageFileFormat::loadFrom(data, static_cast<size_t>(size));
     };
 
-    recordButton.setImage(loadImage(BinaryData::record_png, BinaryData::record_pngSize));
-    playButton.setImage(loadImage(BinaryData::play_png, BinaryData::play_pngSize));
-    stopButton.setImage(loadImage(BinaryData::stop_png, BinaryData::stop_pngSize));
-    loopButton.setImage(loadImage(BinaryData::cycle_png, BinaryData::cycle_pngSize));
-    quantizeButton.setImage(loadImage(BinaryData::quantize_png, BinaryData::quantize_pngSize));
-    auditionButton.setImage(loadImage(BinaryData::audition_png, BinaryData::audition_pngSize));
-    undoButton.setImage(loadImage(BinaryData::undo_png, BinaryData::undo_pngSize));
-    redoButton.setImage(loadImage(BinaryData::redo_png, BinaryData::redo_pngSize));
-    selectModeButton.setImage(loadImage(BinaryData::select_png, BinaryData::select_pngSize));
-    splitModeButton.setImage(loadImage(BinaryData::split_png, BinaryData::split_pngSize));
-    pitchDrawingModeButton.setImage(loadImage(BinaryData::drawing_png, BinaryData::drawing_pngSize));
-    timingModeButton.setImage(loadImage(BinaryData::timing_png, BinaryData::timing_pngSize));
+    recordButton.setIcon(BinaryData::lucide_circle_dot_svg);
+    playButton.setIcon(BinaryData::lucide_play_svg, BinaryData::lucide_pause_svg);
+    stopButton.setIcon(BinaryData::lucide_square_svg);
+    loopButton.setIcon(BinaryData::lucide_repeat_svg);
+    quantizeButton.setIcon(BinaryData::lucide_magnet_svg);
+    auditionButton.setIcon(BinaryData::lucide_headphones_svg);
+    undoButton.setIcon(BinaryData::lucide_undo_2_svg);
+    redoButton.setIcon(BinaryData::lucide_redo_2_svg);
+    selectModeButton.setIcon(BinaryData::lucide_mouse_pointer_2_svg);
+    splitModeButton.setIcon(BinaryData::lucide_scissors_svg);
+    pitchDrawingModeButton.setIcon(BinaryData::lucide_pencil_svg);
+    timingModeButton.setIcon(BinaryData::lucide_move_horizontal_svg);
     logoImage = loadImage(BinaryData::logo_png, BinaryData::logo_pngSize);
 
-    followButton.setImage(loadImage(BinaryData::scroll_png, BinaryData::scroll_pngSize));
-    parametersButton.setImage(loadImage(BinaryData::side_png, BinaryData::side_pngSize));
-    leftPanelButton.setImage(loadImage(BinaryData::tracks_png, BinaryData::tracks_pngSize));
-    // region.png: clip icon (off) / track icon (on), each with a hover frame.
-    trackViewButton.setImage(loadImage(BinaryData::region_png, BinaryData::region_pngSize));
+    followButton.setIcon(BinaryData::lucide_chevrons_right_svg);
+    parametersButton.setIcon(BinaryData::lucide_panel_right_svg);
+    leftPanelButton.setIcon(BinaryData::lucide_panel_left_svg);
+    // Clip icon while off, track icon while on.
+    trackViewButton.setIcon(BinaryData::lucide_rectangle_horizontal_svg, BinaryData::lucide_rows_3_svg);
 
     // Configure buttons
     addChildComponent(recordButton);

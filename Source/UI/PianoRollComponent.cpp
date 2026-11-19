@@ -412,15 +412,9 @@ PianoRollComponent::PianoRollComponent()
   setMouseClickGrabsKeyboardFocus(true);
 
   // No extra controls here; overview lives outside the piano roll.
-  int previewImageSize = 0;
-  if (const auto *previewImageData =
-          BinaryData::getNamedResource("preview_png", previewImageSize))
-  {
-    previewButton.setImage(
-        juce::ImageFileFormat::loadFrom(previewImageData, previewImageSize));
-    previewButtonWidth = std::max(1, previewButton.getWidth());
-    previewButtonHeight = std::max(1, previewButton.getHeight());
-  }
+  previewButton.setIcon(BinaryData::lucide_volume_2_svg);
+  previewButtonWidth = previewButton.getWidth();
+  previewButtonHeight = previewButton.getHeight();
   previewButton.setTooltip(TR("tooltip.context_audition"));
   previewButton.setVisible(false);
   previewButton.onClick = [this]()
@@ -430,15 +424,9 @@ PianoRollComponent::PianoRollComponent()
   };
   addAndMakeVisible(previewButton);
 
-  int resetImageSize = 0;
-  if (const auto *resetImageData =
-          BinaryData::getNamedResource("reset_png", resetImageSize))
-  {
-    resetButton.setImage(
-        juce::ImageFileFormat::loadFrom(resetImageData, resetImageSize));
-    resetButtonWidth = std::max(1, resetButton.getWidth());
-    resetButtonHeight = std::max(1, resetButton.getHeight());
-  }
+  resetButton.setIcon(BinaryData::lucide_rotate_ccw_svg);
+  resetButtonWidth = resetButton.getWidth();
+  resetButtonHeight = resetButton.getHeight();
   resetButton.setTooltip(TR("tooltip.restore_original"));
   resetButton.setVisible(false);
   resetButton.onClick = [this]()

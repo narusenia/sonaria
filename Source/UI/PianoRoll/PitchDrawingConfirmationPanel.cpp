@@ -11,10 +11,8 @@ PitchDrawingConfirmationPanel::PitchDrawingConfirmationPanel()
     prompt.setColour(juce::Label::textColourId, APP_COLOR_TEXT_PRIMARY);
     prompt.setJustificationType(juce::Justification::centredLeft);
 
-    cancelButton.setImage(juce::ImageFileFormat::loadFrom(
-        BinaryData::cancel_png, static_cast<size_t>(BinaryData::cancel_pngSize)));
-    okButton.setImage(juce::ImageFileFormat::loadFrom(
-        BinaryData::ok_png, static_cast<size_t>(BinaryData::ok_pngSize)));
+    cancelButton.setIcon(BinaryData::lucide_x_svg);
+    okButton.setIcon(BinaryData::lucide_check_svg);
     cancelButton.onClick = [this] { if (onCancel) onCancel(); };
     okButton.onClick = [this] { if (onApply) onApply(); };
 

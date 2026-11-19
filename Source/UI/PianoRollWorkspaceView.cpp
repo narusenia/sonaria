@@ -116,8 +116,7 @@ PianoRollWorkspaceView::PianoRollWorkspaceView(PianoRollComponent &piano)
     pianoRoll.setBlobHeightScale(static_cast<float>(blobHeightSlider.getValue()));
   };
 
-  autoZoomButton.setImage(juce::ImageFileFormat::loadFrom(
-      BinaryData::autozoom_png, static_cast<size_t>(BinaryData::autozoom_pngSize)));
+  autoZoomButton.setIcon(BinaryData::lucide_unfold_vertical_svg);
   autoZoomButton.setTooltip(TR("tooltip.vertical_auto_zoom"));
   autoZoomButton.onClick = [this]()
   {
@@ -125,8 +124,7 @@ PianoRollWorkspaceView::PianoRollWorkspaceView(PianoRollComponent &piano)
       onAutoZoomRequested();
   };
 
-  overviewToggleButton.setImage(juce::ImageFileFormat::loadFrom(
-      BinaryData::thumbnail_png, static_cast<size_t>(BinaryData::thumbnail_pngSize)));
+  overviewToggleButton.setIcon(BinaryData::lucide_panel_bottom_svg);
   overviewToggleButton.setClickingTogglesState(true);
   overviewToggleButton.setToggleState(overviewVisible,
                                       juce::dontSendNotification);

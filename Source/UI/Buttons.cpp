@@ -12,6 +12,33 @@
 #include "../Utils/UI/Theme.h"
 #include "Components/AppFont.h"
 
+namespace
+{
+constexpr int iconButtonSize = 24;
+constexpr int iconSize = 18;
+}
+
+void ButtonIcon::set(const char* svg, const char* svgWhenOn, std::array<juce::Colour, 4> colours)
+{
+    for (size_t i = 0; i < states.size(); ++i)
+    {
+        // States 2 and 3 are the "on" states of a toggle.
+        const juce::String source(i >= 2 && svgWhenOn != nullptr ? svgWhenOn : svg);
+        states[i] = juce::Drawable::createFromSVGString(
+            source.replace("currentColor", "#" + colours[i].toDisplayString(false)));
+    }
+}
+
+void ButtonIcon::draw(juce::Graphics& g, juce::Rectangle<int> area, int state) const
+{
+    if (auto* d = states[(size_t) state].get())
+    {
+        const int size = juce::jmin(iconSize, area.getWidth(), area.getHeight());
+        d->drawWithin(g, area.withSizeKeepingCentre(size, size).toFloat(),
+                      juce::RectanglePlacement::centred, 1.0f);
+    }
+}
+
 Button::Button(juce::Image img)
 :image(img), textX(0), textY(0)
 {
@@ -22,7 +49,9 @@ Button::Button(juce::Image img)
 
 void Button::paintButton (juce::Graphics &g, bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown)
 {
-    if (image.isValid())
+    if (icon.isValid())
+        icon.draw(g, getLocalBounds(), !isEnabled() ? 3 : shouldDrawButtonAsDown ? 2 : shouldDrawButtonAsHighlighted ? 1 : 0);
+    else if (image.isValid())
         g.drawImage(image, (getWidth() - image.getWidth() / 2) / 2, (getHeight() - image.getHeight() / 3 / 2) / 2, image.getWidth() / 2, image.getHeight() / 3 / 2, 0, image.getHeight() * (shouldDrawButtonAsDown || !isEnabled() ? 2 : (shouldDrawButtonAsHighlighted ? 1 : 0)) / 3, image.getWidth(), image.getHeight() / 3);
     else
     {
@@ -47,6 +76,13 @@ void Button::setImage(juce::Image img)
 {
     image = img;
     setSize((img.getWidth() + 1) / 2, (img.getHeight() + 1) / 3 / 2);
+    repaint();
+}
+
+void Button::setIcon(const char* svg)
+{
+    icon.set(svg, nullptr, {APP_COLOR_TEXT_MUTED, APP_COLOR_TEXT_PRIMARY, APP_COLOR_PRIMARY, APP_COLOR_BUTTON_TEXT_DISABLED});
+    setSize(iconButtonSize, iconButtonSize);
     repaint();
 }
 
@@ -82,7 +118,9 @@ void ToggleButton::setImage(juce::Image img)
 void ToggleButton::paintButton (juce::Graphics &g, bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown)
 {
     setAlpha(isEnabled() ? 1.f : 0.3f);
-    if (image.isValid())
+    if (icon.isValid())
+        icon.draw(g, getLocalBounds(), (shouldDrawButtonAsHighlighted ? 1 : 0) + (getToggleState() ? 2 : 0));
+    else if (image.isValid())
     {
         g.drawImage(image, (getWidth() - (image.getWidth() + 1) / 2) / 2, (getHeight() - (image.getHeight() / 4 + 1) / 2) / 2, (image.getWidth() + 1) / 2, (image.getHeight() / 4  + 1) / 2, 0, ((shouldDrawButtonAsHighlighted ? 1 : 0) + (getToggleState() ? 2 : 0)) * image.getHeight() / 4 , image.getWidth(), image.getHeight() / 4);
     }
@@ -94,4 +132,10 @@ void ToggleButton::paintButton (juce::Graphics &g, bool shouldDrawButtonAsHighli
     g.setFont(AppFont::getFont(14.f).withPointHeight(14.f));
     g.setColour(getToggleState() ? APP_COLOR_TOGGLE_TEXT_ON : APP_COLOR_TOGGLE_TEXT_OFF);
     g.drawText(getButtonText(), getLocalBounds(), juce::Justification::centred);
+}
+void ToggleButton::setIcon(const char* svg, const char* svgWhenOn)
+{
+    icon.set(svg, svgWhenOn, {APP_COLOR_TEXT_MUTED, APP_COLOR_TEXT_PRIMARY, APP_COLOR_PRIMARY, APP_COLOR_PRIMARY_GLOW});
+    setSize(iconButtonSize, iconButtonSize);
+    repaint();
 }
