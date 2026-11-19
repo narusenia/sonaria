@@ -146,7 +146,7 @@ private:
     ToggleButton playButton;
     Button stopButton;
     ToggleButton loopButton;
-    juce::Image logoImage;
+    std::unique_ptr<juce::Drawable> logo;
     juce::Rectangle<int> getLogoBounds() const;
 
     bool pluginMode = false;

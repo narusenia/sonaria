@@ -7,11 +7,6 @@
 
 ToolbarComponent::ToolbarComponent()
 {
-    auto loadImage = [](const void *data, int size)
-    {
-        return juce::ImageFileFormat::loadFrom(data, static_cast<size_t>(size));
-    };
-
     recordButton.setIcon(BinaryData::lucide_circle_dot_svg);
     playButton.setIcon(BinaryData::lucide_play_svg, BinaryData::lucide_pause_svg);
     stopButton.setIcon(BinaryData::lucide_square_svg);
@@ -24,7 +19,11 @@ ToolbarComponent::ToolbarComponent()
     splitModeButton.setIcon(BinaryData::lucide_scissors_svg);
     pitchDrawingModeButton.setIcon(BinaryData::lucide_pencil_svg);
     timingModeButton.setIcon(BinaryData::lucide_move_horizontal_svg);
-    logoImage = loadImage(BinaryData::logo_png, BinaryData::logo_pngSize);
+    // The logotype's two colours follow the theme: the mark's lower stroke is the accent.
+    logo = juce::Drawable::createFromSVGString(
+        juce::String(BinaryData::sonaria_logotype_svg)
+            .replace("#9C97A8", "#" + APP_COLOR_TEXT_MUTED.toDisplayString(false))
+            .replace("#B3A4FF", "#" + APP_COLOR_PRIMARY.toDisplayString(false)));
 
     followButton.setIcon(BinaryData::lucide_chevrons_right_svg);
     parametersButton.setIcon(BinaryData::lucide_panel_right_svg);
@@ -150,11 +149,11 @@ ToolbarComponent::~ToolbarComponent()
 
 juce::Rectangle<int> ToolbarComponent::getLogoBounds() const
 {
-    if (!logoImage.isValid())
+    if (logo == nullptr)
         return {};
 
-    const int logoW = (logoImage.getWidth() + 1) / 2;
-    const int logoH = (logoImage.getHeight() + 1) / 2;
+    constexpr int logoH = 20;
+    constexpr int logoW = 86; // logotype.svg is 1148 x 266
     return {17, (getHeight() - logoH) / 2, logoW, logoH};
 }
 
@@ -183,13 +182,8 @@ void ToolbarComponent::paint(juce::Graphics &g)
     g.setColour(APP_COLOR_TOOLBAR_BACKGROUND);
     g.fillRect(bounds);
 
-    if (logoImage.isValid())
-    {
-        const auto logo = getLogoBounds();
-        g.drawImage(logoImage, logo.getX(), logo.getY(),
-                    logo.getWidth(), logo.getHeight(),
-                    0, 0, logoImage.getWidth(), logoImage.getHeight());
-    }
+    if (logo != nullptr)
+        logo->drawWithin(g, getLogoBounds().toFloat(), juce::RectanglePlacement::centred, 1.0f);
 
     // Left-panel group background
     if (!leftPanelCapsuleBounds.isEmpty())
@@ -283,9 +277,7 @@ void ToolbarComponent::resized()
     const int editToolPad = 15;
     const int editToolSlotSize = 22;
     const int editToolGroupHeight = 38;
-    const int logoRight = 17 + (logoImage.isValid()
-                                    ? (logoImage.getWidth() + 1) / 2
-                                    : 0);
+    const int logoRight = logo != nullptr ? getLogoBounds().getRight() : 17;
     const int editToolGroupWidth = editToolSlotSize * 4 + editToolGap * 3
                                    + editToolPad * 2;
     const int editToolGroupX = fullToolbarBounds.getCentreX()
