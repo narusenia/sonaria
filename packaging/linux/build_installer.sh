@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds a self-extracting Linux installer (.run) for PitchNet, bundling the
+# Builds a self-extracting Linux installer (.run) for Sonaria, bundling the
 # standalone app, the VST3 plugin, and all required models/resources.
 #
 # Usage: packaging/linux/build_installer.sh [build-dir]
@@ -13,11 +13,11 @@ BUILD_DIR="$(cd "${1:-$ROOT_DIR/build}" && pwd)"
 
 VERSION="$(grep -oP 'project\(PitchNet VERSION \K[0-9.]+' "$ROOT_DIR/CMakeLists.txt")"
 ARCH="x86_64"
-APP_NAME="PitchNet"
-COMPANY_DIR="Session Loops"
+APP_NAME="Sonaria"
+COMPANY_DIR="Narusenia"
 
-STANDALONE_BIN="$BUILD_DIR/PitchNet_artefacts/Release/PitchNet"
-VST3_BUNDLE="$BUILD_DIR/PitchNetPlugin_artefacts/Release/VST3/PitchNet.vst3"
+STANDALONE_BIN="$BUILD_DIR/PitchNet_artefacts/Release/Sonaria"
+VST3_BUNDLE="$BUILD_DIR/PitchNetPlugin_artefacts/Release/VST3/Sonaria.vst3"
 ONNX_LIB_DIR="$BUILD_DIR/_deps/onnxruntime-1.19.2-src/lib"
 
 for f in "$STANDALONE_BIN" "$VST3_BUNDLE" "$ONNX_LIB_DIR"; do
@@ -39,8 +39,8 @@ mkdir -p "$APP_DIR/lib"
 mkdir -p "$PAYLOAD/vst3"
 
 echo "==> Staging standalone app"
-cp "$STANDALONE_BIN" "$APP_DIR/PitchNet"
-chmod 755 "$APP_DIR/PitchNet"
+cp "$STANDALONE_BIN" "$APP_DIR/Sonaria"
+chmod 755 "$APP_DIR/Sonaria"
 
 echo "==> Staging ONNX Runtime"
 cp -P "$ONNX_LIB_DIR/libonnxruntime.so" "$ONNX_LIB_DIR/libonnxruntime.so.1" "$APP_DIR/lib/"
@@ -55,17 +55,17 @@ cp -r "$ROOT_DIR/Resources/lang" "$APP_DIR/lang"
 cp -r "$ROOT_DIR/Resources/fonts" "$APP_DIR/fonts"
 
 echo "==> Fixing standalone RPATH"
-patchelf --set-rpath '$ORIGIN/lib' "$APP_DIR/PitchNet"
+patchelf --set-rpath '$ORIGIN/lib' "$APP_DIR/Sonaria"
 
 echo "==> Staging VST3 plugin"
-cp -r "$VST3_BUNDLE" "$PAYLOAD/vst3/PitchNet.vst3"
-PLUGIN_DIR="$PAYLOAD/vst3/PitchNet.vst3/Contents/x86_64-linux"
+cp -r "$VST3_BUNDLE" "$PAYLOAD/vst3/Sonaria.vst3"
+PLUGIN_DIR="$PAYLOAD/vst3/Sonaria.vst3/Contents/x86_64-linux"
 # The plugin carries its own ONNX Runtime so it loads from any install location.
 cp -RP "$APP_DIR/lib" "$PLUGIN_DIR/lib"
-patchelf --set-rpath '$ORIGIN/lib' "$PLUGIN_DIR/PitchNet.so"
+patchelf --set-rpath '$ORIGIN/lib' "$PLUGIN_DIR/Sonaria.so"
 
 echo "==> Staging desktop integration"
-cp "$ROOT_DIR/Resources/images/icon.png" "$PAYLOAD/pitchnet.png"
+cp "$ROOT_DIR/Resources/images/icon.png" "$PAYLOAD/sonaria.png"
 
 echo "==> Writing install script"
 # Fully-quoted template: nothing here is expanded by *this* shell. Build-time
@@ -110,26 +110,26 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PAYLOAD="$SCRIPT_DIR/payload"
 
-echo "Installing PitchNet ${VERSION} to ${INSTALL_PREFIX}..."
+echo "Installing Sonaria ${VERSION} to ${INSTALL_PREFIX}..."
 
 mkdir -p "$(dirname "${INSTALL_PREFIX}")"
 chmod 755 "$(dirname "${INSTALL_PREFIX}")"
 rm -rf "${INSTALL_PREFIX}"
 cp -r "$PAYLOAD/app" "${INSTALL_PREFIX}"
 chmod -R a+rX "${INSTALL_PREFIX}"
-chmod 755 "${INSTALL_PREFIX}/PitchNet"
+chmod 755 "${INSTALL_PREFIX}/Sonaria"
 
 if [ -z "${VST3_HOME}" ]; then
     echo "Warning: could not resolve home directory for user '${VST3_USER}'; skipping VST3 install." >&2
 else
     VST3_DIR="${VST3_HOME}/.vst3"
     mkdir -p "${VST3_DIR}"
-    rm -rf "${VST3_DIR}/PitchNet.vst3"
-    cp -r "$PAYLOAD/vst3/PitchNet.vst3" "${VST3_DIR}/PitchNet.vst3"
+    rm -rf "${VST3_DIR}/Sonaria.vst3"
+    cp -r "$PAYLOAD/vst3/Sonaria.vst3" "${VST3_DIR}/Sonaria.vst3"
     if [ "${SYSTEM_INSTALL}" -eq 1 ]; then
-        chown -R "${VST3_USER}:$(id -gn "${VST3_USER}")" "${VST3_DIR}/PitchNet.vst3"
+        chown -R "${VST3_USER}:$(id -gn "${VST3_USER}")" "${VST3_DIR}/Sonaria.vst3"
     fi
-    chmod -R u+rwX,go+rX "${VST3_DIR}/PitchNet.vst3"
+    chmod -R u+rwX,go+rX "${VST3_DIR}/Sonaria.vst3"
 fi
 
 APPLICATIONS_DIR="${DATA_DIR}/applications"
@@ -139,20 +139,20 @@ if [ "${SYSTEM_INSTALL}" -eq 1 ]; then
     chmod 755 "${APPLICATIONS_DIR}" "${ICON_DIR}"
 fi
 
-cat > "${APPLICATIONS_DIR}/pitchnet.desktop" <<DESKTOP_EOF
+cat > "${APPLICATIONS_DIR}/sonaria.desktop" <<DESKTOP_EOF
 [Desktop Entry]
 Type=Application
-Name=PitchNet
+Name=Sonaria
 Comment=Neural pitch editor
-Exec="${BIN_DIR}/pitchnet" %f
-Icon=pitchnet
+Exec="${BIN_DIR}/sonaria" %f
+Icon=sonaria
 Terminal=false
 Categories=AudioVideo;Audio;Music;
 DESKTOP_EOF
-cp "$PAYLOAD/pitchnet.png" "${ICON_DIR}/pitchnet.png"
-chmod a+r "${APPLICATIONS_DIR}/pitchnet.desktop" "${ICON_DIR}/pitchnet.png"
+cp "$PAYLOAD/sonaria.png" "${ICON_DIR}/sonaria.png"
+chmod a+r "${APPLICATIONS_DIR}/sonaria.desktop" "${ICON_DIR}/sonaria.png"
 
-ln -sf "${INSTALL_PREFIX}/PitchNet" "${BIN_DIR}/pitchnet"
+ln -sf "${INSTALL_PREFIX}/Sonaria" "${BIN_DIR}/sonaria"
 
 cat > "${INSTALL_PREFIX}/uninstall.sh" <<UNINSTALL_EOF
 #!/usr/bin/env bash
@@ -163,12 +163,12 @@ if [ "${SYSTEM_INSTALL}" -eq 1 ] && [ "\$(id -u)" -ne 0 ]; then
 fi
 rm -rf "${INSTALL_PREFIX}"
 if [ -n "${VST3_HOME}" ]; then
-    rm -rf "${VST3_HOME}/.vst3/PitchNet.vst3"
+    rm -rf "${VST3_HOME}/.vst3/Sonaria.vst3"
 fi
-rm -f "${BIN_DIR}/pitchnet"
-rm -f "${APPLICATIONS_DIR}/pitchnet.desktop"
-rm -f "${ICON_DIR}/pitchnet.png"
-echo "PitchNet uninstalled."
+rm -f "${BIN_DIR}/sonaria"
+rm -f "${APPLICATIONS_DIR}/sonaria.desktop"
+rm -f "${ICON_DIR}/sonaria.png"
+echo "Sonaria uninstalled."
 UNINSTALL_EOF
 chmod +x "${INSTALL_PREFIX}/uninstall.sh"
 
@@ -191,20 +191,20 @@ for lib in libasound.so.2 libfontconfig.so.1 libfreetype.so.6; do
 done
 
 echo ""
-echo "PitchNet ${VERSION} installed."
-echo "  Standalone: run 'pitchnet' or find PitchNet in your applications menu."
+echo "Sonaria ${VERSION} installed."
+echo "  Standalone: run 'sonaria' or find Sonaria in your applications menu."
 case ":${PATH}:" in
     *":${BIN_DIR}:"*) ;;
     *) echo "              (${BIN_DIR} is not on your PATH; the applications menu entry still works.)" ;;
 esac
 if [ -n "${VST3_HOME}" ]; then
-    echo "  VST3 plugin: ${VST3_HOME}/.vst3/PitchNet.vst3"
+    echo "  VST3 plugin: ${VST3_HOME}/.vst3/Sonaria.vst3"
 fi
 echo "  Uninstall:   ${UNINSTALL_CMD}"
 
 if [ -d "${OTHER_PREFIX}" ]; then
     echo ""
-    echo "Note: a ${OTHER_PREFIX_LABEL} PitchNet install also exists at ${OTHER_PREFIX}."
+    echo "Note: a ${OTHER_PREFIX_LABEL} Sonaria install also exists at ${OTHER_PREFIX}."
     echo "      Per-user files take priority; remove whichever copy you no longer want"
     echo "      by running its uninstall.sh."
 fi
@@ -219,8 +219,8 @@ chmod +x "$STAGE/install.sh"
 
 echo "==> Packaging with makeself"
 mkdir -p "$ROOT_DIR/dist"
-OUT="$ROOT_DIR/dist/PitchNet-Linux-${ARCH}.run"
-makeself --gzip "$STAGE" "$OUT" "PitchNet ${VERSION} Installer" ./install.sh
+OUT="$ROOT_DIR/dist/Sonaria-Linux-${ARCH}.run"
+makeself --gzip "$STAGE" "$OUT" "Sonaria ${VERSION} Installer" ./install.sh
 
 echo ""
 echo "Installer created: $OUT"

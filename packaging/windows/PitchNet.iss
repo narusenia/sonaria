@@ -1,10 +1,10 @@
-﻿; PitchNet Windows installer.
+﻿; Sonaria Windows installer.
 
-#define MyAppName "PitchNet"
+#define MyAppName "Sonaria"
 #define MyAppVersion "0.8.1"
-#define MyAppPublisher "Session Loops"
-#define MyAppURL "https://www.sessionloops.com/"
-#define MyAppExeName "PitchNet.exe"
+#define MyAppPublisher "Narusenia"
+#define MyAppURL "https://github.com/narusenia/sonaria"
+#define MyAppExeName "Sonaria.exe"
 
 [Setup]
 ; This script lives in packaging\windows. SourceDir points back at the repository
@@ -12,7 +12,7 @@
 ; resolved from the repo root, exactly as when the script sat there.
 SourceDir=..\..
 OutputDir=Output
-AppId={{D6C85D0D-3B96-4B45-B8B5-3E25B18D24F0}
+AppId={{723F4B65-11A4-4813-80A7-39BB7B9E095E}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
@@ -22,7 +22,7 @@ AppUpdatesURL={#MyAppURL}
 DefaultDirName={code:getPreProgramPath}\{#MyAppName}
 DefaultGroupName={#MyAppPublisher}
 DisableProgramGroupPage=yes
-OutputBaseFilename=PitchNet_Installer
+OutputBaseFilename=Sonaria_Installer
 ArchitecturesInstallIn64BitMode=x64compatible
 SetupIconFile=build\PitchNet_artefacts\JuceLibraryCode\icon.ico
 Compression=lzma
@@ -42,10 +42,10 @@ Name: "vst3"; Description: "VST3"; Types: custom
 Name: "aax"; Description: "AAX"; Types: custom
 
 [Files]
-Source: "build\PitchNet_artefacts\Release\PitchNet.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion
+Source: "build\PitchNet_artefacts\Release\Sonaria.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion
 Source: "build\PitchNet_artefacts\Release\onnxruntime.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion
-Source: "build\PitchNetPlugin_artefacts\Release\VST3\PitchNet.vst3\*"; DestDir: "{code:getPreVST64Path}"; Components: vst3; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "build\PitchNetPlugin_artefacts\Release\AAX\PitchNet.aaxplugin\*"; DestDir: "{code:getPreAAXPath}"; Components: aax; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "build\PitchNetPlugin_artefacts\Release\VST3\Sonaria.vst3\*"; DestDir: "{code:getPreVST64Path}"; Components: vst3; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "build\PitchNetPlugin_artefacts\Release\AAX\Sonaria.aaxplugin\*"; DestDir: "{code:getPreAAXPath}"; Components: aax; Flags: ignoreversion recursesubdirs createallsubdirs
 ; FCPE and its tables are debug-only; release builds use SwiftF0 (swift_f0.onnx).
 Source: "Resources\models\*"; Excludes: "fcpe.onnx,mel_filterbank.bin,cent_table.bin"; DestDir: "{commonappdata}\{#MyAppPublisher}\{#MyAppName}\models"; Components: main; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "Resources\fonts\Montserrat-Medium.ttf"; DestDir: "{commonfonts}"; FontInstall: "Montserrat-Medium"; Components: main; Flags: onlyifdoesntexist uninsneveruninstall
