@@ -59,8 +59,8 @@ std::shared_ptr<juce::TooltipWindow> getEditorTooltipWindow()
 
 constexpr float updateSubtitleFontSize = 14.0f;
 constexpr float aboutNoticesFontSize = 12.0f;
-const juce::Colour updateLogScrollbarTrack(0xFF0D0B0Bu);
-const juce::Colour updateLogScrollbarThumb(0xFF565656u);
+const juce::Colour &updateLogScrollbarTrack = APP_COLOR_SCROLLBAR_TRACK;
+const juce::Colour &updateLogScrollbarThumb = APP_COLOR_SCROLLBAR_THUMB;
 
 struct UpdateInfo
 {

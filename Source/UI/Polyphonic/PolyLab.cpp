@@ -27,8 +27,8 @@ constexpr int kMaxChannels = 2;
 constexpr double kMaxSeconds = 10.0 * 60.0;
 constexpr int kVariantGroup = 4021;
 
-const juce::Colour kRowBlack(0xFF11141Bu);
-const juce::Colour kEditInk(0xFF08262Au);
+const juce::Colour& kRowBlack = APP_COLOR_POLYLAB_BLACK_KEY_ROW;
+const juce::Colour& kEditInk = APP_COLOR_POLYLAB_EDITED_CURVE;
 
 int pitchClass(int midi) { return ((midi % 12) + 12) % 12; }
 

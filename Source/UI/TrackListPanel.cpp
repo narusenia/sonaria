@@ -11,8 +11,8 @@ constexpr float borderThickness = 1.5f;
 constexpr int textInsetX = 15;
 constexpr float inactiveBorderAlpha = 0.3f;
 
-const juce::Colour activeFill{0xFF353535u};
-const juce::Colour inactiveText{0xFF9A9A9Au};
+const juce::Colour& activeFill = APP_COLOR_TRACK_ROW_ACTIVE;
+const juce::Colour& inactiveText = APP_COLOR_TRACK_NAME_INACTIVE;
 } // namespace
 
 TrackListPanel::TrackListPanel()

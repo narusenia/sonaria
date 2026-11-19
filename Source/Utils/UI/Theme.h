@@ -175,6 +175,35 @@ extern const juce::Colour APP_COLOR_OVERVIEW_WAVEFORM;
 extern const juce::Colour APP_COLOR_OVERVIEW_VIEWPORT;
 extern const juce::Colour APP_COLOR_OVERVIEW_PLAYHEAD;
 
+// ── Toggles & radio buttons ───────────────────────────────────────
+extern const juce::Colour APP_COLOR_TOGGLE_FILL;
+extern const juce::Colour APP_COLOR_TOGGLE_FILL_HOVER;
+extern const juce::Colour APP_COLOR_TOGGLE_TEXT_ON;
+extern const juce::Colour APP_COLOR_TOGGLE_TEXT_OFF;
+extern const juce::Colour APP_COLOR_RADIO_HOVER;
+extern const juce::Colour APP_COLOR_RADIO_IDLE;
+extern const juce::Colour APP_COLOR_RADIO_LABEL_HOVER;
+extern const juce::Colour APP_COLOR_RADIO_LABEL_IDLE;
+
+// ── Note pitch gradient (in tune -> out of tune) ──────────────────
+extern const juce::Colour APP_COLOR_NOTE_IN_TUNE_CENTRE;
+extern const juce::Colour APP_COLOR_NOTE_IN_TUNE_SIDE;
+extern const juce::Colour APP_COLOR_NOTE_FIRST_LAYER_CENTRE;
+extern const juce::Colour APP_COLOR_NOTE_FIRST_LAYER_SIDE;
+extern const juce::Colour APP_COLOR_NOTE_SECOND_LAYER_CENTRE;
+extern const juce::Colour APP_COLOR_NOTE_SECOND_LAYER_SIDE;
+extern const juce::Colour APP_COLOR_NOTE_OUT_OF_TUNE_CENTRE;
+extern const juce::Colour APP_COLOR_NOTE_OUT_OF_TUNE_SIDE;
+
+// ── Track list ────────────────────────────────────────────────────
+extern const juce::Colour APP_COLOR_TRACK_DEFAULT;
+extern const juce::Colour APP_COLOR_TRACK_ROW_ACTIVE;
+extern const juce::Colour APP_COLOR_TRACK_NAME_INACTIVE;
+
+// ── Poly lab ──────────────────────────────────────────────────────
+extern const juce::Colour APP_COLOR_POLYLAB_BLACK_KEY_ROW;
+extern const juce::Colour APP_COLOR_POLYLAB_EDITED_CURVE;
+
 // ── Scrollbars ────────────────────────────────────────────────────
 // One look for every scrollbar in the app: a dim grey rounded thumb over a
 // recessed gutter. The piano-roll canvas set the look; styleCanvasScrollBar()

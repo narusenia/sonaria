@@ -2,6 +2,7 @@
 
 #include "../JuceHeader.h"
 #include "RegionPreview.h"
+#include "../Utils/UI/Theme.h"
 #include <functional>
 #include <memory>
 #include <vector>
@@ -47,15 +48,12 @@ struct MainViewTrackEntry {
   bool pinned = false;        // notes drawn on the canvas; never the active track
 };
 
-/** Track colour when the DAW sends none, or "Use DAW Track Color" is off. */
-constexpr juce::uint32 kDefaultTrackColour = 0xFFE6E6E6u;
-
 /** The colour a track is shown in, given the "Use DAW Track Color" switch. */
 inline juce::Colour resolveTrackColour(const MainViewTrackEntry &track,
                                        bool useDawTrackColour) {
   return useDawTrackColour && track.hasHostColour
              ? track.colour
-             : juce::Colour(kDefaultTrackColour);
+             : APP_COLOR_TRACK_DEFAULT;
 }
 
 class IMainView {

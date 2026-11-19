@@ -87,10 +87,10 @@ void ToggleButton::paintButton (juce::Graphics &g, bool shouldDrawButtonAsHighli
     }
     else
     {
-        g.setColour(juce::Colour(shouldDrawButtonAsHighlighted ? 0xFF727272 : 0xFF565656));
+        g.setColour(shouldDrawButtonAsHighlighted ? APP_COLOR_TOGGLE_FILL_HOVER : APP_COLOR_TOGGLE_FILL);
         g.fillRoundedRectangle(0, 0, getWidth(), getHeight(), getWidth() > 40 ? 13.f : 3.5f);
     }
     g.setFont(juce::Font("Montserrat", "Medium", 14.f).withPointHeight(14.f));
-    g.setColour(juce::Colour(getToggleState() ? 0xFFE6E6E6 : 0xFF9B9B9B));
+    g.setColour(getToggleState() ? APP_COLOR_TOGGLE_TEXT_ON : APP_COLOR_TOGGLE_TEXT_OFF);
     g.drawText(getButtonText(), getLocalBounds(), juce::Justification::centred);
 }

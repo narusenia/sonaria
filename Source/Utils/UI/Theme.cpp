@@ -199,6 +199,35 @@ const juce::Colour APP_COLOR_OVERVIEW_WAVEFORM        = juce::Colour(0xFF484546u
 const juce::Colour APP_COLOR_OVERVIEW_VIEWPORT        = juce::Colour(0xFFEFEFEFu);  // Visible-range box in the overview
 const juce::Colour APP_COLOR_OVERVIEW_PLAYHEAD        = juce::Colour(0xFFC8C7C7u);  // Overview playhead
 
+// ── Toggles & radio buttons ───────────────────────────────────────
+const juce::Colour APP_COLOR_TOGGLE_FILL              = juce::Colour(0xFF565656u);  // Plain toggle button fill
+const juce::Colour APP_COLOR_TOGGLE_FILL_HOVER        = juce::Colour(0xFF727272u);  // Plain toggle button fill, hovered
+const juce::Colour APP_COLOR_TOGGLE_TEXT_ON           = juce::Colour(0xFFE6E6E6u);  // Plain toggle button label, on
+const juce::Colour APP_COLOR_TOGGLE_TEXT_OFF          = juce::Colour(0xFF9B9B9Bu);  // Plain toggle button label, off
+const juce::Colour APP_COLOR_RADIO_HOVER              = juce::Colour(0xFF9B9B9Bu);  // Radio button ring, hovered
+const juce::Colour APP_COLOR_RADIO_IDLE               = juce::Colour(0xFF515151u);  // Radio button ring, idle
+const juce::Colour APP_COLOR_RADIO_LABEL_HOVER        = juce::Colour(0xFF9B9B9Bu);  // Radio button label, hovered
+const juce::Colour APP_COLOR_RADIO_LABEL_IDLE         = juce::Colour(0xFF515151u);  // Radio button label, idle
+
+// ── Note pitch gradient (in tune -> out of tune) ──────────────────
+const juce::Colour APP_COLOR_NOTE_IN_TUNE_CENTRE      = juce::Colour(0xFF1983E0u);  // In-tune note, centre
+const juce::Colour APP_COLOR_NOTE_IN_TUNE_SIDE        = juce::Colour(0xFF0021E2u);  // In-tune note, edges
+const juce::Colour APP_COLOR_NOTE_FIRST_LAYER_CENTRE  = juce::Colour(0xFFD66CFFu);  // Slightly off note, centre
+const juce::Colour APP_COLOR_NOTE_FIRST_LAYER_SIDE    = juce::Colour(0xFF971CFFu);  // Slightly off note, edges
+const juce::Colour APP_COLOR_NOTE_SECOND_LAYER_CENTRE = juce::Colour(0xFFFF90EDu);  // Further off note, centre
+const juce::Colour APP_COLOR_NOTE_SECOND_LAYER_SIDE   = juce::Colour(0xFFF624B7u);  // Further off note, edges
+const juce::Colour APP_COLOR_NOTE_OUT_OF_TUNE_CENTRE  = juce::Colour(0xFFF95D5Du);  // Out-of-tune note, centre
+const juce::Colour APP_COLOR_NOTE_OUT_OF_TUNE_SIDE    = juce::Colour(0xFFFF0000u);  // Out-of-tune note, edges
+
+// ── Track list ────────────────────────────────────────────────────
+const juce::Colour APP_COLOR_TRACK_DEFAULT            = juce::Colour(0xFFE6E6E6u);  // Track colour when the DAW sends none, or "Use DAW Track Color" is off
+const juce::Colour APP_COLOR_TRACK_ROW_ACTIVE         = juce::Colour(0xFF353535u);  // Active track row fill
+const juce::Colour APP_COLOR_TRACK_NAME_INACTIVE      = juce::Colour(0xFF9A9A9Au);  // Inactive track name
+
+// ── Poly lab ──────────────────────────────────────────────────────
+const juce::Colour APP_COLOR_POLYLAB_BLACK_KEY_ROW    = juce::Colour(0xFF11141Bu);  // Black-key rows
+const juce::Colour APP_COLOR_POLYLAB_EDITED_CURVE     = juce::Colour(0xFF08262Au);  // Pitch curve of moved notes
+
 // ── Scrollbars ────────────────────────────────────────────────────
 const juce::Colour APP_COLOR_SCROLLBAR_THUMB      = juce::Colour(0xFF565656u);  // Thumb
 const juce::Colour APP_COLOR_SCROLLBAR_TRACK      = juce::Colour(0xFF0D0B0Bu);  // Recessed gutter

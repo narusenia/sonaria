@@ -6,7 +6,7 @@
 #include <limits>
 
 namespace {
-const juce::Colour thumbnailBackground(0xFF191717u);
+const juce::Colour &thumbnailBackground = APP_COLOR_OVERVIEW_BACKGROUND;
 
 struct NoteGradientColours {
   juce::Colour centre;
@@ -36,14 +36,14 @@ juce::Colour interpolateLayeredColour(juce::Colour first,
 }
 
 NoteGradientColours getNoteGradientColours(float midi, int pitchReferenceHz) {
-  static const juce::Colour inTuneCentre(0xFF1983E0u);
-  static const juce::Colour inTuneSide(0xFF0021E2u);
-  static const juce::Colour firstLayerCentre(0xFFD66CFFu);
-  static const juce::Colour firstLayerSide(0xFF971CFFu);
-  static const juce::Colour secondLayerCentre(0xFFFF90EDu);
-  static const juce::Colour secondLayerSide(0xFFF624B7u);
-  static const juce::Colour outOfTuneCentre(0xFFF95D5Du);
-  static const juce::Colour outOfTuneSide(0xFFFF0000u);
+  static const juce::Colour inTuneCentre(APP_COLOR_NOTE_IN_TUNE_CENTRE);
+  static const juce::Colour inTuneSide(APP_COLOR_NOTE_IN_TUNE_SIDE);
+  static const juce::Colour firstLayerCentre(APP_COLOR_NOTE_FIRST_LAYER_CENTRE);
+  static const juce::Colour firstLayerSide(APP_COLOR_NOTE_FIRST_LAYER_SIDE);
+  static const juce::Colour secondLayerCentre(APP_COLOR_NOTE_SECOND_LAYER_CENTRE);
+  static const juce::Colour secondLayerSide(APP_COLOR_NOTE_SECOND_LAYER_SIDE);
+  static const juce::Colour outOfTuneCentre(APP_COLOR_NOTE_OUT_OF_TUNE_CENTRE);
+  static const juce::Colour outOfTuneSide(APP_COLOR_NOTE_OUT_OF_TUNE_SIDE);
 
   const float amount = getPitchCenterAmount(midi, pitchReferenceHz);
 

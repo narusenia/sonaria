@@ -367,13 +367,13 @@ public:
 
         const bool selected = getToggleState();
         g.setColour(selected ? APP_COLOR_RADIO_SELECTED
-                             : juce::Colour(highlighted ? 0xFF9B9B9Bu : 0xFF515151u));
+                             : (highlighted ? APP_COLOR_RADIO_HOVER : APP_COLOR_RADIO_IDLE));
         g.drawEllipse(circle, 1.0f);
         if (selected)
             g.fillEllipse(circle.reduced(3.0f));
 
         g.setColour(selected ? APP_COLOR_RADIO_LABEL_SELECTED
-                             : juce::Colour(highlighted ? 0xFF9B9B9Bu : 0xFF515151u));
+                             : (highlighted ? APP_COLOR_RADIO_LABEL_HOVER : APP_COLOR_RADIO_LABEL_IDLE));
         g.setFont(AppFont::getFont(15.0f));
         if (!isEnabled())
             g.setOpacity(0.5f);
