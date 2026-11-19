@@ -72,6 +72,15 @@ public:
     }
 
     /**
+     * Get the Montserrat Regular face (lighter than getFont's Medium) with
+     * the specified height (no DPI scaling applied).
+     */
+    static juce::Font getRegularFont(float height = 14.0f)
+    {
+        return juce::Font(juce::FontOptions("Montserrat", "Regular", height));
+    }
+
+    /**
      * Get bold font with specified height (no DPI scaling applied).
      * Use getScaledBoldFont() for DPI-aware font sizing.
      */

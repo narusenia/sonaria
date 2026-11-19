@@ -4,6 +4,7 @@
 #include "../../Audio/BreathSibilanceDetector.h"
 #include "../../Audio/NoteTiming.h"
 #include "VisualWaveformEnvelope.h"
+#include "../Components/AppFont.h"
 #include "../../Utils/UI/Theme.h"
 
 #include <algorithm>
@@ -302,8 +303,7 @@ void drawLevelLabel(juce::Graphics &g, float centreX, float top, float db)
   const juce::String label =
       (db > 0.0f ? "+" : "") + juce::String(db, 1) + " dB";
   const auto font =
-      juce::Font(juce::FontOptions("Montserrat", "Regular", 11.0f))
-          .withPointHeight(11.0f);
+      AppFont::getRegularFont(11.0f).withPointHeight(11.0f);
   const float width = std::max(
       60.0f,
       static_cast<float>(juce::GlyphArrangement::getStringWidthInt(font, label)) +

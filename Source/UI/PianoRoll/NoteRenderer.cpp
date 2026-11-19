@@ -716,7 +716,7 @@ void NoteRenderer::draw(juce::Graphics &g, Pass pass, bool splitModeActive,
       }
 
       const auto labelFont =
-          juce::Font("Montserrat", "Regular", 11.0f).withPointHeight(11.0f);
+          AppFont::getRegularFont(11.0f).withPointHeight(11.0f);
       const float labelWidth = std::max(
           60.0f, static_cast<float>(juce::GlyphArrangement::getStringWidthInt(
                      labelFont, label)) + 16.0f);

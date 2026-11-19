@@ -10,6 +10,7 @@
 
 #include "Buttons.h"
 #include "../Utils/UI/Theme.h"
+#include "Components/AppFont.h"
 
 Button::Button(juce::Image img)
 :image(img), textX(0), textY(0)
@@ -90,7 +91,7 @@ void ToggleButton::paintButton (juce::Graphics &g, bool shouldDrawButtonAsHighli
         g.setColour(shouldDrawButtonAsHighlighted ? APP_COLOR_TOGGLE_FILL_HOVER : APP_COLOR_TOGGLE_FILL);
         g.fillRoundedRectangle(0, 0, getWidth(), getHeight(), getWidth() > 40 ? 13.f : 3.5f);
     }
-    g.setFont(juce::Font("Montserrat", "Medium", 14.f).withPointHeight(14.f));
+    g.setFont(AppFont::getFont(14.f).withPointHeight(14.f));
     g.setColour(getToggleState() ? APP_COLOR_TOGGLE_TEXT_ON : APP_COLOR_TOGGLE_TEXT_OFF);
     g.drawText(getButtonText(), getLocalBounds(), juce::Justification::centred);
 }
