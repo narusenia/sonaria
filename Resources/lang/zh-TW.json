@@ -147,6 +147,8 @@
   "panel.time": "時間",
   "panel.ui": "介面",
   "param.brightness": "亮度",
+  "param.deviation_caution": "注意偏差",
+  "param.deviation_fix": "需修正偏差",
   "param.show_breaths_and_sibilance": "顯示呼吸聲和齒音",
   "param.beat": "拍號",
   "param.beats": "節拍",

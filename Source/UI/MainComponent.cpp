@@ -10,6 +10,7 @@
 #include "../Models/ProjectTimelineOffset.h"
 #include "../Utils/AppLogger.h"
 #include "../Utils/Constants.h"
+#include "../Utils/NoteDeviation.h"
 #include "../Utils/UI/Theme.h"
 #include "../Utils/Localization.h"
 #include "../Utils/OnnxRuntime.h"
@@ -861,6 +862,22 @@ MainComponent::MainComponent(bool enableAudioDevice)
   {
     settingsManager->setUiBrightnessPercent(brightnessPercent);
     applyUiBrightness(brightnessPercent);
+  };
+  const auto applyDeviationThresholds = [this](double caution, double fix)
+  {
+    NoteDeviation::thresholds() = {static_cast<float>(caution), static_cast<float>(fix)};
+    pianoRoll.repaint();
+    pianoRollView.refreshOverview();
+  };
+  {
+    const auto [caution, fix] = settingsManager->getDeviationThresholds();
+    parameterPanel.setDeviationThresholds(caution, fix);
+    applyDeviationThresholds(caution, fix);
+  }
+  parameterPanel.onDeviationThresholdsChanged = [this, applyDeviationThresholds](double caution, double fix)
+  {
+    settingsManager->setDeviationThresholds(caution, fix);
+    applyDeviationThresholds(caution, fix);
   };
   parameterPanel.onNoiseVisibilityChanged = [this](bool show)
   {

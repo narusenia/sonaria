@@ -88,6 +88,13 @@ public:
   {
     uiBrightnessPercent = juce::jlimit(75.0, 200.0, percent);
   }
+  // Cents at which a note's deviation reads as caution and as needing a fix.
+  std::pair<double, double> getDeviationThresholds() const { return {deviationCautionCents, deviationFixCents}; }
+  void setDeviationThresholds(double caution, double fix)
+  {
+    deviationCautionCents = juce::jlimit(1.0, 50.0, caution);
+    deviationFixCents = juce::jlimit(deviationCautionCents + 1.0, 100.0, fix);
+  }
   bool getShowBreathsAndSibilance() const { return showBreathsAndSibilance; }
   void setNoiseVisibility(bool show) { showBreathsAndSibilance = show; }
   bool getLiveAuditionEnabled() const { return liveAuditionEnabled; }
@@ -176,6 +183,8 @@ private:
   juce::String audioDeviceState;
   juce::String skippedUpdateVersion;
   double uiBrightnessPercent = 100.0;
+  double deviationCautionCents = 10.0;
+  double deviationFixCents = 30.0;
   bool showBreathsAndSibilance = true;
   bool liveAuditionEnabled = false;
   bool followPlayback = true;

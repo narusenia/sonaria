@@ -149,6 +149,8 @@
   "panel.time": "Время",
   "panel.ui": "Интерфейс",
   "param.brightness": "Яркость",
+  "param.deviation_caution": "Внимание от",
+  "param.deviation_fix": "Исправить от",
   "param.show_breaths_and_sibilance": "Вдохи и сибилянты",
   "param.beat": "Доля",
   "param.beats": "Доли",

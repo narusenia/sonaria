@@ -37,6 +37,7 @@ public:
 
     void setUiBrightness(double brightnessPercent);
     void setNoiseVisibility(bool show);
+    void setDeviationThresholds(double caution, double fix);
     void setHostTimelineState(double bpm, int numerator, int denominator);
     void setUndoManager(PitchUndoManager* mgr) { juce::ignoreUnused(mgr); }
     void setSelectedNote(Note* note);
@@ -80,6 +81,7 @@ public:
     std::function<void(bool)> onTimelineSnapCycleChanged;
     std::function<void(double)> onUiBrightnessChanged;
     std::function<void(bool)> onNoiseVisibilityChanged;
+    std::function<void(double, double)> onDeviationThresholdsChanged;
     std::function<void(SynthesisEngineType)> onSynthesisEngineChanged;
     std::function<void(int)> onRenderDeviceChanged;
 
@@ -192,6 +194,9 @@ private:
     FloatingZoomSliderLookAndFeel brightnessSliderLookAndFeel;
     juce::Slider brightnessSlider;
     StyledToggleButton showBreathsAndSibilanceToggle;
+    // Caution and fix thresholds for note deviation, in cents.
+    std::array<juce::Label, 2> deviationLabels;
+    std::array<juce::Slider, 2> deviationSliders;
 
     int selectedScaleRootNote = 0;
     ScaleMode selectedScaleMode = ScaleMode::Chromatic;

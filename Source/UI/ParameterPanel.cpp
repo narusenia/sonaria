@@ -48,7 +48,7 @@ constexpr int kPitchCardHeight =
     ((kRowGap + 1) + kControlRowHeight) * 3 + kInnerPadY;
 constexpr int kUiCardHeight =
     kInnerPadY + kSectionLabelHeight + kSectionLabelGap +
-    kControlRowHeight * 2 + kRowGap + kInnerPadY;
+    kControlRowHeight * 4 + kRowGap * 3 + kInnerPadY;
 constexpr int kLanguageCardHeight =
     kInnerPadY + kSectionLabelHeight + kSectionLabelGap + kLanguageRowHeight + kInnerPadY;
 constexpr int kMidiReferenceCardHeight =
@@ -361,14 +361,16 @@ ParameterPanel::ParameterPanel()
     renderDeviceButton.addListener(this);
 
     for (auto* label : { &referenceLabel, &timelineBeatLabel,
-                         &timelineTempoLabel, &timelineGridLabel, &brightnessLabel })
+                         &timelineTempoLabel, &timelineGridLabel, &brightnessLabel,
+                         &deviationLabels[0], &deviationLabels[1] })
     {
         addAndMakeVisible(label);
         label->setColour(juce::Label::textColourId, APP_COLOR_TEXT_MUTED);
     }
 
     for (auto* label : { &referenceLabel, &timelineBeatLabel,
-                         &timelineTempoLabel, &timelineGridLabel, &brightnessLabel })
+                         &timelineTempoLabel, &timelineGridLabel, &brightnessLabel,
+                         &deviationLabels[0], &deviationLabels[1] })
     {
         label->setColour(juce::Label::textColourId, APP_COLOR_PANEL_LABEL);
         label->setFont(AppFont::getFont(14.0f));
@@ -448,6 +450,37 @@ ParameterPanel::ParameterPanel()
     };
     addAndMakeVisible(brightnessSlider);
 
+    for (size_t i = 0; i < deviationSliders.size(); ++i)
+    {
+        auto& slider = deviationSliders[i];
+        slider.setRange(1.0, i == 0 ? 50.0 : 100.0, 1.0);
+        slider.setValue(i == 0 ? 10.0 : 30.0, juce::dontSendNotification);
+        slider.setDoubleClickReturnValue(true, i == 0 ? 10.0 : 30.0);
+        slider.setNumDecimalPlacesToDisplay(0);
+        slider.setTextValueSuffix(" ct");
+        slider.setSliderStyle(juce::Slider::LinearHorizontal);
+        slider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+        slider.setLookAndFeel(&brightnessSliderLookAndFeel);
+        slider.onValueChange = [this, i]()
+        {
+            if (isUpdating)
+                return;
+            // Keep caution below fix by pushing the other threshold along.
+            auto& caution = deviationSliders[0];
+            auto& fix = deviationSliders[1];
+            if (fix.getValue() <= caution.getValue())
+            {
+                if (i == 0)
+                    fix.setValue(caution.getValue() + 1.0, juce::dontSendNotification);
+                else
+                    caution.setValue(fix.getValue() - 1.0, juce::dontSendNotification);
+            }
+            if (onDeviationThresholdsChanged)
+                onDeviationThresholdsChanged(caution.getValue(), fix.getValue());
+        };
+        addAndMakeVisible(slider);
+    }
+
     addAndMakeVisible(showBreathsAndSibilanceToggle);
     showBreathsAndSibilanceToggle.setClickingTogglesState(true);
     showBreathsAndSibilanceToggle.setToggleState(true, juce::dontSendNotification);
@@ -482,6 +515,8 @@ ParameterPanel::ParameterPanel()
 ParameterPanel::~ParameterPanel()
 {
     brightnessSlider.setLookAndFeel(nullptr);
+    for (auto& slider : deviationSliders)
+        slider.setLookAndFeel(nullptr);
 }
 
 void ParameterPanel::setupTextButton(juce::TextButton& button)
@@ -775,14 +810,25 @@ void ParameterPanel::resized()
     showBreathsAndSibilanceToggle.setBounds(bounds.removeFromTop(kControlRowHeight));
     bounds.removeFromTop(rowGap);
 
-    auto brightnessRow = bounds.removeFromTop(kControlRowHeight);
-    constexpr int minBrightnessSliderWidth = 64;
-    const int brightnessLabelWidth = juce::GlyphArrangement::getStringWidthInt(
-        brightnessLabel.getFont(), brightnessLabel.getText()) + 12;
-    const int labelSpace = juce::jmax(0, brightnessRow.getWidth() - minBrightnessSliderWidth);
-    brightnessLabel.setBounds(brightnessRow.removeFromLeft(
-        juce::jmin(brightnessLabelWidth, labelSpace)));
-    brightnessSlider.setBounds(brightnessRow.reduced(0, 2));
+    // Labels share one width so the three sliders line up.
+    constexpr int minSliderWidth = 64;
+    int sliderLabelWidth = 0;
+    for (auto* label : { &brightnessLabel, &deviationLabels[0], &deviationLabels[1] })
+        sliderLabelWidth = juce::jmax(sliderLabelWidth, juce::GlyphArrangement::getStringWidthInt(
+            label->getFont(), label->getText()) + 12);
+    sliderLabelWidth = juce::jmin(sliderLabelWidth, juce::jmax(0, bounds.getWidth() - minSliderWidth));
+    const auto layoutSliderRow = [&](juce::Label& label, juce::Slider& slider)
+    {
+        auto row = bounds.removeFromTop(kControlRowHeight);
+        label.setBounds(row.removeFromLeft(sliderLabelWidth));
+        slider.setBounds(row.reduced(0, 2));
+    };
+    layoutSliderRow(brightnessLabel, brightnessSlider);
+    for (size_t i = 0; i < deviationSliders.size(); ++i)
+    {
+        bounds.removeFromTop(rowGap);
+        layoutSliderRow(deviationLabels[i], deviationSliders[i]);
+    }
 
     const int uiCardBottom = bounds.getY() + innerPadY;
     uiCardBounds = juce::Rectangle<int>(
@@ -948,6 +994,10 @@ void ParameterPanel::refreshLocalisedText()
     brightnessLabel.setText(TR("param.brightness"), juce::dontSendNotification);
     brightnessSlider.setName(TR("param.brightness"));
     showBreathsAndSibilanceToggle.setButtonText(TR("param.show_breaths_and_sibilance"));
+    deviationLabels[0].setText(TR("param.deviation_caution"), juce::dontSendNotification);
+    deviationLabels[1].setText(TR("param.deviation_fix"), juce::dontSendNotification);
+    deviationSliders[0].setName(TR("param.deviation_caution"));
+    deviationSliders[1].setName(TR("param.deviation_fix"));
     midiDragButton.setButtonText(TR("param.midi_drag"));
     midiDragButton.setTooltip(TR("tooltip.midi_drag"));
     midiReferenceSectionLabel.setText(TR("panel.midi"), juce::dontSendNotification);
@@ -1170,6 +1220,12 @@ void ParameterPanel::setUiBrightness(double brightnessPercent)
 {
     uiBrightnessPercent = juce::jlimit(75.0, 200.0, brightnessPercent);
     brightnessSlider.setValue(uiBrightnessPercent, juce::dontSendNotification);
+}
+
+void ParameterPanel::setDeviationThresholds(double caution, double fix)
+{
+    deviationSliders[0].setValue(caution, juce::dontSendNotification);
+    deviationSliders[1].setValue(fix, juce::dontSendNotification);
 }
 
 void ParameterPanel::setNoiseVisibility(bool show)

@@ -149,6 +149,8 @@
   "panel.time": "Tempo",
   "panel.ui": "Interface",
   "param.brightness": "Brilho",
+  "param.deviation_caution": "Aviso a partir de",
+  "param.deviation_fix": "Corrigir a partir de",
   "param.show_breaths_and_sibilance": "Respirações e sibilância",
   "param.beat": "Batida",
   "param.beats": "Batidas",
