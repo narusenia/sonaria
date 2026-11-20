@@ -177,6 +177,9 @@ public:
   bool isTrackViewMode() const { return trackViewMode; }
   void centerOnPitchRange(float minMidi, float maxMidi);
   void selectOnlyNote(Note &note);
+  // Quantize / Straighten at 100% on the selection (keyboard Q / W).
+  bool quantizeSelectedNotes();
+  bool straightenSelectedNotes();
   bool centerOnCurrentPitchRange();
   void fitPitchRangeToView(float minMidi, float maxMidi);
   int getVisibleContentWidth() const;
@@ -377,7 +380,9 @@ private:
   void showResetMenu(Note &note);
   void setHoveredNote(Note *note);
   void updateScrollBars();
-  bool nudgeSelectedNotesBySemitones(int semitoneDelta);
+  // Applies edit to every selected note as one undo step.
+  bool editSelectedNotes(const std::function<void(Note &)> &edit);
+  bool selectAdjacentNote(bool forward, bool extend);
   void reapplyBasePitchForNote(
       Note *note); // Recalculate F0 from base pitch + delta after undo/redo
 

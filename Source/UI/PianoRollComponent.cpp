@@ -3314,115 +3314,160 @@ void PianoRollComponent::setUndoManager(PitchUndoManager *manager)
   noteSplitter->setUndoManager(manager);
 }
 
-bool PianoRollComponent::nudgeSelectedNotesBySemitones(int semitoneDelta)
+bool PianoRollComponent::editSelectedNotes(const std::function<void(Note &)> &edit)
 {
-  if (project == nullptr || semitoneDelta == 0)
+  if (project == nullptr)
     return false;
 
-  auto selectedNotes = project->getSelectedNotes();
-  if (selectedNotes.empty())
-    return false;
-
-  constexpr float minMidi = static_cast<float>(MIN_MIDI_NOTE);
-  constexpr float maxMidi = static_cast<float>(MAX_MIDI_NOTE);
-
-  std::vector<Note *> notesToMove;
-  std::vector<float> oldMidis;
-  std::vector<float> newMidis;
-  notesToMove.reserve(selectedNotes.size());
-  oldMidis.reserve(selectedNotes.size());
-  newMidis.reserve(selectedNotes.size());
-
-  int dirtyStartFrame = std::numeric_limits<int>::max();
-  int dirtyEndFrame = std::numeric_limits<int>::min();
-
-  for (auto *note : selectedNotes)
+  std::vector<Note *> notes;
+  std::vector<TransformParams> before, after;
+  int first = std::numeric_limits<int>::max(), last = std::numeric_limits<int>::min();
+  for (auto *note : project->getSelectedNotes())
   {
-    if (!note || note->isRest())
+    if (note == nullptr || note->isRest())
       continue;
-
-    const float oldMidi = note->getMidiNote();
-    const float offset = note->getPitchOffset();
-    const float oldAdjustedMidi = oldMidi + offset;
-    const float movedAdjustedMidi =
-        juce::jlimit(minMidi, maxMidi,
-                     oldAdjustedMidi + static_cast<float>(semitoneDelta));
-    const float movedMidi = movedAdjustedMidi - offset;
-
-    if (std::abs(movedMidi - oldMidi) <= 1.0e-6f)
+    const auto old = TransformParams::fromNote(*note);
+    edit(*note);
+    const auto changed = TransformParams::fromNote(*note);
+    if (std::abs(changed.midiNote - old.midiNote) <= 1.0e-6f &&
+        std::abs(changed.vibrato - old.vibrato) <= 1.0e-6f &&
+        std::abs(changed.pitchDrift - old.pitchDrift) <= 1.0e-6f)
       continue;
-
-    notesToMove.push_back(note);
-    oldMidis.push_back(oldMidi);
-    newMidis.push_back(movedMidi);
-    dirtyStartFrame = std::min(dirtyStartFrame, note->getStartFrame());
-    dirtyEndFrame = std::max(dirtyEndFrame, note->getEndFrame());
+    notes.push_back(note);
+    before.push_back(old);
+    after.push_back(changed);
+    note->markDirty();
+    note->markSynthDirty();
+    first = std::min(first, note->getStartFrame());
+    last = std::max(last, note->getEndFrame());
   }
-
-  if (notesToMove.empty())
+  if (notes.empty())
     return false;
-
-  auto rebuildAndNotify =
-      [this, dirtyStartFrame, dirtyEndFrame](const std::vector<Note *> &)
-  {
-    if (project == nullptr)
-      return;
-
-    PitchCurveProcessor::rebuildBaseFromNotes(*project);
-    invalidateBasePitchCache();
-
-    project->markNoteEditDirtyRange(dirtyStartFrame, dirtyEndFrame);
-
-    if (onPitchEdited)
-      onPitchEdited();
-    if (onPitchEditFinished)
-      onPitchEditFinished();
-
-    repaint();
-  };
 
   if (undoManager)
-  {
-    auto *projectPtr = project;
-    auto action = std::make_unique<MultiNoteMidiNudgeAction>(
-        notesToMove, oldMidis, newMidis,
-        [projectPtr, dirtyStartFrame,
-         dirtyEndFrame](const std::vector<Note *> &notes)
-        {
-          if (!projectPtr)
-            return;
-          PitchCurveProcessor::rebuildBaseFromNotes(*projectPtr);
-          for (auto *note : notes)
-            if (note)
-              note->markSynthDirty();
-          projectPtr->markNoteEditDirtyRange(dirtyStartFrame, dirtyEndFrame);
-        });
-    undoManager->addAction(std::move(action));
-  }
+    undoManager->addAction(std::make_unique<PitchToolAction>(project, notes, before, after));
 
-  for (size_t i = 0; i < notesToMove.size(); ++i)
-  {
-    notesToMove[i]->setMidiNote(newMidis[i]);
-    notesToMove[i]->markDirty();
-    notesToMove[i]->markSynthDirty();
-  }
+  PitchCurveProcessor::rebuildBaseFromNotes(*project);
+  invalidateBasePitchCache();
+  project->markNoteEditDirtyRange(first, last);
+  updatePitchToolHandlesFromSelection();
+  if (onPitchEdited)
+    onPitchEdited();
+  if (onPitchEditFinished)
+    onPitchEditFinished();
+  repaint();
+  return true;
+}
 
-  rebuildAndNotify(notesToMove);
+bool PianoRollComponent::quantizeSelectedNotes()
+{
+  if (project == nullptr)
+    return false;
+  const auto mode = project->getScaleMode();
+  const auto scaleMode = mode == ScaleMode::None || mode == ScaleMode::Chromatic
+                             ? project->getPreferredScaleMode() : mode;
+  const int root = project->getScaleRootNote(), referenceHz = project->getPitchReferenceHz();
+  return editSelectedNotes([&](Note &note)
+  {
+    // Land the mean pitch, which the deviation colour measures, on the scale tone.
+    const float shift = NoteDeviation::meanMidi(*project, note) - note.getMidiNote();
+    const float midi = note.getLastNonMacroMidiNote();
+    note.setMidiNoteFromPitchCorrection(
+        ScaleUtils::snapMidiToScale(midi + shift, scaleMode, root, referenceHz) - shift);
+    note.setMacroPitchCenter(100.0f);
+  });
+}
+
+bool PianoRollComponent::straightenSelectedNotes()
+{
+  // The keyboard form keeps vibrato; the macro dialog can flatten it too.
+  return editSelectedNotes([](Note &note) { note.setPitchDrift(0.0f); });
+}
+
+bool PianoRollComponent::selectAdjacentNote(bool forward, bool extend)
+{
+  if (project == nullptr)
+    return false;
+  auto &notes = project->getNotes();
+  const auto selected = project->getSelectedNotes();
+  // Step from the selection's edge in the direction of travel.
+  int from = forward ? std::numeric_limits<int>::min() : std::numeric_limits<int>::max();
+  for (const auto *note : selected)
+    from = forward ? std::max(from, note->getStartFrame()) : std::min(from, note->getStartFrame());
+
+  Note *target = nullptr;
+  for (auto &note : notes)
+  {
+    if (note.isRest())
+      continue;
+    const int start = note.getStartFrame();
+    if (forward ? start > from && (!target || start < target->getStartFrame())
+                : start < from && (!target || start > target->getStartFrame()))
+      target = &note;
+  }
+  if (target == nullptr)
+    return !selected.empty(); // At either end the key is still ours.
+
+  if (extend)
+  {
+    target->setSelected(true);
+    updatePitchToolHandlesFromSelection();
+    updatePreviewButtonBounds();
+    if (onNoteSelected)
+      onNoteSelected(target);
+    repaint();
+  }
+  else
+    selectOnlyNote(*target);
+
+  // Scroll only when the note leaves the view.
+  const double secondsPerFrame = static_cast<double>(HOP_SIZE) / SAMPLE_RATE;
+  const double pps = getPixelsPerSecond();
+  const double x = target->getStartFrame() * secondsPerFrame * pps;
+  const double right = target->getEndFrame() * secondsPerFrame * pps;
+  if (x < scrollX || right > scrollX + getVisibleContentWidth())
+    setScrollX(x - getVisibleContentWidth() * 0.3);
   return true;
 }
 
 bool PianoRollComponent::keyPressed(const juce::KeyPress &key)
 {
   const auto mods = key.getModifiers();
-  if (mods.isCommandDown() || mods.isCtrlDown() || mods.isAltDown())
+  if (mods.isCommandDown() || mods.isCtrlDown() || project == nullptr)
     return false;
 
   const int keyCode = key.getKeyCode();
+  if (keyCode == juce::KeyPress::leftKey || keyCode == juce::KeyPress::rightKey)
+    return !mods.isAltDown() &&
+           selectAdjacentNote(keyCode == juce::KeyPress::rightKey, mods.isShiftDown());
+
   if (keyCode == juce::KeyPress::upKey || keyCode == juce::KeyPress::downKey)
   {
     const int direction = keyCode == juce::KeyPress::upKey ? 1 : -1;
-    const int step = mods.isShiftDown() ? 12 : 1;
-    return nudgeSelectedNotesBySemitones(direction * step);
+    constexpr float minMidi = static_cast<float>(MIN_MIDI_NOTE);
+    constexpr float maxMidi = static_cast<float>(MAX_MIDI_NOTE);
+    const auto moveTo = [&](Note &note, float adjusted)
+    { note.setMidiNote(juce::jlimit(minMidi, maxMidi, adjusted) - note.getPitchOffset()); };
+    // Alt moves by cents (Shift: 10), Shift by octaves, plain by scale tones.
+    if (mods.isAltDown())
+    {
+      const float step = (mods.isShiftDown() ? 0.1f : 0.01f) * static_cast<float>(direction);
+      editSelectedNotes([&](Note &note) { moveTo(note, note.getAdjustedMidiNote() + step); });
+    }
+    else if (mods.isShiftDown())
+      editSelectedNotes([&](Note &note) { moveTo(note, note.getAdjustedMidiNote() + 12.0f * direction); });
+    else
+    {
+      const auto mode = project->getScaleMode();
+      const int root = project->getScaleRootNote(), referenceHz = project->getPitchReferenceHz();
+      editSelectedNotes([&](Note &note)
+      {
+        moveTo(note, ScaleUtils::stepMidiOnScale(note.getAdjustedMidiNote(), direction,
+                                                 mode, root, referenceHz));
+      });
+    }
+    // With nothing selected the key goes on to the host or the app.
+    return !project->getSelectedNotes().empty();
   }
 
   return false;

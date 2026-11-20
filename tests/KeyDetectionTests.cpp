@@ -39,5 +39,15 @@ int main()
   CHECK(project.getDetectedScaleRootNote() == 7);
   CHECK(KeyChangeAction::takeAutoKey(project) == nullptr);
 
+  // Arrow keys step along the scale: E4 up in C major is F4, B4 up is C5, C4 down is B3.
+  CHECK(ScaleUtils::stepMidiOnScale(64.0f, 1, ScaleMode::Major, 0) == 65.0f);
+  CHECK(ScaleUtils::stepMidiOnScale(71.0f, 1, ScaleMode::Major, 0) == 72.0f);
+  CHECK(ScaleUtils::stepMidiOnScale(60.0f, -1, ScaleMode::Major, 0) == 59.0f);
+  // Off-scale or between tones, the step lands on the next tone in that direction.
+  CHECK(ScaleUtils::stepMidiOnScale(66.3f, 1, ScaleMode::Major, 0) == 67.0f);
+  CHECK(ScaleUtils::stepMidiOnScale(66.3f, -1, ScaleMode::Major, 0) == 65.0f);
+  CHECK(ScaleUtils::stepMidiOnScale(64.005f, 1, ScaleMode::Major, 0) == 65.0f);
+  CHECK(ScaleUtils::stepMidiOnScale(61.0f, 1, ScaleMode::Chromatic, 0) == 62.0f);
+
   std::cout << "Key detection tests passed\n";
 }

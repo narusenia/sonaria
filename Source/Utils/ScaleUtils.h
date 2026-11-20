@@ -191,6 +191,21 @@ inline float finePitchDragOffset(float deltaYPixels, float anchorMidi,
     return cents / 100.0f + reference - anchorMidi;
 }
 
+// The next scale tone above (direction > 0) or below the pitch; semitones without a scale.
+inline float stepMidiOnScale(float midi, int direction, ScaleMode mode, int rootNote,
+                             int referenceHz = static_cast<int>(FREQ_A4))
+{
+    const float offset = getReferenceOffsetSemitones(referenceHz);
+    const float normalized = midi - offset;
+    // A pitch a cent or less from a tone counts as on it, so the step leaves it.
+    int candidate = direction > 0 ? static_cast<int>(std::floor(normalized + 0.01f)) + 1
+                                  : static_cast<int>(std::ceil(normalized - 0.01f)) - 1;
+    const bool anyTone = mode == ScaleMode::None || mode == ScaleMode::Chromatic || rootNote < 0;
+    for (int i = 0; i < 12 && !anyTone && !isPitchClassInScale(mode, candidate, rootNote); ++i)
+        candidate += direction > 0 ? 1 : -1;
+    return static_cast<float>(candidate) + offset;
+}
+
 inline float snapMidiToScale(float midi,
                              ScaleMode mode,
                              int rootNote,

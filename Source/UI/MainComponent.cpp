@@ -4073,6 +4073,9 @@ void MainComponent::getAllCommands(juce::Array<juce::CommandID> &commands)
       CommandIDs::selectAll,
       CommandIDs::nextDeviatedNote,
       CommandIDs::previousDeviatedNote,
+      CommandIDs::quantizeSelection,
+      CommandIDs::straightenSelection,
+      CommandIDs::showShortcuts,
 
       // View commands
       CommandIDs::showSettings,
@@ -4174,6 +4177,22 @@ void MainComponent::getCommandInfo(juce::CommandID commandID,
     result.setInfo(TR("command.next_deviated_note"), TR("command.next_deviated_note.desp"), TR("menu.edit"), 0);
     result.addDefaultKeypress('n', 0);
     result.setActive(project != nullptr);
+    break;
+
+  case CommandIDs::quantizeSelection:
+    result.setInfo(TR("command.quantize_selection"), TR("command.quantize_selection.desp"), TR("menu.edit"), 0);
+    result.addDefaultKeypress('q', 0);
+    result.setActive(project != nullptr);
+    break;
+
+  case CommandIDs::straightenSelection:
+    result.setInfo(TR("command.straighten_selection"), TR("command.straighten_selection.desp"), TR("menu.edit"), 0);
+    result.addDefaultKeypress('w', 0);
+    result.setActive(project != nullptr);
+    break;
+
+  case CommandIDs::showShortcuts:
+    result.setInfo(TR("command.show_shortcuts"), TR("command.show_shortcuts.desp"), TR("menu.edit"), 0);
     break;
 
   case CommandIDs::previousDeviatedNote:
@@ -4345,6 +4364,20 @@ bool MainComponent::perform(const ApplicationCommandTarget::InvocationInfo &info
   case CommandIDs::nextDeviatedNote:
   case CommandIDs::previousDeviatedNote:
     jumpToDeviatedNote(info.commandID == CommandIDs::nextDeviatedNote);
+    return true;
+
+  case CommandIDs::quantizeSelection:
+    pianoRoll.quantizeSelectedNotes();
+    return true;
+
+  case CommandIDs::straightenSelection:
+    pianoRoll.straightenSelectedNotes();
+    return true;
+
+  case CommandIDs::showShortcuts:
+    juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::NoIcon,
+                                           TR("command.show_shortcuts"),
+                                           TR("shortcuts.list"));
     return true;
 
   // View commands

@@ -26,6 +26,8 @@ namespace CommandIDs
         selectAll           = 0x2012,
         nextDeviatedNote    = 0x2013,
         previousDeviatedNote = 0x2014,
+        quantizeSelection   = 0x2015,
+        straightenSelection = 0x2016,
         
         // View Menu Commands (0x2020-0x202F)
         showDeltaPitch      = 0x2020,
@@ -33,6 +35,7 @@ namespace CommandIDs
         showSettings        = 0x2022,
         showAbout           = 0x2023,
         showPolyphonicLab   = 0x2024,
+        showShortcuts       = 0x2025,
         
         // Transport Commands (0x2030-0x203F)
         playPause           = 0x2030,
