@@ -81,7 +81,6 @@ private:
   };
   std::unordered_map<const Note*, MacroPreview> macroPreview;
   std::vector<const Note*> macroNotes;
-  double lastMacroPreviewUpdate = 0.0;
   float macroOffset(const Note& note, int frame, bool includeDrift) const;
   std::vector<float> cachedBasePitch;
   size_t cachedNoteCount = 0;

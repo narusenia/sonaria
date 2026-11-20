@@ -24,7 +24,6 @@ void PitchCurveRenderer::beginMacroPreview(const std::vector<Note*>& notes)
     }
   std::sort(macroNotes.begin(), macroNotes.end(), [](const Note* a, const Note* b)
   { return a->getStartFrame() < b->getStartFrame(); });
-  lastMacroPreviewUpdate = 0.0;
 }
 
 float PitchCurveRenderer::macroOffset(const Note& note, int frame, bool includeDrift) const
@@ -127,16 +126,12 @@ void PitchCurveRenderer::draw(juce::Graphics &g, const Params &params)
   if (params.hidePitchCurves)
     return;
 
-  const double now = juce::Time::getMillisecondCounterHiRes();
-  if (!macroPreview.empty() && now - lastMacroPreviewUpdate >= 33.0)
+  // Every paint picks up the slider's latest values, so a drag shows within one frame.
+  for (auto& entry : macroPreview)
   {
-    for (auto& entry : macroPreview)
-    {
-      entry.second.displayMidi = entry.first->getMidiNote();
-      entry.second.displayDrift = entry.first->getPitchDrift();
-      entry.second.displayVibrato = entry.first->getVibrato();
-    }
-    lastMacroPreviewUpdate = now;
+    entry.second.displayMidi = entry.first->getMidiNote();
+    entry.second.displayDrift = entry.first->getPitchDrift();
+    entry.second.displayVibrato = entry.first->getVibrato();
   }
   const auto &audioData = project->getAudioData();
   if (audioData.f0.empty())

@@ -88,3 +88,9 @@ add_executable(PitchMacroRenderTests PitchMacroRenderTests.cpp)
 target_link_libraries(PitchMacroRenderTests PRIVATE pitchnet_ui)
 target_compile_features(PitchMacroRenderTests PRIVATE cxx_std_17)
 add_test(NAME PitchMacroRenderTests COMMAND PitchMacroRenderTests)
+
+# REQ-UI-002 frame budget for the piano roll; Release builds only measure meaningfully.
+add_executable(PianoRollFrameTimeTests PianoRollFrameTimeTests.cpp)
+target_link_libraries(PianoRollFrameTimeTests PRIVATE pitchnet_ui)
+target_compile_features(PianoRollFrameTimeTests PRIVATE cxx_std_17)
+add_test(NAME PianoRollFrameTimeTests COMMAND PianoRollFrameTimeTests)
