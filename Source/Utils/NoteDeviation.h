@@ -51,7 +51,7 @@ inline Level level(float cents, Thresholds limits = thresholds())
 inline float cents(const Project& project, const Note& note)
 {
     const float midi = meanMidi(project, note);
-    const float target = ScaleUtils::snapMidiToScale(midi, project.getScaleMode(),
+    const float target = ScaleUtils::snapMidiToScale(midi, ScaleUtils::keyScaleMode(project),
                                                      project.getScaleRootNote(),
                                                      project.getPitchReferenceHz());
     return (midi - target) * 100.0f;

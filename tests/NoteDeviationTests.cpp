@@ -31,9 +31,9 @@ int main()
   }
   CHECK(near(NoteDeviation::cents(project, outOfScale), 90.0f));
 
-  // In chromatic mode the nearest semitone is the target.
+  // Chromatic snapping does not change the target: deviation still follows the key.
   project.setScaleMode(ScaleMode::Chromatic);
-  CHECK(near(NoteDeviation::cents(project, outOfScale), -10.0f));
+  CHECK(near(NoteDeviation::cents(project, outOfScale), 90.0f));
 
   // A note with no voiced frames falls back to its own pitch.
   Note silent(30, 40, 60.0f);

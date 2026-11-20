@@ -191,6 +191,14 @@ inline float finePitchDragOffset(float deltaYPixels, float anchorMidi,
     return cents / 100.0f + reference - anchorMidi;
 }
 
+// The key's scale. The Chromatic / Scale choice only sets snapping, so deviation,
+// Quantize and scale steps always use the key's own mode.
+inline ScaleMode keyScaleMode(const Project& project)
+{
+    const auto mode = project.getScaleMode();
+    return mode == ScaleMode::None || mode == ScaleMode::Chromatic ? project.getPreferredScaleMode() : mode;
+}
+
 // The next scale tone above (direction > 0) or below the pitch; semitones without a scale.
 inline float stepMidiOnScale(float midi, int direction, ScaleMode mode, int rootNote,
                              int referenceHz = static_cast<int>(FREQ_A4))

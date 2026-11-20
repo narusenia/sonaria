@@ -3363,9 +3363,7 @@ bool PianoRollComponent::quantizeSelectedNotes()
 {
   if (project == nullptr)
     return false;
-  const auto mode = project->getScaleMode();
-  const auto scaleMode = mode == ScaleMode::None || mode == ScaleMode::Chromatic
-                             ? project->getPreferredScaleMode() : mode;
+  const auto scaleMode = ScaleUtils::keyScaleMode(*project);
   const int root = project->getScaleRootNote(), referenceHz = project->getPitchReferenceHz();
   return editSelectedNotes([&](Note &note)
   {
@@ -3458,7 +3456,7 @@ bool PianoRollComponent::keyPressed(const juce::KeyPress &key)
       editSelectedNotes([&](Note &note) { moveTo(note, note.getAdjustedMidiNote() + 12.0f * direction); });
     else
     {
-      const auto mode = project->getScaleMode();
+      const auto mode = ScaleUtils::keyScaleMode(*project);
       const int root = project->getScaleRootNote(), referenceHz = project->getPitchReferenceHz();
       editSelectedNotes([&](Note &note)
       {
