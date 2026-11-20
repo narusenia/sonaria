@@ -2174,6 +2174,9 @@ void MainComponent::analyzeAudio()
       {
         if (safeThis == nullptr)
           return;
+        if (auto *project = safeThis->getProject(); project && safeThis->undoManager)
+          if (auto keyAction = KeyChangeAction::takeAutoKey(*project))
+            safeThis->undoManager->addAction(std::move(keyAction));
         safeThis->notifyProjectDataChanged();
       });
 }
@@ -3175,6 +3178,8 @@ void MainComponent::redo()
 void MainComponent::afterHistoryChange(bool requiresResynthesis)
 {
   parameterPanel.updateFromNote();
+  toolbar.setProject(getProject()); // A key change refreshes the scale label.
+  pianoRoll.refreshScaleFromProject();
   pianoRoll.invalidateBasePitchCache(); // Refresh cache after note split etc.
   pianoRoll.repaint();
   pianoRollView.refreshOverview();
@@ -3494,6 +3499,9 @@ void MainComponent::setHostAudio(const juce::AudioBuffer<float> &buffer,
         auto *project = safeThis->getProject();
         if (!project)
           return;
+        if (safeThis->undoManager)
+          if (auto keyAction = KeyChangeAction::takeAutoKey(*project))
+            safeThis->undoManager->addAction(std::move(keyAction));
 
         project->getAudioData().timelineOffsetSeconds =
             std::max(0.0, timelineOffsetSeconds);

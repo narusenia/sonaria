@@ -390,6 +390,9 @@ void MainComponent::loadAudioFile(const juce::File &file,
         auto *project = safeThis->getProject();
         if (!project)
           return;
+        if (safeThis->undoManager)
+          if (auto keyAction = KeyChangeAction::takeAutoKey(*project))
+            safeThis->undoManager->addAction(std::move(keyAction));
         if (loadingParameters)
           project->setMidiReference(loadingParameters->midiReference);
         if (!safeThis->isPluginMode())

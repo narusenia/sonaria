@@ -3,6 +3,7 @@
 #include "../Audio/BreathSibilanceAnalysis.h"
 #include "../Audio/EditorController.h"
 #include "../Undo/PitchUndoManager.h"
+#include "../Undo/KeyChangeAction.h"
 #include "../Models/ProjectModificationRanges.h"
 #include "../Models/ProjectSerializer.h"
 #include "../Models/ProjectTimelineOffset.h"
@@ -1349,6 +1350,8 @@ void PitchNetAudioProcessor::requestCapturedAudioAnalysis(
           return;
 
         attachMacroParameters(*analyzedProject);
+        if (auto keyAction = KeyChangeAction::takeAutoKey(*analyzedProject))
+          undoManager->addAction(std::move(keyAction));
 
         std::unique_ptr<Project> completedProject;
         const bool hasPreviousCapture =
@@ -3141,6 +3144,7 @@ void PitchNetAudioProcessor::analyzeAraRegionForCanvas(
             sampleRate);
 
         attachMacroParameters(*project);
+        auto keyAction = KeyChangeAction::takeAutoKey(*project);
 
         // Cache this region's analysis so re-selecting it is instant and its
         // edits persist across switches.
@@ -3148,6 +3152,8 @@ void PitchNetAudioProcessor::analyzeAraRegionForCanvas(
         regionState.project = std::make_unique<Project>(*project);
         auto *regionUndoManager = regionState.ensureUndoManager();
         regionUndoManager->clear();
+        if (keyAction)
+          regionUndoManager->addAction(std::move(keyAction));
         const bool completedPendingRegion =
             pendingRegionCanvasAnalysisKey == regionKey;
 
@@ -3677,7 +3683,11 @@ void PitchNetAudioProcessor::restoreAraRegionProject(const juce::String &regionK
 }
 
 void PitchNetAudioProcessor::attachMacroParameters(Project &project) {
+  const auto autoKeyBefore = project.takeAutoKeyBefore();
   if (!macroParameters->projectKeyInitialized && project.getMacroParameters()->projectKeyInitialized) {
+    // The shared key changes only here, so an analysis-seeded key undoes to its state.
+    if (autoKeyBefore)
+      project.setAutoKeyBefore({macroParameters->projectKeyRoot, macroParameters->projectKeyMode, false});
     macroParameters->projectKeyRoot = project.getProjectKeyRoot();
     macroParameters->projectKeyMode = project.getProjectKeyMode();
     macroParameters->projectKeyInitialized = true;

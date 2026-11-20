@@ -12,4 +12,5 @@
 #include "PitchToolAction.h"
 #include "TimingAction.h"
 #include "PitchDrawingAction.h"
+#include "KeyChangeAction.h"
 #include "PitchUndoManager.h"

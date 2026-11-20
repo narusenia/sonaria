@@ -7,6 +7,7 @@
 #include <vector>
 #include <memory>
 #include <utility>
+#include <optional>
 
 /**
  * Container for audio data and extracted features.
@@ -167,6 +168,13 @@ struct MacroParameters
     bool timelineSnapCycle = false;
 };
 
+struct ProjectKeyState
+{
+    int root = 0;
+    ScaleMode mode = ScaleMode::Major;
+    bool initialized = false;
+};
+
 /**
  * Project data container.
  */
@@ -294,6 +302,9 @@ public:
     int getProjectKeyRoot() const { return macroParameters->projectKeyRoot; }
     ScaleMode getProjectKeyMode() const { return macroParameters->projectKeyMode; }
     void setProjectKey(int root, ScaleMode mode);
+    // Key state before analysis seeded the project key, until it is recorded as an undo step.
+    void setAutoKeyBefore(ProjectKeyState state) { autoKeyBefore = state; }
+    std::optional<ProjectKeyState> takeAutoKeyBefore() { return std::exchange(autoKeyBefore, std::nullopt); }
 
     int getPitchReferenceHz() const { return macroParameters->pitchReferenceHz; }
     void setPitchReferenceHz(int hz);
@@ -352,4 +363,5 @@ private:
     ScaleMode preferredScaleMode = ScaleMode::Major;
     int scaleRootNote = 0; // 0 = C, 1 = C#, ..., 11 = B
     std::shared_ptr<MacroParameters> macroParameters;
+    std::optional<ProjectKeyState> autoKeyBefore;
 };

@@ -156,8 +156,11 @@ inline void detectAndApplyScale(Project& project)
 
     // Detection is a suggestion, not an explicit region override. Seed the
     // default once for standalone projects; the plugin adopts its first result.
-    if (!project.getMacroParameters()->projectKeyInitialized)
+    if (const auto macros = project.getMacroParameters(); !macros->projectKeyInitialized)
+    {
+        project.setAutoKeyBefore({macros->projectKeyRoot, macros->projectKeyMode, false});
         project.setProjectKey(rootNote, mode);
+    }
 }
 
 inline float getReferenceOffsetSemitones(int referenceHz)

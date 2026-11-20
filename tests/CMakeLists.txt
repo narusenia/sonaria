@@ -19,6 +19,7 @@ set(PITCHNET_TEST_SOURCES
     BreathSibilanceTests.cpp
     FormantShiftTests.cpp
     HostSyncTempoTests.cpp
+    KeyDetectionTests.cpp
     MidiReferenceTests.cpp
     NoteGainCurveTests.cpp
     NonAraLifecycleTests.cpp
