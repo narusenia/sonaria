@@ -12,7 +12,7 @@
 #include "../Utils/UI/TimecodeFont.h"
 #include "../Utils/UI/Theme.h"
 #include "../Utils/PitchCurveProcessor.h"
-#include "../Utils/ScaleUtils.h"
+#include "../Utils/NoteDeviation.h"
 #include "../Utils/TimingRegionUtils.h"
 #include "PianoRoll/BreathSibilanceRenderer.h"
 #include "PianoRoll/PianoRollViewHelpers.h"
@@ -2718,17 +2718,22 @@ void PianoRollComponent::mouseExit(const juce::MouseEvent &)
 
 juce::String PianoRollComponent::getTooltip()
 {
-  if (!pitchToolHandles || pitchToolHandles->isEmpty())
-    return {};
-
   const auto mousePosition = getMouseXYRelative();
   const float adjustedX = mousePosition.x - pianoKeysWidth +
                           static_cast<float>(scrollX);
   const float adjustedY = mousePosition.y - headerHeight +
                           static_cast<float>(scrollY);
-  const int handleIndex = pitchToolHandles->hitTest(adjustedX, adjustedY);
+  const int handleIndex = pitchToolHandles && !pitchToolHandles->isEmpty()
+                              ? pitchToolHandles->hitTest(adjustedX, adjustedY)
+                              : -1;
   if (handleIndex < 0)
-    return {};
+  {
+    // The deviation as a number, so the colour is never the only cue.
+    if (hoveredNote == nullptr || project == nullptr)
+      return {};
+    const int cents = juce::roundToInt(NoteDeviation::cents(*project, *hoveredNote));
+    return (cents >= 0 ? "+" : "") + juce::String(cents) + " ct";
+  }
 
   switch (pitchToolHandles->getHandle(handleIndex).type)
   {

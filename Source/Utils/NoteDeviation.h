@@ -22,6 +22,30 @@ inline float meanMidi(const Project& project, const Note& note)
     return count > 0 ? static_cast<float>(sum / count) : note.getAdjustedMidiNote();
 }
 
+enum class Level { InTune, Caution, Fix };
+
+struct Thresholds
+{
+    float caution = 10.0f;
+    float fix = 30.0f;
+};
+
+// shortcut: one app-wide setting shared by every editor in the process; move it
+// into the views if thresholds ever need to differ per window.
+inline Thresholds& thresholds()
+{
+    static Thresholds value;
+    return value;
+}
+
+inline Level level(float cents, Thresholds limits = thresholds())
+{
+    const float distance = std::abs(cents);
+    return distance >= limits.fix ? Level::Fix
+         : distance >= limits.caution ? Level::Caution
+         : Level::InTune;
+}
+
 // Cents from the nearest tone of the project's scale; positive when sharp.
 inline float cents(const Project& project, const Note& note)
 {

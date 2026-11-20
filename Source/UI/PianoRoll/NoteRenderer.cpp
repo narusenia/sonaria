@@ -10,7 +10,7 @@
 #include "../Components/AppFont.h"
 #include "../../Audio/NoteTiming.h"
 #include "../../Utils/Constants.h"
-#include "../../Utils/ScaleUtils.h"
+#include "../../Utils/NoteDeviation.h"
 #include "../../Utils/UI/Theme.h"
 
 #include <algorithm>
@@ -58,48 +58,20 @@ struct NoteGradientColours
   juce::Colour side;
 };
 
-float getPitchCenterAmount(float midi, int pitchReferenceHz)
+NoteGradientColours getNoteGradientColours(const Project *project, const Note &note)
 {
-  const float pitchCenter =
-      ScaleUtils::snapMidiToSemitone(midi, pitchReferenceHz);
-  const float distanceFromCenter = std::abs(midi - pitchCenter);
-
-  return juce::jlimit(0.0f, 1.0f, distanceFromCenter / 0.5f);
-}
-
-juce::Colour interpolateLayeredColour(juce::Colour first,
-                                      juce::Colour second,
-                                      juce::Colour third,
-                                      juce::Colour fourth,
-                                      float amount)
-{
-  if (amount < 1.0f / 3.0f)
-    return first.interpolatedWith(second, amount * 3.0f);
-
-  if (amount < 2.0f / 3.0f)
-    return second.interpolatedWith(third, amount * 3.0f - 1.0f);
-
-  return third.interpolatedWith(fourth, amount * 3.0f - 2.0f);
-}
-
-NoteGradientColours getNoteGradientColours(float midi, int pitchReferenceHz)
-{
-  static const juce::Colour inTuneCentre(APP_COLOR_NOTE_IN_TUNE_CENTRE);
-  static const juce::Colour inTuneSide(APP_COLOR_NOTE_IN_TUNE_SIDE);
-  static const juce::Colour firstLayerCentre(APP_COLOR_NOTE_FIRST_LAYER_CENTRE);
-  static const juce::Colour firstLayerSide(APP_COLOR_NOTE_FIRST_LAYER_SIDE);
-  static const juce::Colour secondLayerCentre(APP_COLOR_NOTE_SECOND_LAYER_CENTRE);
-  static const juce::Colour secondLayerSide(APP_COLOR_NOTE_SECOND_LAYER_SIDE);
-  static const juce::Colour outOfTuneCentre(APP_COLOR_NOTE_OUT_OF_TUNE_CENTRE);
-  static const juce::Colour outOfTuneSide(APP_COLOR_NOTE_OUT_OF_TUNE_SIDE);
-
-  const float amount = getPitchCenterAmount(midi, pitchReferenceHz);
-
-  return {
-      interpolateLayeredColour(inTuneCentre, firstLayerCentre,
-                               secondLayerCentre, outOfTuneCentre, amount),
-      interpolateLayeredColour(inTuneSide, firstLayerSide, secondLayerSide,
-                               outOfTuneSide, amount)};
+  const auto level = project != nullptr
+                         ? NoteDeviation::level(NoteDeviation::cents(*project, note))
+                         : NoteDeviation::Level::InTune;
+  switch (level)
+  {
+    case NoteDeviation::Level::Fix:
+      return {APP_COLOR_NOTE_OUT_OF_TUNE_CENTRE, APP_COLOR_NOTE_OUT_OF_TUNE_SIDE};
+    case NoteDeviation::Level::Caution:
+      return {APP_COLOR_NOTE_CAUTION_CENTRE, APP_COLOR_NOTE_CAUTION_SIDE};
+    default:
+      return {APP_COLOR_NOTE_IN_TUNE_CENTRE, APP_COLOR_NOTE_IN_TUNE_SIDE};
+  }
 }
 
 void setNoteGradientFill(juce::Graphics &g,
@@ -137,9 +109,7 @@ juce::Colour NoteRenderer::bodyColour(const Note &note) const
 {
   if (greyscale)
     return APP_COLOR_NOTE_GREYSCALE;
-  const int pitchReferenceHz = project ? project->getPitchReferenceHz() : 440;
-  return getNoteGradientColours(note.getAdjustedMidiNote(), pitchReferenceHz)
-      .centre;
+  return getNoteGradientColours(project, note).centre;
 }
 
 void NoteRenderer::draw(juce::Graphics &g, Pass pass, bool splitModeActive,
@@ -364,8 +334,7 @@ void NoteRenderer::draw(juce::Graphics &g, Pass pass, bool splitModeActive,
           greyscale
               ? NoteGradientColours{APP_COLOR_NOTE_GREYSCALE,
                                     APP_COLOR_NOTE_GREYSCALE_EDGE}
-              : getNoteGradientColours(note.getAdjustedMidiNote(),
-                                       pitchReferenceHz);
+              : getNoteGradientColours(project, note);
       juce::Rectangle<float> noteVisualBounds(x, y, renderedWidth, h);
       // The shape that was filled, for the pinned-track outline.
       juce::Path bodyShape;

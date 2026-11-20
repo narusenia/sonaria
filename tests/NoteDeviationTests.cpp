@@ -40,5 +40,12 @@ int main()
   silent.setPitchOffset(0.25f);
   CHECK(near(NoteDeviation::cents(project, silent), 25.0f));
 
+  // Default thresholds: under 10 ct in tune, 10 to under 30 caution, 30 and over fix.
+  CHECK(NoteDeviation::level(9.9f) == NoteDeviation::Level::InTune);
+  CHECK(NoteDeviation::level(-10.0f) == NoteDeviation::Level::Caution);
+  CHECK(NoteDeviation::level(29.9f) == NoteDeviation::Level::Caution);
+  CHECK(NoteDeviation::level(-30.0f) == NoteDeviation::Level::Fix);
+  CHECK(NoteDeviation::level(20.0f, {5.0f, 15.0f}) == NoteDeviation::Level::Fix);
+
   std::cout << "Note deviation tests passed\n";
 }

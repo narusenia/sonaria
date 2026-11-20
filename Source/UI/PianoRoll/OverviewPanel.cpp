@@ -1,6 +1,6 @@
 #include "OverviewPanel.h"
 #include "VisualWaveformEnvelope.h"
-#include "../../Utils/ScaleUtils.h"
+#include "../../Utils/NoteDeviation.h"
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -8,50 +8,15 @@
 namespace {
 const juce::Colour &thumbnailBackground = APP_COLOR_OVERVIEW_BACKGROUND;
 
-struct NoteGradientColours {
-  juce::Colour centre;
-  juce::Colour side;
-};
-
-float getPitchCenterAmount(float midi, int pitchReferenceHz) {
-  const float pitchCenter =
-      ScaleUtils::snapMidiToSemitone(midi, pitchReferenceHz);
-  const float distanceFromCenter = std::abs(midi - pitchCenter);
-
-  return juce::jlimit(0.0f, 1.0f, distanceFromCenter / 0.5f);
-}
-
-juce::Colour interpolateLayeredColour(juce::Colour first,
-                                      juce::Colour second,
-                                      juce::Colour third,
-                                      juce::Colour fourth,
-                                      float amount) {
-  if (amount < 1.0f / 3.0f)
-    return first.interpolatedWith(second, amount * 3.0f);
-
-  if (amount < 2.0f / 3.0f)
-    return second.interpolatedWith(third, amount * 3.0f - 1.0f);
-
-  return third.interpolatedWith(fourth, amount * 3.0f - 2.0f);
-}
-
-NoteGradientColours getNoteGradientColours(float midi, int pitchReferenceHz) {
-  static const juce::Colour inTuneCentre(APP_COLOR_NOTE_IN_TUNE_CENTRE);
-  static const juce::Colour inTuneSide(APP_COLOR_NOTE_IN_TUNE_SIDE);
-  static const juce::Colour firstLayerCentre(APP_COLOR_NOTE_FIRST_LAYER_CENTRE);
-  static const juce::Colour firstLayerSide(APP_COLOR_NOTE_FIRST_LAYER_SIDE);
-  static const juce::Colour secondLayerCentre(APP_COLOR_NOTE_SECOND_LAYER_CENTRE);
-  static const juce::Colour secondLayerSide(APP_COLOR_NOTE_SECOND_LAYER_SIDE);
-  static const juce::Colour outOfTuneCentre(APP_COLOR_NOTE_OUT_OF_TUNE_CENTRE);
-  static const juce::Colour outOfTuneSide(APP_COLOR_NOTE_OUT_OF_TUNE_SIDE);
-
-  const float amount = getPitchCenterAmount(midi, pitchReferenceHz);
-
-  return {
-      interpolateLayeredColour(inTuneCentre, firstLayerCentre,
-                               secondLayerCentre, outOfTuneCentre, amount),
-      interpolateLayeredColour(inTuneSide, firstLayerSide, secondLayerSide,
-                               outOfTuneSide, amount)};
+juce::Colour noteColour(const Project &project, const Note &note) {
+  switch (NoteDeviation::level(NoteDeviation::cents(project, note))) {
+  case NoteDeviation::Level::Fix:
+    return APP_COLOR_NOTE_OUT_OF_TUNE_SIDE;
+  case NoteDeviation::Level::Caution:
+    return APP_COLOR_NOTE_CAUTION_SIDE;
+  default:
+    return APP_COLOR_NOTE_IN_TUNE_SIDE;
+  }
 }
 
 float noteRangeY(float midi, float minPitch, float maxPitch,
@@ -351,8 +316,6 @@ void OverviewPanel::paintStaticContent(juce::Graphics &g) {
   const float noteHeight =
       juce::jlimit(1.0f, 5.0f, content.getHeight() / pitchRange);
   const float thickness = juce::jlimit(1.0f, 3.0f, noteHeight);
-  const int pitchReferenceHz =
-      project != nullptr ? project->getPitchReferenceHz() : 440;
 
   if (hasPreviews) {
     for (const auto &region : *regionPreviews) {
@@ -361,13 +324,11 @@ void OverviewPanel::paintStaticContent(juce::Graphics &g) {
       for (const auto &note : region.notes) {
         if (note.endSeconds <= note.startSeconds)
           continue;
-        const auto noteColour =
-            getNoteGradientColours(note.midi, pitchReferenceHz).side;
         const float x1 = timeToOverviewX(hostToProject(note.startSeconds));
         const float x2 = timeToOverviewX(hostToProject(note.endSeconds));
         const float y = noteRangeY(note.midi, minPitch, maxPitch, content);
         // Same as the active region's notes, but grey.
-        g.setColour(noteColour.withSaturation(0.0f).withAlpha(0.9f));
+        g.setColour(APP_COLOR_NOTE_IN_TUNE_SIDE.withSaturation(0.0f).withAlpha(0.9f));
         g.drawLine(x1, y, x2, y, thickness);
       }
     }
@@ -389,13 +350,10 @@ void OverviewPanel::paintStaticContent(juce::Graphics &g) {
         continue;
 
       const float midi = note.getAdjustedMidiNote();
-      const auto noteColour =
-          getNoteGradientColours(midi, pitchReferenceHz).side;
-
       const float x1 = timeToOverviewX(startTime);
       const float x2 = timeToOverviewX(endTime);
       const float y = noteRangeY(midi, minPitch, maxPitch, content);
-      g.setColour(noteColour.withAlpha(0.9f));
+      g.setColour(noteColour(*project, note).withAlpha(0.9f));
       g.drawLine(x1, y, x2, y, thickness);
     }
   }

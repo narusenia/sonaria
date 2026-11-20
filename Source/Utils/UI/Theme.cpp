@@ -212,10 +212,8 @@ const juce::Colour APP_COLOR_RADIO_LABEL_IDLE         = juce::Colour(0xFF51505Bu
 // ── Note pitch gradient (in tune -> out of tune) ──────────────────
 const juce::Colour APP_COLOR_NOTE_IN_TUNE_CENTRE      = juce::Colour(0xFFB3A4FFu);  // In-tune note, centre
 const juce::Colour APP_COLOR_NOTE_IN_TUNE_SIDE        = juce::Colour(0xFF8E7CF0u);  // In-tune note, edges
-const juce::Colour APP_COLOR_NOTE_FIRST_LAYER_CENTRE  = juce::Colour(0xFFD3A6EEu);  // Slightly off note, centre
-const juce::Colour APP_COLOR_NOTE_FIRST_LAYER_SIDE    = juce::Colour(0xFFB07FDBu);  // Slightly off note, edges
-const juce::Colour APP_COLOR_NOTE_SECOND_LAYER_CENTRE = juce::Colour(0xFFFFB48Au);  // Further off note, centre
-const juce::Colour APP_COLOR_NOTE_SECOND_LAYER_SIDE   = juce::Colour(0xFFF08F55u);  // Further off note, edges
+const juce::Colour APP_COLOR_NOTE_CAUTION_CENTRE      = juce::Colour(0xFFF29AC8u);  // Note off by the caution threshold, centre
+const juce::Colour APP_COLOR_NOTE_CAUTION_SIDE        = juce::Colour(0xFFDB72AEu);  // Note off by the caution threshold, edges
 const juce::Colour APP_COLOR_NOTE_OUT_OF_TUNE_CENTRE  = juce::Colour(0xFFFF9F5Au);  // Out-of-tune note, centre
 const juce::Colour APP_COLOR_NOTE_OUT_OF_TUNE_SIDE    = juce::Colour(0xFFF07A2Au);  // Out-of-tune note, edges
 

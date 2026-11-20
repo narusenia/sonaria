@@ -188,10 +188,8 @@ extern const juce::Colour APP_COLOR_RADIO_LABEL_IDLE;
 // ── Note pitch gradient (in tune -> out of tune) ──────────────────
 extern const juce::Colour APP_COLOR_NOTE_IN_TUNE_CENTRE;
 extern const juce::Colour APP_COLOR_NOTE_IN_TUNE_SIDE;
-extern const juce::Colour APP_COLOR_NOTE_FIRST_LAYER_CENTRE;
-extern const juce::Colour APP_COLOR_NOTE_FIRST_LAYER_SIDE;
-extern const juce::Colour APP_COLOR_NOTE_SECOND_LAYER_CENTRE;
-extern const juce::Colour APP_COLOR_NOTE_SECOND_LAYER_SIDE;
+extern const juce::Colour APP_COLOR_NOTE_CAUTION_CENTRE;
+extern const juce::Colour APP_COLOR_NOTE_CAUTION_SIDE;
 extern const juce::Colour APP_COLOR_NOTE_OUT_OF_TUNE_CENTRE;
 extern const juce::Colour APP_COLOR_NOTE_OUT_OF_TUNE_SIDE;
 
