@@ -21,6 +21,7 @@ set(PITCHNET_TEST_SOURCES
     HostSyncTempoTests.cpp
     KeyDetectionTests.cpp
     MidiReferenceTests.cpp
+    NoteDeviationTests.cpp
     NoteGainCurveTests.cpp
     NonAraLifecycleTests.cpp
     OriginalWaveformRestoreTests.cpp
