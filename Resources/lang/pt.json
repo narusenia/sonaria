@@ -156,6 +156,7 @@
   "param.brightness": "Brilho",
   "param.deviation_caution": "Aviso a partir de",
   "param.deviation_fix": "Corrigir a partir de",
+  "param.jump_includes_caution": "Saltar também para notas de aviso",
   "param.show_breaths_and_sibilance": "Respirações e sibilância",
   "param.beat": "Batida",
   "param.beats": "Batidas",

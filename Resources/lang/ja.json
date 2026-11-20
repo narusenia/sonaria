@@ -161,6 +161,7 @@
   "param.brightness": "明るさ",
   "param.deviation_caution": "注意のずれ",
   "param.deviation_fix": "要修正のずれ",
+  "param.jump_includes_caution": "注意のノートにもジャンプ",
   "param.show_breaths_and_sibilance": "ブレスと歯擦音を表示",
   "param.beat": "拍子",
   "param.beats": "拍",

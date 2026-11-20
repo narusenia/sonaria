@@ -28,6 +28,7 @@ struct Thresholds
 {
     float caution = 10.0f;
     float fix = 30.0f;
+    bool jumpIncludesCaution = false;
 };
 
 // shortcut: one app-wide setting shared by every editor in the process; move it
@@ -56,14 +57,17 @@ inline float cents(const Project& project, const Note& note)
     return (midi - target) * 100.0f;
 }
 // The next (or previous) note needing a fix after fromFrame, wrapping around; -1 if there is none.
-inline int findFixNote(const Project& project, int fromFrame, bool forward)
+// Caution notes count too when the setting asks for them.
+inline int findFixNote(const Project& project, int fromFrame, bool forward,
+                       bool includeCaution = thresholds().jumpIncludesCaution)
 {
     const auto& notes = project.getNotes();
     int next = -1, wrapped = -1;
     const auto earlier = [&](int a, int b) { return notes[(size_t) a].getStartFrame() < notes[(size_t) b].getStartFrame(); };
     for (int i = 0; i < static_cast<int>(notes.size()); ++i) {
         const auto& note = notes[(size_t) i];
-        if (note.isRest() || level(cents(project, note)) != Level::Fix)
+        const auto noteLevel = note.isRest() ? Level::InTune : level(cents(project, note));
+        if (noteLevel != Level::Fix && !(includeCaution && noteLevel == Level::Caution))
             continue;
         const int start = note.getStartFrame();
         if (forward) {

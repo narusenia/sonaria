@@ -95,6 +95,8 @@ public:
     deviationCautionCents = juce::jlimit(1.0, 50.0, caution);
     deviationFixCents = juce::jlimit(deviationCautionCents + 1.0, 100.0, fix);
   }
+  bool getJumpIncludesCaution() const { return jumpIncludesCaution; }
+  void setJumpIncludesCaution(bool include) { jumpIncludesCaution = include; }
   bool getShowBreathsAndSibilance() const { return showBreathsAndSibilance; }
   void setNoiseVisibility(bool show) { showBreathsAndSibilance = show; }
   bool getLiveAuditionEnabled() const { return liveAuditionEnabled; }
@@ -185,6 +187,7 @@ private:
   double uiBrightnessPercent = 100.0;
   double deviationCautionCents = 10.0;
   double deviationFixCents = 30.0;
+  bool jumpIncludesCaution = false;
   bool showBreathsAndSibilance = true;
   bool liveAuditionEnabled = false;
   bool followPlayback = true;

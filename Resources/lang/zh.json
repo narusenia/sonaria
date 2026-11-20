@@ -154,6 +154,7 @@
   "param.brightness": "亮度",
   "param.deviation_caution": "注意偏差",
   "param.deviation_fix": "需修正偏差",
+  "param.jump_includes_caution": "也跳到注意音符",
   "param.show_breaths_and_sibilance": "显示呼吸声和齿音",
   "param.beat": "拍号",
   "param.beats": "节拍",

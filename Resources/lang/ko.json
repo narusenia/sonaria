@@ -154,6 +154,7 @@
   "param.brightness": "밝기",
   "param.deviation_caution": "주의 편차",
   "param.deviation_fix": "수정 편차",
+  "param.jump_includes_caution": "주의 노트로도 이동",
   "param.show_breaths_and_sibilance": "숨소리와 치찰음 표시",
   "param.beat": "박자",
   "param.beats": "박자",

@@ -61,6 +61,10 @@ int main()
     CHECK(NoteDeviation::findFixNote(jumps, 30, true) == 1);
     CHECK(NoteDeviation::findFixNote(jumps, 30, false) == 1);
     CHECK(NoteDeviation::findFixNote(jumps, 10, false) == 3);
+    // Including caution notes adds the 15 ct note (index 2 at 62.15) to the walk.
+    jumps.getNotes()[2].setPitchOffset(2.15f);
+    CHECK(NoteDeviation::findFixNote(jumps, 10, true, true) == 2);
+    CHECK(NoteDeviation::findFixNote(jumps, 10, true, false) == 3);
     Project clean;
     clean.addNote(Note(0, 10, 60.0f));
     CHECK(NoteDeviation::findFixNote(clean, -1, true) == -1);

@@ -156,6 +156,7 @@
   "param.brightness": "Яркость",
   "param.deviation_caution": "Внимание от",
   "param.deviation_fix": "Исправить от",
+  "param.jump_includes_caution": "Переходить и к нотам «внимание»",
   "param.show_breaths_and_sibilance": "Вдохи и сибилянты",
   "param.beat": "Доля",
   "param.beats": "Доли",

@@ -163,6 +163,7 @@
   "param.brightness": "Brightness",
   "param.deviation_caution": "Caution at",
   "param.deviation_fix": "Fix at",
+  "param.jump_includes_caution": "Jump to caution notes too",
   "param.show_breaths_and_sibilance": "Show Breaths & Sibilance",
   "param.beat": "Beat",
   "param.beats": "Beats",

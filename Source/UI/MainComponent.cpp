@@ -865,7 +865,8 @@ MainComponent::MainComponent(bool enableAudioDevice)
   };
   const auto applyDeviationThresholds = [this](double caution, double fix)
   {
-    NoteDeviation::thresholds() = {static_cast<float>(caution), static_cast<float>(fix)};
+    NoteDeviation::thresholds().caution = static_cast<float>(caution);
+    NoteDeviation::thresholds().fix = static_cast<float>(fix);
     pianoRoll.repaint();
     pianoRollView.refreshOverview();
   };
@@ -878,6 +879,14 @@ MainComponent::MainComponent(bool enableAudioDevice)
   {
     settingsManager->setDeviationThresholds(caution, fix);
     applyDeviationThresholds(caution, fix);
+  };
+  NoteDeviation::thresholds().jumpIncludesCaution = settingsManager->getJumpIncludesCaution();
+  parameterPanel.setJumpIncludesCaution(settingsManager->getJumpIncludesCaution());
+  parameterPanel.onJumpIncludesCautionChanged = [this](bool include)
+  {
+    settingsManager->setJumpIncludesCaution(include);
+    NoteDeviation::thresholds().jumpIncludesCaution = include;
+    settingsManager->saveConfig();
   };
   parameterPanel.onNoiseVisibilityChanged = [this](bool show)
   {

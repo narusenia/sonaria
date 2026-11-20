@@ -48,7 +48,7 @@ constexpr int kPitchCardHeight =
     ((kRowGap + 1) + kControlRowHeight) * 3 + kInnerPadY;
 constexpr int kUiCardHeight =
     kInnerPadY + kSectionLabelHeight + kSectionLabelGap +
-    kControlRowHeight * 4 + kRowGap * 3 + kInnerPadY;
+    kControlRowHeight * 5 + kRowGap * 4 + kInnerPadY;
 constexpr int kLanguageCardHeight =
     kInnerPadY + kSectionLabelHeight + kSectionLabelGap + kLanguageRowHeight + kInnerPadY;
 constexpr int kMidiReferenceCardHeight =
@@ -481,6 +481,14 @@ ParameterPanel::ParameterPanel()
         addAndMakeVisible(slider);
     }
 
+    addAndMakeVisible(jumpIncludesCautionToggle);
+    jumpIncludesCautionToggle.setClickingTogglesState(true);
+    jumpIncludesCautionToggle.onClick = [this]()
+    {
+        if (onJumpIncludesCautionChanged)
+            onJumpIncludesCautionChanged(jumpIncludesCautionToggle.getToggleState());
+    };
+
     addAndMakeVisible(showBreathsAndSibilanceToggle);
     showBreathsAndSibilanceToggle.setClickingTogglesState(true);
     showBreathsAndSibilanceToggle.setToggleState(true, juce::dontSendNotification);
@@ -829,6 +837,8 @@ void ParameterPanel::resized()
         bounds.removeFromTop(rowGap);
         layoutSliderRow(deviationLabels[i], deviationSliders[i]);
     }
+    bounds.removeFromTop(rowGap);
+    jumpIncludesCautionToggle.setBounds(bounds.removeFromTop(kControlRowHeight));
 
     const int uiCardBottom = bounds.getY() + innerPadY;
     uiCardBounds = juce::Rectangle<int>(
@@ -998,6 +1008,7 @@ void ParameterPanel::refreshLocalisedText()
     deviationLabels[1].setText(TR("param.deviation_fix"), juce::dontSendNotification);
     deviationSliders[0].setName(TR("param.deviation_caution"));
     deviationSliders[1].setName(TR("param.deviation_fix"));
+    jumpIncludesCautionToggle.setButtonText(TR("param.jump_includes_caution"));
     midiDragButton.setButtonText(TR("param.midi_drag"));
     midiDragButton.setTooltip(TR("tooltip.midi_drag"));
     midiReferenceSectionLabel.setText(TR("panel.midi"), juce::dontSendNotification);
@@ -1226,6 +1237,11 @@ void ParameterPanel::setDeviationThresholds(double caution, double fix)
 {
     deviationSliders[0].setValue(caution, juce::dontSendNotification);
     deviationSliders[1].setValue(fix, juce::dontSendNotification);
+}
+
+void ParameterPanel::setJumpIncludesCaution(bool include)
+{
+    jumpIncludesCautionToggle.setToggleState(include, juce::dontSendNotification);
 }
 
 void ParameterPanel::setNoiseVisibility(bool show)
