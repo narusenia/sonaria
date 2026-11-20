@@ -12,25 +12,27 @@
 
 | 操作 | 計算 | 既存の部品 |
 |---|---|---|
-| Quantize（強さ s） | ノートのオフセットを `s × (最も近いスケール音 − 平均ピッチ)` だけ動かす | ノートの offset |
-| Straighten（強さ s） | ノート内の delta に factor `1 − s` をかける | `PitchToolOperations` の factor 操作 |
-| Straighten（ビブラート保持） | delta を低域（ドリフト）と高域（3〜8Hz のビブラート）に分け、低域だけに factor をかける | `FourierPitchFilter` |
+| Quantize（強さ s） | ノートのピッチを `s × (最も近いスケール音 − 平均ピッチ)` だけ動かす | Pitch Center マクロ |
+| Straighten（強さ s） | ノートの vibrato と drift の factor に `1 − s` をかける | `PitchToolOperations` の factor 操作 |
+| Straighten（ビブラート保持） | delta の 2Hz 以下（ドリフト）だけに factor をかける | `PitchToolOperations::scalePitchDrift` |
 
-- スライダーは選択中のノートに対して 0〜100%。ドラッグ中は試聴に反映し、離したら undo 1 回分のアクションにまとめる
+- Pitch Center ダイアログのスライダーで、選択中のノートに 0〜100% でかける。ドラッグ中は描画と試聴に反映し、OK で undo 1 回分のアクションにまとめる
+- 平均ピッチとスケールは、ピッチ欄の Chromatic / Scale（スナップの設定）にかかわらず、プロジェクトのキーのスケールで測る
 - ノートの冒頭と末尾 30ms（しゃくり・フォール）には Straighten をかけない（仮）
 
 ## キーボード割り当て（仮）
 
-M1 で実装しながら、Cubase と Studio One のショートカットとの衝突を確認して決める。
+M1 で実装した。Cubase と Studio One のショートカットとの衝突は未確認。一覧は編集メニューの「キーボードショートカット」で出る。
 
 | キー | 操作 |
 |---|---|
 | ← / → | 前 / 次のノートを選択 |
 | Shift + ← / → | 選択を広げる |
-| ↑ / ↓ | 選択ノートをスケール上の 1 音上 / 下へ |
+| ↑ / ↓ | 選択ノートをスケール上の 1 音上 / 下へ（セントのずれは捨て、スケール音に乗せる） |
+| Shift + ↑ / ↓ | 選択ノートを 1 オクターブ上 / 下へ |
 | Alt + ↑ / ↓ | 選択ノートを 1 セント単位で上 / 下へ（Shift で 10 セント） |
 | N / Shift + N | 次 / 前のずれたノートへジャンプ |
-| Q / W | Quantize / Straighten を 100% でかける |
+| Q / W | Quantize / Straighten（ビブラート保持）を 100% でかける |
 | 1〜4 | ツール切り替え（選択 / 分割 / 描画 / タイミング） |
 | Space 長押し中の A | 選択ノートを原音で試聴（M5） |
 | H | 度数シフトのダイアログ（M2） |
