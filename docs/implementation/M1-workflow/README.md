@@ -11,9 +11,9 @@
 | M1-01 | 解析後のスケール自動適用（既存 `detectMajorOrRelativeMinor` を使う）、手動変更の保護、undo | WF-001 | S | — | 実装済み（検出したキーを undo 1 回で戻せる。実音声と DAW での確認は未） |
 | M1-02 | ずれの計算（ノートごとのセント）とテスト | WF-003 | S | M1-01 | 完了（`Source/Utils/NoteDeviation.h`。有声フレームの平均ピッチを `audioData.f0` から求める） |
 | M1-03 | ずれの色分け（`NoteRenderer`）、しきい値の設定、ツールチップ | WF-003 | S | M1-02 | 実装済み（3 段階の色は Standalone で確認。しきい値は UI パネルのスライダー、ツールチップは画面で未確認） |
-| M1-04 | ずれたノートへのジャンプ（コマンド ID 追加、表示範囲の移動） | WF-004 | S | M1-02 | 実装済み（N / Shift+N、編集メニュー。対象は要修正のみで、注意を含める設定は未実装。画面での確認は未） |
-| M1-05 | Quantize（ノートの offset を使う）とテスト | WF-002 | M | M1-01 | 未着手 |
-| M1-06 | Straighten（既存の factor 操作、ビブラート保持は `FourierPitchFilter`）とテスト | WF-002 | M | — | 未着手 |
-| M1-07 | Quantize / Straighten のスライダー UI（ドラッグ中の試聴、離したら undo 1 回） | WF-002, UI-002 | M | M1-05, M1-06 | 未着手 |
-| M1-08 | キーボード操作（割り当て表の実装、一覧表示、Cubase と Studio One での衝突確認） | WF-005 | M | M1-04, M1-07 | 未着手 |
-| M1-10 | 基準曲での操作応答の確認（60fps） | UI-002 | S | M1-03 | 未着手 |
+| M1-04 | ずれたノートへのジャンプ（コマンド ID 追加、表示範囲の移動） | WF-004 | S | M1-02 | 実装済み（N / Shift+N、編集メニュー。UI パネルで注意のノートも対象にできる。画面での確認は未） |
+| M1-05 | Quantize（ノートの offset を使う）とテスト | WF-002 | M | M1-01 | 完了（既存の Pitch Center を、ノートの平均ピッチがスケール音に合うよう変更。Q で 100%） |
+| M1-06 | Straighten（既存の factor 操作、ビブラート保持は `FourierPitchFilter`）とテスト | WF-002 | M | — | 完了（既存の Pitch Drift がビブラート保持の Straighten。保持しないモードを追加。W で 100%） |
+| M1-07 | Quantize / Straighten のスライダー UI（ドラッグ中の試聴、離したら undo 1 回） | WF-002, UI-002 | M | M1-05, M1-06 | 完了（既存の Pitch Center ダイアログを使う。undo はダイアログの OK 1 回で 1 つ。ドラッグ中の描画は毎フレーム更新） |
+| M1-08 | キーボード操作（割り当て表の実装、一覧表示、Cubase と Studio One での衝突確認） | WF-005 | M | M1-04, M1-07 | 実装済み（← → 選択、↑ ↓ スケール移動、Alt でセント、Q / W、編集メニューに一覧。Cubase と Studio One での衝突確認は未） |
+| M1-10 | 基準曲での操作応答の確認（60fps） | UI-002 | S | M1-03 | 完了（`tests/PianoRollFrameTimeTests.cpp`。3 分・600 ノートでスクロール 6.1ms、ズーム 9.1ms / フレーム、M 系 Mac・画面外描画。ゴーストは M2 で再測定） |
