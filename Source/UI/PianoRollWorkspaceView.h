@@ -56,7 +56,9 @@ private:
   ToggleButton overviewToggleButton;
   bool trackViewModeAvailable = false;
   bool overviewVisible = false;
-  bool pitchCenterSnapToScale = false;
+  // A detected key makes the scale the natural Quantize target.
+  bool pitchCenterSnapToScale = true;
+  bool straightenKeepsVibrato = true;
 
   FloatingZoomSliderLookAndFeel floatingZoomSliderLookAndFeel;
   FloatingControlBackground zoomXBackground;

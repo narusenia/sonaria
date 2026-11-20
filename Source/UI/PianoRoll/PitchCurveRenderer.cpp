@@ -19,7 +19,7 @@ void PitchCurveRenderer::beginMacroPreview(const std::vector<Note*>& notes)
     {
       macroPreview.emplace(note, MacroPreview{note->getMidiNote(), note->getPitchDrift(),
           PitchCurveProcessor::getDriftPreviewResponse(*project, *note),
-          note->getMidiNote(), note->getPitchDrift()});
+          note->getMidiNote(), note->getPitchDrift(), note->getVibrato(), note->getVibrato()});
       macroNotes.push_back(note);
     }
   std::sort(macroNotes.begin(), macroNotes.end(), [](const Note* a, const Note* b)
@@ -34,9 +34,17 @@ float PitchCurveRenderer::macroOffset(const Note& note, int frame, bool includeD
   const auto& preview = it->second;
   float offset = preview.displayMidi - preview.midi;
   const int local = frame - note.getStartFrame();
-  if (includeDrift && local >= 0 && local < static_cast<int>(preview.driftResponse.size()))
-    offset += (preview.displayDrift - preview.drift) * preview.driftResponse[static_cast<size_t>(local)];
-  return offset;
+  if (!includeDrift || local < 0)
+    return offset;
+  float driftOffset = 0.0f;
+  if (local < static_cast<int>(preview.driftResponse.size()))
+    driftOffset = (preview.displayDrift - preview.drift) * preview.driftResponse[static_cast<size_t>(local)];
+  // Vibrato scales the whole delta, so a new scale multiplies the current curve.
+  const auto& delta = project->getAudioData().deltaPitch;
+  if (std::abs(preview.vibrato) > 0.0001f && frame >= 0 && frame < static_cast<int>(delta.size()))
+    driftOffset += (preview.displayVibrato / preview.vibrato - 1.0f) *
+                   (delta[static_cast<size_t>(frame)] + driftOffset);
+  return offset + driftOffset;
 }
 
 void PitchCurveRenderer::invalidateBasePitchCache()
@@ -126,6 +134,7 @@ void PitchCurveRenderer::draw(juce::Graphics &g, const Params &params)
     {
       entry.second.displayMidi = entry.first->getMidiNote();
       entry.second.displayDrift = entry.first->getPitchDrift();
+      entry.second.displayVibrato = entry.first->getVibrato();
     }
     lastMacroPreviewUpdate = now;
   }

@@ -258,6 +258,7 @@
   "quantize.pitch_center": "Centro de afinação",
   "quantize.pitch_drift": "Deriva de afinação",
   "quantize.snap_to_scale": "Ajustar à escala",
+  "quantize.keep_vibrato": "Manter vibrato",
   "restore.all": "Todas as edições",
   "restore.amplitude": "Amplitude",
   "restore.formant": "Formante",

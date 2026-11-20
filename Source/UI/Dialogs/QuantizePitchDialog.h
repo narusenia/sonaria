@@ -9,7 +9,7 @@ namespace QuantizePitchDialog {
 // non-empty range is shown as "low % - high %" until that slider is changed.
 // The initial values (the targets' average) position the thumbs.
 // Preview arguments: pitch center %, center edited, snap to scale,
-// pitch drift %, drift edited. Drift is correction strength: 0% original
+// pitch drift %, drift edited, keep vibrato. Drift is correction strength: 0% original
 // (default), 100% removed. An unedited slider keeps each note's own value.
 // The completion callback receives true only when the user explicitly
 // confirms the edit. onPreview updates note positions during dragging;
@@ -18,8 +18,8 @@ void showPopup(juce::Component *parent,
                juce::Rectangle<int> anchorBounds,
                juce::Range<float> pitchCenterRange, float initialPitchCenter,
                juce::Range<float> pitchDriftRange, float initialPitchDrift,
-               bool initialSnapToScale,
-               std::function<void(float, bool, bool, float, bool)> onPreview,
+               bool initialSnapToScale, bool initialKeepVibrato,
+               std::function<void(float, bool, bool, float, bool, bool)> onPreview,
                std::function<void(bool)> onComplete,
                std::function<void()> onRefreshPreview);
 

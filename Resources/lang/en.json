@@ -258,6 +258,7 @@
   "quantize.pitch_center": "Pitch Center",
   "quantize.pitch_drift": "Pitch Drift",
   "quantize.snap_to_scale": "Snap to Scale",
+  "quantize.keep_vibrato": "Keep Vibrato",
   "restore.all": "All Edits",
   "restore.amplitude": "Amplitude",
   "restore.formant": "Formant",

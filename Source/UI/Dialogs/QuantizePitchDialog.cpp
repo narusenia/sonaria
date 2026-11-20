@@ -14,8 +14,8 @@ class Content final : public juce::Component
 public:
   Content(juce::Range<float> pitchCenterRange, float initialPitchCenter,
           juce::Range<float> pitchDriftRange, float initialPitchDrift,
-          bool initialSnapToScale,
-          std::function<void(float, bool, bool, float, bool)> preview,
+          bool initialSnapToScale, bool initialKeepVibrato,
+          std::function<void(float, bool, bool, float, bool, bool)> preview,
           std::function<void(bool)> completed, std::function<void()> refreshPreview)
       : onPreview(std::move(preview)), onComplete(std::move(completed)),
         onRefreshPreview(std::move(refreshPreview))
@@ -54,6 +54,10 @@ public:
 
     snapToScale.setButtonText(TR("quantize.snap_to_scale"));
 
+    keepVibrato.setToggleState(initialKeepVibrato, juce::dontSendNotification);
+    keepVibrato.onClick = [this] { if (driftEdited) previewCorrection(); };
+    keepVibrato.setButtonText(TR("quantize.keep_vibrato"));
+
     setupButton(cancelButton, TR("dialog.cancel"));
     setupButton(okButton, TR("dialog.ok"));
     cancelButton.onClick = [this] { finish(false); };
@@ -64,6 +68,7 @@ public:
     addAndMakeVisible(pitchDriftLabel);
     addAndMakeVisible(pitchDrift);
     addAndMakeVisible(snapToScale);
+    addAndMakeVisible(keepVibrato);
     addAndMakeVisible(cancelButton);
     addAndMakeVisible(okButton);
   }
@@ -96,8 +101,11 @@ public:
     pitchDriftLabel.setBounds(row.removeFromLeft(94));
     pitchDrift.setBounds(row);
     area.removeFromTop(10);
+    auto toggleRow = area.removeFromTop(24);
+    snapToScale.setBounds(toggleRow.removeFromLeft(toggleRow.getWidth() / 2));
+    keepVibrato.setBounds(toggleRow);
+    area.removeFromTop(8);
     auto actionRow = area.removeFromTop(24);
-    snapToScale.setBounds(actionRow.removeFromLeft(148));
     auto buttons = actionRow.removeFromRight(160).translated(1, 0);
     cancelButton.setBounds(buttons.removeFromLeft(75));
     buttons.removeFromLeft(10);
@@ -142,7 +150,8 @@ private:
     if (onPreview)
       onPreview(static_cast<float>(pitchCenter.getValue()), centerEdited,
                 snapToScale.getToggleState(),
-                static_cast<float>(pitchDrift.getValue()), driftEdited);
+                static_cast<float>(pitchDrift.getValue()), driftEdited,
+                keepVibrato.getToggleState());
     previewPending = true;
     if (!sliderDragging)
       refreshCorrection();
@@ -157,7 +166,7 @@ private:
       onRefreshPreview();
   }
 
-  std::function<void(float, bool, bool, float, bool)> onPreview;
+  std::function<void(float, bool, bool, float, bool, bool)> onPreview;
   std::function<void(bool)> onComplete;
   std::function<void()> onRefreshPreview;
   bool sliderDragging = false;
@@ -169,7 +178,7 @@ private:
   bool centerEdited = false;
   bool driftEdited = false;
   static constexpr int valueBoxWidth = 88;
-  StyledToggleButton snapToScale;
+  StyledToggleButton snapToScale, keepVibrato;
   juce::TextButton cancelButton, okButton;
   bool finished = false;
 };
@@ -186,8 +195,8 @@ void dismissPopup()
 void showPopup(juce::Component *parent, juce::Rectangle<int> anchorBounds,
                juce::Range<float> pitchCenterRange, float initialPitchCenter,
                juce::Range<float> pitchDriftRange, float initialPitchDrift,
-               bool initialSnapToScale,
-               std::function<void(float, bool, bool, float, bool)> onPreview,
+               bool initialSnapToScale, bool initialKeepVibrato,
+               std::function<void(float, bool, bool, float, bool, bool)> onPreview,
                std::function<void(bool)> onComplete,
                std::function<void()> onRefreshPreview)
 {
@@ -197,9 +206,10 @@ void showPopup(juce::Component *parent, juce::Rectangle<int> anchorBounds,
   dismissPopup();
 
   constexpr int width = 374;
-  constexpr int height = 124;
+  constexpr int height = 156;
   auto *content = new Content(pitchCenterRange, initialPitchCenter,
                               pitchDriftRange, initialPitchDrift, initialSnapToScale,
+                              initialKeepVibrato,
                               std::move(onPreview), std::move(onComplete),
                               std::move(onRefreshPreview));
   content->setSize(width, height);

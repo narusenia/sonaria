@@ -216,6 +216,7 @@
   "quantize.pitch_center": "ピッチセンター",
   "quantize.pitch_drift": "ピッチドリフト",
   "quantize.snap_to_scale": "スケールにスナップ",
+  "quantize.keep_vibrato": "ビブラートを残す",
   "restore.all": "すべての編集",
   "restore.amplitude": "振幅",
   "restore.formant": "フォルマント",

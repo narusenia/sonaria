@@ -216,6 +216,7 @@
   "quantize.pitch_center": "Centro de tono",
   "quantize.pitch_drift": "Deriva de tono",
   "quantize.snap_to_scale": "Ajustar a la escala",
+  "quantize.keep_vibrato": "Mantener vibrato",
   "restore.all": "Todas las ediciones",
   "restore.amplitude": "Amplitud",
   "restore.formant": "Formante",

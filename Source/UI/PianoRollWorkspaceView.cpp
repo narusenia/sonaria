@@ -5,7 +5,7 @@
 #include "BinaryData.h"
 #include "Dialogs/QuantizePitchDialog.h"
 #include "../Utils/PitchCurveProcessor.h"
-#include "../Utils/ScaleUtils.h"
+#include "../Utils/NoteDeviation.h"
 #include "../Utils/PitchMacroScope.h"
 #include "../Undo/UndoActions.h"
 #include <algorithm>
@@ -283,9 +283,15 @@ void PianoRollWorkspaceView::showPitchCenterPopup()
 
   struct NoteCenter {
     Note* note;
-    float midiNote, sourceMidiNote, pitchDrift, strength;
-    float finalMidi = 0.0f, finalDrift = 1.0f, finalStrength = 0.0f;
-    float renderedMidi = midiNote, renderedDrift = pitchDrift;
+    float midiNote, sourceMidiNote, pitchDrift, strength, vibrato;
+    // From the note's pitch to the mean pitch of its voiced frames.
+    float meanShift = 0.0f;
+    float finalMidi = 0.0f, finalDrift = 1.0f, finalStrength = 0.0f, finalVibrato = 1.0f;
+    float renderedMidi = midiNote, renderedDrift = pitchDrift, renderedVibrato = vibrato;
+    bool changed() const {
+      return std::abs(finalMidi - midiNote) > 0.0001f || std::abs(finalDrift - pitchDrift) > 0.0001f ||
+             std::abs(finalVibrato - vibrato) > 0.0001f;
+    }
   };
   struct State {
     TrackPitchMacroTarget target;
@@ -297,8 +303,14 @@ void PianoRollWorkspaceView::showPitchCenterPopup()
   for (auto& target : targets) {
     State state{target, target.project->getPitchCenter(), {}};
     for (auto* note : collectPitchMacroNotes(*target.project, track, target.frames))
+    {
+      // shortcut: the shift is measured once at open, so a Pitch Drift change in the
+      // same session moves the mean slightly off the target; re-measure per preview if that matters.
+      const float meanShift = NoteDeviation::meanMidi(*target.project, *note) - note->getMidiNote();
       state.notes.push_back({note, note->getMidiNote(), note->getLastNonMacroMidiNote(),
-                             note->getPitchDrift(), note->getMacroPitchCenter()});
+                             note->getPitchDrift(), note->getMacroPitchCenter(),
+                             note->getVibrato(), meanShift});
+    }
     states->push_back(std::move(state));
   }
   auto amount = std::make_shared<float>(activeProject->getPitchCenter());
@@ -327,10 +339,13 @@ void PianoRollWorkspaceView::showPitchCenterPopup()
       int first = std::numeric_limits<int>::max(), last = -1;
       for (auto& center : state.notes) {
         const float midi = center.note->getMidiNote(), drift = center.note->getPitchDrift();
+        const float vibrato = center.note->getVibrato();
         if (std::abs(midi - center.renderedMidi) <= 0.0001f &&
-            std::abs(drift - center.renderedDrift) <= 0.0001f) continue;
+            std::abs(drift - center.renderedDrift) <= 0.0001f &&
+            std::abs(vibrato - center.renderedVibrato) <= 0.0001f) continue;
         center.renderedMidi = midi;
         center.renderedDrift = drift;
+        center.renderedVibrato = vibrato;
         center.note->markDirty();
         center.note->markSynthDirty();
         first = std::min(first, center.note->getStartFrame());
@@ -355,10 +370,10 @@ void PianoRollWorkspaceView::showPitchCenterPopup()
       int first = std::numeric_limits<int>::max(), last = -1;
       for (const auto& center : state.notes) {
         center.note->setMacroPitchCenter(redo ? center.finalStrength : center.strength);
-        if (std::abs(center.finalMidi - center.midiNote) <= 0.0001f &&
-            std::abs(center.finalDrift - center.pitchDrift) <= 0.0001f) continue;
+        if (!center.changed()) continue;
         center.note->setMidiNoteFromPitchCorrection(redo ? center.finalMidi : center.midiNote);
         center.note->setPitchDrift(redo ? center.finalDrift : center.pitchDrift);
+        center.note->setVibrato(redo ? center.finalVibrato : center.vibrato);
         center.note->markDirty();
         center.note->markSynthDirty();
         first = std::min(first, center.note->getStartFrame());
@@ -419,15 +434,17 @@ void PianoRollWorkspaceView::showPitchCenterPopup()
   const auto anchor = juce::Rectangle<int>(pianoCard.getRight(), pianoCard.getY(), 0, 0);
   QuantizePitchDialog::showPopup(this, anchor, {centerLow, centerHigh}, centerMean,
       {driftLow, driftHigh}, driftMean,
-      pitchCenterSnapToScale,
+      pitchCenterSnapToScale, straightenKeepsVibrato,
       [this, states, targets, amount, previewEdited, centerWasEdited, initialSnapToScale](
-          float value, bool centerEdited, bool snapToScale, float drift, bool driftEdited) {
+          float value, bool centerEdited, bool snapToScale, float drift, bool driftEdited,
+          bool keepVibrato) {
         *previewEdited = true;
         if (centerEdited) {
           *centerWasEdited = true;
           *amount = value;
         }
         pitchCenterSnapToScale = snapToScale;
+        straightenKeepsVibrato = keepVibrato;
         // Until Pitch Center or the snap mode changes, each note keeps its own
         // correction, so a drift-only edit never re-corrects pitch.
         const bool recomputePitch = centerEdited || snapToScale != initialSnapToScale;
@@ -452,8 +469,12 @@ void PianoRollWorkspaceView::showPitchCenterPopup()
           for (const auto &center : state.notes)
           {
             if (center.note == nullptr) continue;
-            if (driftEdited)
+            if (driftEdited) {
               center.note->setPitchDrift(1.0f - drift / 100.0f);
+              // Without vibrato kept, Straighten also flattens the fast wobble.
+              center.note->setVibrato(keepVibrato ? center.vibrato
+                                                  : center.vibrato * (1.0f - drift / 100.0f));
+            }
             if (!recomputePitch)
             {
               center.note->setMidiNoteFromPitchCorrection(center.midiNote);
@@ -467,11 +488,13 @@ void PianoRollWorkspaceView::showPitchCenterPopup()
             // macro result. This lets a lower amount restore that edit without
             // compounding correction or discarding edits made between passes.
             const float sourceMidi = center.sourceMidiNote;
-            const float corrected = snapToScale
-                ? ScaleUtils::snapMidiToScale(sourceMidi, correctionScaleMode,
+            // Correct the note's mean pitch, which is what the deviation colour measures.
+            const float sourceMean = sourceMidi + center.meanShift;
+            const float corrected = (snapToScale
+                ? ScaleUtils::snapMidiToScale(sourceMean, correctionScaleMode,
                                                state.target.project->getScaleRootNote(),
                                                state.target.project->getPitchReferenceHz())
-                : std::round(sourceMidi);
+                : std::round(sourceMean)) - center.meanShift;
             const float signedDeviation = sourceMidi - corrected;
             if (snapToScale)
             {
@@ -504,13 +527,14 @@ void PianoRollWorkspaceView::showPitchCenterPopup()
           for (auto& center : state.notes) {
             center.finalMidi = center.note->getMidiNote();
             center.finalDrift = center.note->getPitchDrift();
+            center.finalVibrato = center.note->getVibrato();
             center.finalStrength = center.note->getMacroPitchCenter();
-            changed |= std::abs(center.finalMidi - center.midiNote) > 0.0001f ||
-                       std::abs(center.finalDrift - center.pitchDrift) > 0.0001f ||
+            changed |= center.changed() ||
                        std::abs(center.finalStrength - center.strength) > 0.0001f;
             if (!accepted) {
               center.note->setMidiNoteFromPitchCorrection(center.midiNote);
               center.note->setPitchDrift(center.pitchDrift);
+              center.note->setVibrato(center.vibrato);
               center.note->setMacroPitchCenter(center.strength);
             }
           }

@@ -258,6 +258,7 @@
   "quantize.pitch_center": "Центр высоты",
   "quantize.pitch_drift": "Дрейф высоты",
   "quantize.snap_to_scale": "Привязка к гамме",
+  "quantize.keep_vibrato": "Сохранить вибрато",
   "restore.all": "Все правки",
   "restore.amplitude": "Амплитуда",
   "restore.formant": "Форманта",

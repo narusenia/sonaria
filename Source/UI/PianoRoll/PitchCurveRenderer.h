@@ -76,6 +76,8 @@ private:
     std::vector<float> driftResponse;
     float displayMidi;
     float displayDrift;
+    float vibrato;
+    float displayVibrato;
   };
   std::unordered_map<const Note*, MacroPreview> macroPreview;
   std::vector<const Note*> macroNotes;

@@ -216,6 +216,7 @@
   "quantize.pitch_center": "피치 센터",
   "quantize.pitch_drift": "피치 드리프트",
   "quantize.snap_to_scale": "스케일에 맞추기",
+  "quantize.keep_vibrato": "비브라토 유지",
   "restore.all": "모든 편집",
   "restore.amplitude": "진폭",
   "restore.formant": "포먼트",
