@@ -180,6 +180,8 @@ public:
   // Quantize / Straighten at 100% on the selection (keyboard Q / W).
   bool quantizeSelectedNotes();
   bool straightenSelectedNotes();
+  // Moves the selection by a scale degree (3 = a third up, -8 = an octave down).
+  bool shiftSelectedNotesByDegree(int degree);
   bool centerOnCurrentPitchRange();
   void fitPitchRangeToView(float minMidi, float maxMidi);
   int getVisibleContentWidth() const;

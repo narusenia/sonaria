@@ -3144,6 +3144,32 @@ void MainComponent::resynthesizeIncremental()
       isPluginMode());
 }
 
+void MainComponent::showDegreeShiftMenu()
+{
+  auto *project = getProject();
+  if (project == nullptr || project->getSelectedNotes().empty())
+    return;
+
+  // Item id = degree + 100, so ids stay positive for downward shifts.
+  juce::PopupMenu menu;
+  menu.addSectionHeader(TR("command.shift_degree"));
+  for (int degree : {3, 5, 6, 2, 4, 7, 8, -3, -5, -6, -2, -4, -7, -8})
+  {
+    if (degree == -3)
+      menu.addSeparator();
+    const auto interval = TR("harmony.interval." + juce::String(std::abs(degree)));
+    menu.addItem(degree + 100, TR(degree > 0 ? "harmony.up" : "harmony.down").replace("{interval}", interval));
+  }
+  juce::Component::SafePointer<MainComponent> safeThis(this);
+  menu.showMenuAsync(juce::PopupMenu::Options().withTargetComponent(&pianoRoll)
+                         .withMousePosition(),
+                     [safeThis](int result)
+                     {
+                       if (safeThis != nullptr && result != 0)
+                         safeThis->pianoRoll.shiftSelectedNotesByDegree(result - 100);
+                     });
+}
+
 void MainComponent::jumpToDeviatedNote(bool forward)
 {
   auto *project = getProject();
@@ -4084,6 +4110,7 @@ void MainComponent::getAllCommands(juce::Array<juce::CommandID> &commands)
       CommandIDs::previousDeviatedNote,
       CommandIDs::quantizeSelection,
       CommandIDs::straightenSelection,
+      CommandIDs::shiftByDegree,
       CommandIDs::showShortcuts,
 
       // View commands
@@ -4197,6 +4224,12 @@ void MainComponent::getCommandInfo(juce::CommandID commandID,
   case CommandIDs::straightenSelection:
     result.setInfo(TR("command.straighten_selection"), TR("command.straighten_selection.desp"), TR("menu.edit"), 0);
     result.addDefaultKeypress('w', 0);
+    result.setActive(project != nullptr);
+    break;
+
+  case CommandIDs::shiftByDegree:
+    result.setInfo(TR("command.shift_degree"), TR("command.shift_degree.desp"), TR("menu.edit"), 0);
+    result.addDefaultKeypress('h', 0);
     result.setActive(project != nullptr);
     break;
 
@@ -4381,6 +4414,10 @@ bool MainComponent::perform(const ApplicationCommandTarget::InvocationInfo &info
 
   case CommandIDs::straightenSelection:
     pianoRoll.straightenSelectedNotes();
+    return true;
+
+  case CommandIDs::shiftByDegree:
+    showDegreeShiftMenu();
     return true;
 
   case CommandIDs::showShortcuts:

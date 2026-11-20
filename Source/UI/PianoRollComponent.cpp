@@ -3382,6 +3382,22 @@ bool PianoRollComponent::straightenSelectedNotes()
   return editSelectedNotes([](Note &note) { note.setPitchDrift(0.0f); });
 }
 
+bool PianoRollComponent::shiftSelectedNotesByDegree(int degree)
+{
+  if (project == nullptr)
+    return false;
+  const auto mode = ScaleUtils::keyScaleMode(*project);
+  const int root = project->getScaleRootNote(), referenceHz = project->getPitchReferenceHz();
+  // An off-scale note keeps its offset from the tone below, so it stays off-scale and
+  // the deviation colour flags it.
+  return editSelectedNotes([&](Note &note)
+  {
+    const float adjusted = note.getAdjustedMidiNote();
+    const auto shifted = ScaleUtils::shiftByDegree(adjusted, degree, mode, root, referenceHz);
+    note.setMidiNote(note.getMidiNote() + (shifted.midi - adjusted));
+  });
+}
+
 bool PianoRollComponent::selectAdjacentNote(bool forward, bool extend)
 {
   if (project == nullptr)

@@ -28,6 +28,7 @@ namespace CommandIDs
         previousDeviatedNote = 0x2014,
         quantizeSelection   = 0x2015,
         straightenSelection = 0x2016,
+        shiftByDegree       = 0x2017,
         
         // View Menu Commands (0x2020-0x202F)
         showDeltaPitch      = 0x2020,

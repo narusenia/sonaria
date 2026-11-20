@@ -251,6 +251,7 @@ public:
   void clearHostAudio() override;
   void focusTimelineRange(double startSeconds, double endSeconds) override;
   void jumpToDeviatedNote(bool forward);
+  void showDegreeShiftMenu();
   void fitAnalyzedPitchRangeToView() override;
 
   // Plugin mode callbacks
