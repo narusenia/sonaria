@@ -2,6 +2,7 @@
 #include "../Source/Undo/KeyChangeAction.h"
 #include "../Source/Undo/PitchUndoManager.h"
 #include "TestAssert.h"
+#include <cmath>
 #include <iostream>
 
 static void addGMajorNotes(Project& project)
@@ -48,6 +49,23 @@ int main()
   CHECK(ScaleUtils::stepMidiOnScale(66.3f, -1, ScaleMode::Major, 0) == 65.0f);
   CHECK(ScaleUtils::stepMidiOnScale(64.005f, 1, ScaleMode::Major, 0) == 65.0f);
   CHECK(ScaleUtils::stepMidiOnScale(61.0f, 1, ScaleMode::Chromatic, 0) == 62.0f);
+
+  // Degree shifts in C major: E up a third is G, F up a third is A, G down a third is E.
+  CHECK(ScaleUtils::shiftByDegree(64.0f, 3, ScaleMode::Major, 0).midi == 67.0f);
+  CHECK(ScaleUtils::shiftByDegree(65.0f, 3, ScaleMode::Major, 0).midi == 69.0f);
+  CHECK(ScaleUtils::shiftByDegree(67.0f, -3, ScaleMode::Major, 0).midi == 64.0f);
+  CHECK(ScaleUtils::shiftByDegree(71.0f, 2, ScaleMode::Major, 0).midi == 72.0f);
+  CHECK(ScaleUtils::shiftByDegree(60.0f, 8, ScaleMode::Major, 0).midi == 72.0f);
+  CHECK(ScaleUtils::shiftByDegree(60.0f, -8, ScaleMode::Major, 0).midi == 48.0f);
+  // Cents ride along: E4 +20 ct up a third is G4 +20 ct.
+  CHECK(std::abs(ScaleUtils::shiftByDegree(64.2f, 3, ScaleMode::Major, 0).midi - 67.2f) < 1e-4f);
+  // Off-scale F#4 moves from F4: F up a third is A, so F# lands on A# and is flagged.
+  const auto offScale = ScaleUtils::shiftByDegree(66.0f, 3, ScaleMode::Major, 0);
+  CHECK(offScale.midi == 70.0f && offScale.outOfScale);
+  CHECK(!ScaleUtils::shiftByDegree(64.0f, 3, ScaleMode::Major, 0).outOfScale);
+  // A minor: C up a third is E, A up a third is C.
+  CHECK(ScaleUtils::shiftByDegree(60.0f, 3, ScaleMode::Minor, 9).midi == 64.0f);
+  CHECK(ScaleUtils::shiftByDegree(57.0f, 3, ScaleMode::Minor, 9).midi == 60.0f);
 
   std::cout << "Key detection tests passed\n";
 }

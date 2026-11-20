@@ -214,6 +214,38 @@ inline float stepMidiOnScale(float midi, int direction, ScaleMode mode, int root
     return static_cast<float>(candidate) + offset;
 }
 
+struct DegreeShift
+{
+    float midi;
+    bool outOfScale; // the note was not on a scale tone, so it moved from the tone below it
+};
+
+// Moves a pitch by a scale degree: 3 is a third up, -3 a third down, +-8 an octave.
+// The note moves by whole semitones, so its cents and in-note movement stay as they were.
+inline DegreeShift shiftByDegree(float midi, int degree, ScaleMode mode, int rootNote,
+                                 int referenceHz = static_cast<int>(FREQ_A4))
+{
+    const float offset = getReferenceOffsetSemitones(referenceHz);
+    const int semitone = static_cast<int>(std::round(midi - offset));
+    const bool anyTone = mode == ScaleMode::None || mode == ScaleMode::Chromatic || rootNote < 0;
+    const auto inScale = [&](int note) { return anyTone || isPitchClassInScale(mode, note, rootNote); };
+
+    int base = semitone;
+    for (int i = 0; i < 12 && !inScale(base); ++i)
+        --base;
+    const bool outOfScale = base != semitone;
+
+    int target = base;
+    if (std::abs(degree) >= 8) {
+        target += degree > 0 ? 12 : -12;
+    } else {
+        int steps = degree > 0 ? degree - 1 : degree < 0 ? degree + 1 : 0;
+        while (steps > 0) { ++target; if (inScale(target)) --steps; }
+        while (steps < 0) { --target; if (inScale(target)) ++steps; }
+    }
+    return {midi + static_cast<float>(target - base), outOfScale};
+}
+
 inline float snapMidiToScale(float midi,
                              ScaleMode mode,
                              int rootNote,
