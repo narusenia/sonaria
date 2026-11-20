@@ -25,6 +25,8 @@ juce::PopupMenu MenuHandler::getMenuForIndex(int menuIndex, const juce::String& 
                 menu.addCommandItem(commandManager, CommandIDs::redo);
                 menu.addSeparator();
                 menu.addCommandItem(commandManager, CommandIDs::selectAll);
+                menu.addCommandItem(commandManager, CommandIDs::nextDeviatedNote);
+                menu.addCommandItem(commandManager, CommandIDs::previousDeviatedNote);
                 menu.addSeparator();
                 menu.addCommandItem(commandManager, CommandIDs::fourierFilter);
             }
@@ -77,6 +79,8 @@ juce::PopupMenu MenuHandler::getMenuForIndex(int menuIndex, const juce::String& 
                 menu.addCommandItem(commandManager, CommandIDs::redo);
                 menu.addSeparator();
                 menu.addCommandItem(commandManager, CommandIDs::selectAll);
+                menu.addCommandItem(commandManager, CommandIDs::nextDeviatedNote);
+                menu.addCommandItem(commandManager, CommandIDs::previousDeviatedNote);
                 menu.addSeparator();
                 menu.addCommandItem(commandManager, CommandIDs::fourierFilter);
                 menu.addSeparator();

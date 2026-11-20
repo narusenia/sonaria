@@ -250,6 +250,7 @@ public:
   void updateHostAudioTimelineOffset(double timelineOffsetSeconds) override;
   void clearHostAudio() override;
   void focusTimelineRange(double startSeconds, double endSeconds) override;
+  void jumpToDeviatedNote(bool forward);
   void fitAnalyzedPitchRangeToView() override;
 
   // Plugin mode callbacks

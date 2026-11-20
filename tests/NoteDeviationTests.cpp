@@ -47,5 +47,24 @@ int main()
   CHECK(NoteDeviation::level(-30.0f) == NoteDeviation::Level::Fix);
   CHECK(NoteDeviation::level(20.0f, {5.0f, 15.0f}) == NoteDeviation::Level::Fix);
 
+  // Jumps visit only notes needing a fix, in time order, and wrap at either end.
+  {
+    Project jumps;
+    jumps.setScaleMode(ScaleMode::Chromatic);
+    const float pitches[] = {60.0f, 60.4f, 62.0f, 63.35f, 65.0f};
+    for (int i = 0; i < 5; ++i) {
+      jumps.addNote(Note(i * 10, i * 10 + 10, 60.0f));
+      jumps.getNotes().back().setPitchOffset(pitches[i] - 60.0f);
+    }
+    CHECK(NoteDeviation::findFixNote(jumps, -1, true) == 1);
+    CHECK(NoteDeviation::findFixNote(jumps, 10, true) == 3);
+    CHECK(NoteDeviation::findFixNote(jumps, 30, true) == 1);
+    CHECK(NoteDeviation::findFixNote(jumps, 30, false) == 1);
+    CHECK(NoteDeviation::findFixNote(jumps, 10, false) == 3);
+    Project clean;
+    clean.addNote(Note(0, 10, 60.0f));
+    CHECK(NoteDeviation::findFixNote(clean, -1, true) == -1);
+  }
+
   std::cout << "Note deviation tests passed\n";
 }

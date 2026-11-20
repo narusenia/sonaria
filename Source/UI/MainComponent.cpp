@@ -3135,6 +3135,38 @@ void MainComponent::resynthesizeIncremental()
       isPluginMode());
 }
 
+void MainComponent::jumpToDeviatedNote(bool forward)
+{
+  auto *project = getProject();
+  if (project == nullptr)
+    return;
+
+  const auto selected = project->getSelectedNotes();
+  const int fromFrame = !selected.empty() ? selected.front()->getStartFrame()
+                        : forward ? -1 : std::numeric_limits<int>::max();
+  const int index = NoteDeviation::findFixNote(*project, fromFrame, forward);
+  if (index < 0)
+  {
+    // The toolbar has no status line, so say it in a short-lived bubble.
+    auto *bubble = new juce::BubbleMessageComponent(300);
+    bubble->setColour(juce::BubbleComponent::backgroundColourId, APP_COLOR_SURFACE_RAISED);
+    bubble->setColour(juce::BubbleComponent::outlineColourId, APP_COLOR_BORDER);
+    addChildComponent(bubble);
+    juce::AttributedString text;
+    text.append(TR("status.no_deviated_notes"), AppFont::getFont(14.0f), APP_COLOR_TEXT_PRIMARY);
+    bubble->showAt(&toolbar, text, 2000, true, true);
+    return;
+  }
+
+  auto &note = project->getNotes()[static_cast<size_t>(index)];
+  pianoRoll.selectOnlyNote(note);
+  const double secondsPerFrame = static_cast<double>(HOP_SIZE) / SAMPLE_RATE;
+  focusTimelineRange(note.getStartFrame() * secondsPerFrame,
+                     note.getEndFrame() * secondsPerFrame);
+  const float midi = NoteDeviation::meanMidi(*project, note);
+  pianoRoll.centerOnPitchRange(midi - 1.0f, midi + 1.0f);
+}
+
 void MainComponent::onNoteSelected(Note *note)
 {
   parameterPanel.setSelectedNote(note);
@@ -4039,6 +4071,8 @@ void MainComponent::getAllCommands(juce::Array<juce::CommandID> &commands)
       CommandIDs::undo,
       CommandIDs::redo,
       CommandIDs::selectAll,
+      CommandIDs::nextDeviatedNote,
+      CommandIDs::previousDeviatedNote,
 
       // View commands
       CommandIDs::showSettings,
@@ -4133,6 +4167,18 @@ void MainComponent::getCommandInfo(juce::CommandID commandID,
   case CommandIDs::selectAll:
     result.setInfo(TR("command.select_all"), TR("command.select_all.desp"), TR("menu.edit"), 0);
     result.addDefaultKeypress('a', primaryModifier);
+    result.setActive(project != nullptr);
+    break;
+
+  case CommandIDs::nextDeviatedNote:
+    result.setInfo(TR("command.next_deviated_note"), TR("command.next_deviated_note.desp"), TR("menu.edit"), 0);
+    result.addDefaultKeypress('n', 0);
+    result.setActive(project != nullptr);
+    break;
+
+  case CommandIDs::previousDeviatedNote:
+    result.setInfo(TR("command.previous_deviated_note"), TR("command.previous_deviated_note.desp"), TR("menu.edit"), 0);
+    result.addDefaultKeypress('n', juce::ModifierKeys::shiftModifier);
     result.setActive(project != nullptr);
     break;
 
@@ -4294,6 +4340,11 @@ bool MainComponent::perform(const ApplicationCommandTarget::InvocationInfo &info
       project->selectAllNotes();
       pianoRoll.repaint();
     }
+    return true;
+
+  case CommandIDs::nextDeviatedNote:
+  case CommandIDs::previousDeviatedNote:
+    jumpToDeviatedNote(info.commandID == CommandIDs::nextDeviatedNote);
     return true;
 
   // View commands

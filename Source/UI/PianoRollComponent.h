@@ -176,6 +176,7 @@ public:
   void setTrackViewMode(bool shouldShowTrack);
   bool isTrackViewMode() const { return trackViewMode; }
   void centerOnPitchRange(float minMidi, float maxMidi);
+  void selectOnlyNote(Note &note);
   bool centerOnCurrentPitchRange();
   void fitPitchRangeToView(float minMidi, float maxMidi);
   int getVisibleContentWidth() const;

@@ -2716,6 +2716,19 @@ void PianoRollComponent::mouseExit(const juce::MouseEvent &)
   setHoveredNote(nullptr);
 }
 
+void PianoRollComponent::selectOnlyNote(Note &note)
+{
+  if (project == nullptr)
+    return;
+  project->deselectAllNotes();
+  note.setSelected(true);
+  updatePitchToolHandlesFromSelection();
+  updatePreviewButtonBounds();
+  if (onNoteSelected)
+    onNoteSelected(&note);
+  repaint();
+}
+
 juce::String PianoRollComponent::getTooltip()
 {
   const auto mousePosition = getMouseXYRelative();

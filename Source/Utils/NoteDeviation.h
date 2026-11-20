@@ -55,4 +55,25 @@ inline float cents(const Project& project, const Note& note)
                                                      project.getPitchReferenceHz());
     return (midi - target) * 100.0f;
 }
+// The next (or previous) note needing a fix after fromFrame, wrapping around; -1 if there is none.
+inline int findFixNote(const Project& project, int fromFrame, bool forward)
+{
+    const auto& notes = project.getNotes();
+    int next = -1, wrapped = -1;
+    const auto earlier = [&](int a, int b) { return notes[(size_t) a].getStartFrame() < notes[(size_t) b].getStartFrame(); };
+    for (int i = 0; i < static_cast<int>(notes.size()); ++i) {
+        const auto& note = notes[(size_t) i];
+        if (note.isRest() || level(cents(project, note)) != Level::Fix)
+            continue;
+        const int start = note.getStartFrame();
+        if (forward) {
+            if (start > fromFrame && (next < 0 || earlier(i, next))) next = i;
+            if (wrapped < 0 || earlier(i, wrapped)) wrapped = i;
+        } else {
+            if (start < fromFrame && (next < 0 || earlier(next, i))) next = i;
+            if (wrapped < 0 || earlier(wrapped, i)) wrapped = i;
+        }
+    }
+    return next >= 0 ? next : wrapped;
+}
 } // namespace NoteDeviation
