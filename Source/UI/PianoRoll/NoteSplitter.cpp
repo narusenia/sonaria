@@ -127,6 +127,7 @@ bool NoteSplitter::splitNoteAtFrame(Note* note, int splitFrame) {
     secondNote.setPhoneme(note->getPhoneme());
     secondNote.setVolumeDb(note->getVolumeDb());
     secondNote.setSibilantBalance(note->getSibilantBalance());
+    secondNote.setEngine(note->getEngine());
     secondNote.setSelected(note->isSelected());
     secondNote.setTiltLeft(note->getTiltLeft());
     secondNote.setTiltRight(note->getTiltRight());

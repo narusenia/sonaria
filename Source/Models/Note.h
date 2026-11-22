@@ -3,6 +3,9 @@
 #include "../JuceHeader.h"
 #include <vector>
 
+/// Per-note synthesis engine. Default follows the project's engine.
+enum class NoteEngine { Default = 0, AI, Classic };
+
 /**
  * Represents a single note/pitch segment.
  *
@@ -116,6 +119,9 @@ public:
     {
         sibilantBalance = juce::jlimit(-1.0f, 1.0f, balance);
     }
+
+    NoteEngine getEngine() const { return engine; }
+    void setEngine(NoteEngine newEngine) { engine = newEngine; }
 
     // RMS of pristine source audio; gain edits are applied separately.
     float getSourceAmplitude() const { return sourceAmplitude; }
@@ -256,6 +262,7 @@ private:
     float sourceAmplitude = 0.0f;
     float volumeDb = 0.0f; // Per-note gain in dB (0 = unity)
     float sibilantBalance = 0.0f; // -1..1, see getSibilantBalance()
+    NoteEngine engine = NoteEngine::Default;
 
     std::vector<float> deltaPitch;  // Per-frame deviation from midiNote in semitones
     std::vector<float> originalDeltaPitch;  // Pristine curve from analysis (never modified)

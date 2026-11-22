@@ -13,6 +13,7 @@ struct TransformParams
     float formantShift = 0.0f;
     float volumeDb = 0.0f;
     float sibilantBalance = 0.0f;
+    NoteEngine engine = NoteEngine::Default;
     float vibrato = 1.0f;
     float pitchDrift = 1.0f;
     int smoothLeftFrames = 0;
@@ -32,6 +33,7 @@ struct TransformParams
         p.formantShift = note.getFormantShift();
         p.volumeDb = note.getVolumeDb();
         p.sibilantBalance = note.getSibilantBalance();
+        p.engine = note.getEngine();
         p.vibrato = note.getVibrato();
         p.pitchDrift = note.getPitchDrift();
         p.smoothLeftFrames = note.getSmoothLeftFrames();
@@ -53,6 +55,7 @@ struct TransformParams
         note.setFormantShift(formantShift);
         note.setVolumeDb(volumeDb);
         note.setSibilantBalance(sibilantBalance);
+        note.setEngine(engine);
         note.setSmoothLeftFrames(smoothLeftFrames);
         note.setSmoothRightFrames(smoothRightFrames);
         note.setDeltaScale(deltaScale);
@@ -66,6 +69,7 @@ struct TransformParams
                formantShift == other.formantShift &&
                volumeDb == other.volumeDb &&
                sibilantBalance == other.sibilantBalance &&
+               engine == other.engine &&
                vibrato == other.vibrato &&
                pitchDrift == other.pitchDrift &&
                smoothLeftFrames == other.smoothLeftFrames &&
@@ -87,6 +91,7 @@ struct TransformParams
                formantShift == 0.0f &&
                volumeDb == 0.0f &&
                sibilantBalance == 0.0f &&
+               engine == NoteEngine::Default &&
                vibrato == 1.0f &&
                pitchDrift == 1.0f &&
                smoothLeftFrames == 0 &&

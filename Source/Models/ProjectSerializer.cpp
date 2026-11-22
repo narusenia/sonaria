@@ -980,6 +980,11 @@ juce::var ProjectSerializer::noteToJson(const Note& note,
     obj->setProperty("volumeDb", note.getVolumeDb());
     if (note.getSibilantBalance() != 0.0f)
         obj->setProperty("sibilantBalance", note.getSibilantBalance());
+    // Default is omitted, so projects that never pick an engine stay unchanged.
+    if (note.getEngine() == NoteEngine::AI)
+        obj->setProperty("engine", "AI");
+    else if (note.getEngine() == NoteEngine::Classic)
+        obj->setProperty("engine", "Classic");
     obj->setProperty("sourceAmplitude", note.getSourceAmplitude());
     obj->setProperty("formantShift", note.getFormantShift());
     obj->setProperty("rest", note.isRest());
@@ -1054,6 +1059,11 @@ bool ProjectSerializer::noteFromJson(Note& note, const juce::var& json,
     note.setVolumeDb(static_cast<float>(json.getProperty("volumeDb", 0.0)));
     note.setSibilantBalance(
         static_cast<float>(json.getProperty("sibilantBalance", 0.0)));
+    // Older projects and unknown names (a newer engine) read as Default.
+    const auto engineName = json.getProperty("engine", "").toString();
+    note.setEngine(engineName == "AI"        ? NoteEngine::AI
+                   : engineName == "Classic" ? NoteEngine::Classic
+                                             : NoteEngine::Default);
     note.setSourceAmplitude(static_cast<float>(json.getProperty("sourceAmplitude", 0.0)));
     note.setFormantShift(static_cast<float>(json.getProperty("formantShift", 0.0)));
     note.setRest(json.getProperty("rest", false));
