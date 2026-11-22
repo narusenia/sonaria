@@ -182,6 +182,7 @@ public:
   bool straightenSelectedNotes();
   // Moves the selection by a scale degree (3 = a third up, -8 = an octave down).
   bool shiftSelectedNotesByDegree(int degree);
+  bool setSelectedNotesEngine(NoteEngine engine);
   bool centerOnCurrentPitchRange();
   void fitPitchRangeToView(float minMidi, float maxMidi);
   int getVisibleContentWidth() const;

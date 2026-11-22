@@ -3329,9 +3329,7 @@ bool PianoRollComponent::editSelectedNotes(const std::function<void(Note &)> &ed
     const auto old = TransformParams::fromNote(*note);
     edit(*note);
     const auto changed = TransformParams::fromNote(*note);
-    if (std::abs(changed.midiNote - old.midiNote) <= 1.0e-6f &&
-        std::abs(changed.vibrato - old.vibrato) <= 1.0e-6f &&
-        std::abs(changed.pitchDrift - old.pitchDrift) <= 1.0e-6f)
+    if (changed == old)
       continue;
     notes.push_back(note);
     before.push_back(old);
@@ -3357,6 +3355,11 @@ bool PianoRollComponent::editSelectedNotes(const std::function<void(Note &)> &ed
     onPitchEditFinished();
   repaint();
   return true;
+}
+
+bool PianoRollComponent::setSelectedNotesEngine(NoteEngine engine)
+{
+  return editSelectedNotes([engine](Note &note) { note.setEngine(engine); });
 }
 
 bool PianoRollComponent::quantizeSelectedNotes()

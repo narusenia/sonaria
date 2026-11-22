@@ -61,7 +61,7 @@
   "command.straighten_selection.desp": "Remove slow pitch drift from the selected notes, keeping vibrato",
   "command.show_shortcuts": "Keyboard Shortcuts",
   "command.show_shortcuts.desp": "List the keyboard shortcuts",
-  "shortcuts.list": "Left / Right  —  Select the previous / next note\nShift + Left / Right  —  Extend the selection\nUp / Down  —  Move the selection one scale tone\nShift + Up / Down  —  Move the selection one octave\nAlt + Up / Down  —  Move the selection 1 cent (Shift: 10 cents)\nN / Shift + N  —  Jump to the next / previous off-pitch note\nQ  —  Quantize the selection to the scale\nW  —  Straighten the selection (keeps vibrato)\nH  —  Shift the selection by a scale degree\n1 - 4  —  Select / Split / Draw / Timing tool\nSpace  —  Play / Pause\nCmd + Z / Shift + Cmd + Z  —  Undo / Redo",
+  "shortcuts.list": "Left / Right  —  Select the previous / next note\nShift + Left / Right  —  Extend the selection\nUp / Down  —  Move the selection one scale tone\nShift + Up / Down  —  Move the selection one octave\nAlt + Up / Down  —  Move the selection 1 cent (Shift: 10 cents)\nN / Shift + N  —  Jump to the next / previous off-pitch note\nQ  —  Quantize the selection to the scale\nW  —  Straighten the selection (keeps vibrato)\nH  —  Shift the selection by a scale degree\nE  —  Choose the note engine\n1 - 4  —  Select / Split / Draw / Timing tool\nSpace  —  Play / Pause\nCmd + Z / Shift + Cmd + Z  —  Undo / Redo",
   "command.next_deviated_note": "Next Off-Pitch Note",
   "command.next_deviated_note.desp": "Select the next note that needs a pitch fix",
   "command.previous_deviated_note": "Previous Off-Pitch Note",
@@ -364,5 +364,8 @@
   "update.download_now": "Download Now",
   "update.message": "A new version of Sonaria is available. Would you like to download it?",
   "update.skip_version": "Skip This Version",
-  "update.title": "Update Available"
+  "update.title": "Update Available",
+  "command.note_engine": "Note Engine",
+  "command.note_engine.desp": "Choose the synthesis engine for the selected notes",
+  "engine.default": "Default (app setting)"
 }

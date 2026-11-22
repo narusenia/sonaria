@@ -3179,6 +3179,36 @@ void MainComponent::showDegreeShiftMenu()
                      });
 }
 
+void MainComponent::showNoteEngineMenu()
+{
+  auto *project = getProject();
+  if (project == nullptr || project->getSelectedNotes().empty())
+    return;
+
+  // Tick the engine only when every selected note shares it.
+  const auto selected = project->getSelectedNotes();
+  const auto current = selected.front()->getEngine();
+  const bool shared = std::all_of(selected.begin(), selected.end(),
+                                  [current](const Note *n) { return n->getEngine() == current; });
+  juce::PopupMenu menu;
+  menu.addSectionHeader(TR("command.note_engine"));
+  const std::pair<NoteEngine, juce::String> items[] = {
+      {NoteEngine::Default, TR("engine.default")},
+      {NoteEngine::AI, TR("param.engine_vocoder")},
+      {NoteEngine::Classic, TR("param.engine_psola")}};
+  for (const auto &[engine, label] : items)
+    menu.addItem(static_cast<int>(engine) + 1, label, true, shared && engine == current);
+  juce::Component::SafePointer<MainComponent> safeThis(this);
+  menu.showMenuAsync(juce::PopupMenu::Options().withTargetComponent(&pianoRoll)
+                         .withMousePosition(),
+                     [safeThis](int result)
+                     {
+                       if (safeThis != nullptr && result != 0)
+                         safeThis->pianoRoll.setSelectedNotesEngine(
+                             static_cast<NoteEngine>(result - 1));
+                     });
+}
+
 void MainComponent::jumpToDeviatedNote(bool forward)
 {
   auto *project = getProject();
@@ -4120,6 +4150,7 @@ void MainComponent::getAllCommands(juce::Array<juce::CommandID> &commands)
       CommandIDs::quantizeSelection,
       CommandIDs::straightenSelection,
       CommandIDs::shiftByDegree,
+      CommandIDs::noteEngine,
       CommandIDs::showShortcuts,
 
       // View commands
@@ -4239,6 +4270,12 @@ void MainComponent::getCommandInfo(juce::CommandID commandID,
   case CommandIDs::shiftByDegree:
     result.setInfo(TR("command.shift_degree"), TR("command.shift_degree.desp"), TR("menu.edit"), 0);
     result.addDefaultKeypress('h', 0);
+    result.setActive(project != nullptr);
+    break;
+
+  case CommandIDs::noteEngine:
+    result.setInfo(TR("command.note_engine"), TR("command.note_engine.desp"), TR("menu.edit"), 0);
+    result.addDefaultKeypress('e', 0);
     result.setActive(project != nullptr);
     break;
 
@@ -4427,6 +4464,10 @@ bool MainComponent::perform(const ApplicationCommandTarget::InvocationInfo &info
 
   case CommandIDs::shiftByDegree:
     showDegreeShiftMenu();
+    return true;
+
+  case CommandIDs::noteEngine:
+    showNoteEngineMenu();
     return true;
 
   case CommandIDs::showShortcuts:

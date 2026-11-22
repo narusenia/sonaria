@@ -252,6 +252,7 @@ public:
   void focusTimelineRange(double startSeconds, double endSeconds) override;
   void jumpToDeviatedNote(bool forward);
   void showDegreeShiftMenu();
+  void showNoteEngineMenu();
   void fitAnalyzedPitchRangeToView() override;
 
   // Plugin mode callbacks
