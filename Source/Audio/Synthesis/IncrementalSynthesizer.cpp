@@ -5,6 +5,7 @@
 #include "../NoteTiming.h"
 #include "../ProjectGain.h"
 #include "OriginalWaveformRestore.h"
+#include "EngineMix.h"
 #include "../../Utils/NoteGainCurve.h"
 #include "../../Utils/AppLogger.h"
 #include "../../Utils/Constants.h"
@@ -770,6 +771,15 @@ void IncrementalSynthesizer::synthesizeRegion(ProgressCallback onProgress,
   // PSOLA transforms the original waveform, so it needs neither the model nor
   // a loaded one, and it does not want the mel.
   const bool usePsola = synthesisEngine == SynthesisEngineType::Psola;
+  // A note that asks for AI falls back to PSOLA while the model is unavailable.
+  const bool vocoderReady = vocoder && vocoder->isLoaded();
+  auto noteUsesPsola = [&](NoteEngine engine) {
+    if (engine == NoteEngine::Classic)
+      return true;
+    if (engine == NoteEngine::AI)
+      return !vocoderReady;
+    return usePsola;
+  };
 
   if (!project || (!usePsola && !vocoder)) {
     if (onComplete)
@@ -1318,10 +1328,30 @@ void IncrementalSynthesizer::synthesizeRegion(ProgressCallback onProgress,
   const int formantSampleRate = audioData.sampleRate;
   const bool hasGlobalFormant = std::abs(project->getFormantShift()) > 0.001f;
 
+  // Per output frame: does PSOLA render it? Frames outside every note follow
+  // the app engine.
+  std::vector<std::uint8_t> framePsola(static_cast<size_t>(endFrame - startFrame),
+                                       usePsola ? 1 : 0);
+  for (const auto &note : project->getNotes()) {
+    if (note.isRest())
+      continue;
+    const std::uint8_t psolaHere = noteUsesPsola(note.getEngine()) ? 1 : 0;
+    for (int frame = std::max(startFrame, note.getStartFrame());
+         frame < std::min(endFrame, note.getEndFrame()); ++frame)
+      framePsola[static_cast<size_t>(frame - startFrame)] = psolaHere;
+  }
+  const bool needPsola =
+      std::find(framePsola.begin(), framePsola.end(), 1) != framePsola.end();
+  const bool needVocoder =
+      std::find(framePsola.begin(), framePsola.end(), 0) != framePsola.end();
+  std::vector<std::uint8_t> frameVoiced(adjustedF0Range.size());
+  for (size_t frame = 0; frame < adjustedF0Range.size(); ++frame)
+    frameVoiced[frame] = adjustedF0Range[frame] > 0.0f ? 1 : 0;
+
   // Mel is the neural vocoder's input and is not cheap to copy, so the PSOLA
   // path skips building it entirely.
   std::vector<std::vector<float>> melRange;
-  if (!usePsola) {
+  if (needVocoder) {
     melRange.assign(audioData.melSpectrogram.begin() + startFrame,
                     audioData.melSpectrogram.begin() + endFrame);
     applyNoteTimingToMel(*project, startFrame, endFrame, melRange);
@@ -1337,7 +1367,7 @@ void IncrementalSynthesizer::synthesizeRegion(ProgressCallback onProgress,
   // original audio, and how far its pitch has to move once it gets there.
   // Built here on the message thread while the project is stable.
   DspSynthesisRequest dspRequest;
-  if (usePsola) {
+  if (needPsola) {
     const auto sourceFrameMap = buildSourceFrameMap(startFrame, endFrame);
     auto pitchRatio =
         buildPitchRatioCurve(startFrame, endFrame, sourceFrameMap, adjustedF0Range);
@@ -2116,7 +2146,35 @@ void IncrementalSynthesizer::synthesizeRegion(ProgressCallback onProgress,
         }).detach();
       };
 
-  if (usePsola) {
+  if (needPsola && needVocoder) {
+    // Mixed engines: render the span with both, then stitch per note.
+    auto *vocoderPtr = vocoder;
+    const int fadeSamples = audioData.sampleRate / 100; // 10 ms
+    psola.renderAsync(
+        std::move(dspRequest),
+        [vocoderPtr, melRange = std::move(melRange),
+         adjustedF0Range = std::move(adjustedF0Range), framePsola, frameVoiced,
+         hopSize, fadeSamples, onRendered,
+         capturedCancelFlag](std::vector<float> psolaAudio) mutable {
+          if (psolaAudio.empty() || capturedCancelFlag->load()) {
+            onRendered({});
+            return;
+          }
+          vocoderPtr->inferAsync(
+              std::move(melRange), std::move(adjustedF0Range),
+              [psolaAudio = std::move(psolaAudio), framePsola, frameVoiced,
+               hopSize, fadeSamples, onRendered](std::vector<float> vocoderAudio) {
+                if (vocoderAudio.empty()) {
+                  onRendered({});
+                  return;
+                }
+                onRendered(engineMix::mix(vocoderAudio, psolaAudio, framePsola,
+                                          frameVoiced, hopSize, fadeSamples));
+              },
+              capturedCancelFlag);
+        },
+        capturedCancelFlag);
+  } else if (needPsola) {
     psola.renderAsync(std::move(dspRequest), std::move(onRendered),
                       capturedCancelFlag);
   } else {
