@@ -2866,7 +2866,8 @@ void MainComponent::auditionDraggedNote(const Note &note)
   if (!dragAuditionEnabled || !resampledLoopAudition || note.isRest())
     return;
 
-  std::vector<float> source;
+  // PSOLA request for the note's source span at its current pitch offset.
+  DspSynthesisRequest request;
   if (auto *project = getProject())
   {
     // Use the same timeline audio that the normal note-preview signal path
@@ -2881,18 +2882,31 @@ void MainComponent::auditionDraggedNote(const Note &note)
     const int endFrame = note.getSrcEndFrame() > startFrame
                              ? note.getSrcEndFrame()
                              : note.getEndFrame();
-    const int startSample = juce::jlimit(0, waveform.getNumSamples(),
-                                         startFrame * HOP_SIZE);
-    const int endSample = juce::jlimit(startSample, waveform.getNumSamples(),
-                                       endFrame * HOP_SIZE);
-    if (endSample > startSample)
+    // Room for the widest PSOLA grain either side, as IncrementalSynthesizer.
+    constexpr int context = 4096;
+    const int total = waveform.getNumSamples();
+    const int startSample = juce::jlimit(0, total, startFrame * HOP_SIZE - context);
+    const int endSample = juce::jlimit(startSample, total, endFrame * HOP_SIZE + context);
+    if (endFrame > startFrame && endSample > startSample &&
+        waveform.getNumChannels() > 0)
     {
       const auto *samples = waveform.getReadPointer(0);
-      source.assign(samples + startSample, samples + endSample);
+      const float ratio = std::pow(
+          2.0f, (note.getAdjustedMidiNote() - note.getOriginalMidiNote()) / 12.0f);
+      request.source.assign(samples + startSample, samples + endSample);
+      request.sourceStartSample = startSample;
+      request.numOutputFrames = endFrame - startFrame;
+      for (int frame = startFrame; frame < endFrame; ++frame)
+        request.sourceFrame.push_back(static_cast<double>(frame));
+      request.pitchRatio.assign(static_cast<size_t>(request.numOutputFrames), ratio);
+      request.hopSize = HOP_SIZE;
+      request.sampleRate = audioData.sampleRate > 0 ? audioData.sampleRate : SAMPLE_RATE;
+      request.sourceF0 = audioData.denseF0.empty() ? audioData.f0 : audioData.denseF0;
+      request.sourceVoiced.assign(audioData.voicedMask.begin(), audioData.voicedMask.end());
     }
   }
 
-  if (source.empty())
+  if (request.source.empty())
     return;
 
   if (!noteDragAuditionActive)
@@ -2912,12 +2926,9 @@ void MainComponent::auditionDraggedNote(const Note &note)
     }
   }
 
-  const float shift = note.getAdjustedMidiNote() - note.getOriginalMidiNote();
   noteDragAuditionStartFrame = note.getStartFrame();
   noteDragAuditionEndFrame = note.getEndFrame();
-  pendingNoteDragAuditionSource = std::move(source);
-  pendingNoteDragAuditionShift = shift;
-  pendingNoteDragAuditionMidiNote = note.getAdjustedMidiNote();
+  pendingNoteDragAuditionRequest = std::move(request);
   noteDragAuditionLastInputMs = juce::Time::currentTimeMillis();
   noteDragAuditionPending = true;
 }
@@ -2933,9 +2944,7 @@ void MainComponent::dispatchPendingDragAudition()
     return;
 
   noteDragAuditionPending = false;
-  resampledLoopAudition->request(std::move(pendingNoteDragAuditionSource),
-                                 pendingNoteDragAuditionShift,
-                                 pendingNoteDragAuditionMidiNote);
+  resampledLoopAudition->request(std::move(pendingNoteDragAuditionRequest));
 }
 
 void MainComponent::finishDraggedNoteAudition()
@@ -2946,7 +2955,7 @@ void MainComponent::finishDraggedNoteAudition()
   if (resampledLoopAudition)
     resampledLoopAudition->cancel();
   noteDragAuditionPending = false;
-  pendingNoteDragAuditionSource.clear();
+  pendingNoteDragAuditionRequest = {};
 
   if (isPluginMode())
   {

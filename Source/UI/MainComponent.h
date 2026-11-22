@@ -387,9 +387,7 @@ private:
   int noteDragAuditionStartFrame = 0;
   int noteDragAuditionEndFrame = 0;
   juce::int64 noteDragAuditionLastInputMs = 0;
-  float pendingNoteDragAuditionShift = 0.0f;
-  float pendingNoteDragAuditionMidiNote = 60.0f;
-  std::vector<float> pendingNoteDragAuditionSource;
+  DspSynthesisRequest pendingNoteDragAuditionRequest;
   static constexpr juce::int64 noteDragAuditionDebounceMs = 20;
 
   // New modular components

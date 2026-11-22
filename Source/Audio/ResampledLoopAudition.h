@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../JuceHeader.h"
+#include "Synthesis/DspSynthesisRequest.h"
 
 #include <atomic>
 #include <condition_variable>
@@ -10,10 +11,11 @@
 #include <vector>
 
 /**
- * Builds short, loopable note previews by resampling their selected audio.
+ * Builds loopable note previews: the note's original audio, pitch-shifted
+ * with PSOLA so formants stay put, with short fades so the loop seam is quiet.
  *
  * Requests are coalesced so dragging can update the requested pitch at UI
- * rate without ever running resampling on the message or audio thread.
+ * rate without ever rendering on the message or audio thread.
  */
 class ResampledLoopAudition
 {
@@ -23,22 +25,17 @@ public:
   explicit ResampledLoopAudition(ReadyCallback onReady);
   ~ResampledLoopAudition();
 
-  void request(std::vector<float> source, float semitoneShift,
-               float targetMidiNote);
+  void request(DspSynthesisRequest request);
   void cancel();
 
 private:
   void workerLoop();
-  static juce::AudioBuffer<float> render(std::vector<float> source,
-                                         float semitoneShift,
-                                         float targetMidiNote);
+  static juce::AudioBuffer<float> render(const DspSynthesisRequest &request);
 
   ReadyCallback onReady;
   std::mutex mutex;
   std::condition_variable condition;
-  std::vector<float> pendingSource;
-  float pendingSemitoneShift = 0.0f;
-  float pendingTargetMidiNote = 60.0f;
+  DspSynthesisRequest pendingRequest;
   std::uint64_t requestId = 0;
   bool hasPendingRequest = false;
   bool shuttingDown = false;
