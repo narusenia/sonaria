@@ -44,7 +44,7 @@ public:
     void setSelectedNote(Note* note);
     void setSynthesisEngine(SynthesisEngineType type);
     SynthesisEngineType getSynthesisEngine() const { return synthesisEngine; }
-    // Disables the AI Resynthesis radio on CPU-only machines.
+    // Disables the AI Resynthesis option on CPU-only machines.
     void setAiResynthesisAvailable(bool available);
 
     // ===== Rendering card: inference device =====
@@ -157,8 +157,7 @@ private:
     ComboSelectionButton languageSelectorButton;
     juce::String selectedLanguageCode { "auto" };
 
-    RadioButton chromaticToggle;
-    RadioButton scaleToggle;
+    SegmentedControl pitchModeControl; // Chromatic | Scale
 
     // How an edited region is rendered. Only one of these is resynthesis in
     // the analysis/resynthesis sense - the model turns a spectrum back into a
@@ -167,10 +166,8 @@ private:
     // and the asymmetric labels.
     //
     // Not ranked by quality: neither is better everywhere. The model wins on
-    // large pitch moves, PSOLA returns untouched audio bit for bit. The member
-    // names track the enum, the button text is what the user reads.
-    RadioButton vocoderEngineToggle;
-    RadioButton psolaEngineToggle;
+    // large pitch moves, PSOLA returns untouched audio bit for bit.
+    SegmentedControl renderingControl; // AI Resynthesis (Vocoder) | Classic (PSOLA)
 
     juce::Label renderDeviceLabel;
     ComboSelectionButton renderDeviceButton;
@@ -183,8 +180,7 @@ private:
     juce::Label doubleClickSnapLabel;
     CompactSelectionButton doubleClickSnapBox;
 
-    RadioButton beatsTimelineToggle;
-    RadioButton timeTimelineToggle;
+    SegmentedControl timelineModeControl; // Beats | Time
     juce::Label timelineBeatLabel;
     CompactSelectionButton timelineBeatButton { "4/4" };
     juce::Label timelineTempoLabel;

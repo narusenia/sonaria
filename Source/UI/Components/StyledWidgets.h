@@ -515,3 +515,110 @@ public:
                    bounds.getWidth() * 0.4f, 1.0f);
     }
 };
+
+/**
+ * Mutually exclusive options drawn side by side. Only the selected segment is
+ * filled; the others keep readable text so they do not look disabled.
+ * Index -1 selects nothing (e.g. a mixed selection).
+ */
+class SegmentedControl : public juce::Component, public juce::TooltipClient
+{
+public:
+    SegmentedControl() { setMouseCursor(juce::MouseCursor::PointingHandCursor); }
+
+    std::function<void(int)> onChange;
+
+    void setOptions(const juce::StringArray& texts)
+    {
+        options = texts;
+        enabled.resize(static_cast<size_t>(options.size()), true);
+        tooltips.resize(static_cast<size_t>(options.size()));
+        repaint();
+    }
+
+    void setSelectedIndex(int index)
+    {
+        if (index != selected) { selected = index; repaint(); }
+    }
+    int getSelectedIndex() const { return selected; }
+
+    void setOptionEnabled(int index, bool shouldBeEnabled)
+    {
+        if (juce::isPositiveAndBelow(index, options.size()))
+            enabled[static_cast<size_t>(index)] = shouldBeEnabled;
+        repaint();
+    }
+
+    void setOptionTooltip(int index, const juce::String& text)
+    {
+        if (juce::isPositiveAndBelow(index, options.size()))
+            tooltips[static_cast<size_t>(index)] = text;
+    }
+
+    juce::String getTooltip() override
+    {
+        const int index = indexAt(getMouseXYRelative().x);
+        return index >= 0 ? tooltips[static_cast<size_t>(index)] : juce::String();
+    }
+
+    void paint(juce::Graphics& g) override
+    {
+        const auto area = getLocalBounds().toFloat();
+        g.setColour(APP_COLOR_CONTROL_FILL);
+        g.fillRoundedRectangle(area, 6.0f);
+        g.setFont(AppFont::getFont(14.0f));
+        for (int i = 0; i < options.size(); ++i)
+        {
+            const auto segment = segmentBounds(i);
+            const bool isSelected = i == selected;
+            if (isSelected || i == hovered)
+            {
+                g.setColour(isSelected ? APP_COLOR_PRIMARY : APP_COLOR_CONTROL_FILL.brighter(0.08f));
+                g.fillRoundedRectangle(segment.reduced(2.0f), 4.5f);
+            }
+            g.setColour((isSelected ? APP_COLOR_TEXT_ON_PRIMARY : APP_COLOR_TEXT_PRIMARY)
+                            .withMultipliedAlpha(enabled[static_cast<size_t>(i)] && isEnabled() ? 1.0f : 0.4f));
+            g.drawFittedText(options[i], segment.reduced(4.0f, 0.0f).toNearestInt(),
+                             juce::Justification::centred, 1, 0.8f);
+        }
+    }
+
+    void mouseMove(const juce::MouseEvent& e) override { setHovered(indexAt(e.x)); }
+    void mouseExit(const juce::MouseEvent&) override { setHovered(-1); }
+
+    void mouseUp(const juce::MouseEvent& e) override
+    {
+        const int index = indexAt(e.x);
+        if (index < 0 || index == selected || !enabled[static_cast<size_t>(index)] ||
+            !isEnabled() || !getLocalBounds().contains(e.getPosition()))
+            return;
+        setSelectedIndex(index);
+        if (onChange)
+            onChange(index);
+    }
+
+private:
+    juce::Rectangle<float> segmentBounds(int index) const
+    {
+        const float width = static_cast<float>(getWidth()) / static_cast<float>(juce::jmax(1, options.size()));
+        return { width * static_cast<float>(index), 0.0f, width, static_cast<float>(getHeight()) };
+    }
+
+    int indexAt(int x) const
+    {
+        if (options.isEmpty() || getWidth() <= 0)
+            return -1;
+        return juce::jlimit(0, options.size() - 1, x * options.size() / getWidth());
+    }
+
+    void setHovered(int index)
+    {
+        if (index != hovered) { hovered = index; repaint(); }
+    }
+
+    juce::StringArray options;
+    std::vector<bool> enabled;
+    std::vector<juce::String> tooltips;
+    int selected = -1;
+    int hovered = -1;
+};

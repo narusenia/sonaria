@@ -27,24 +27,23 @@ constexpr int kColumnGap = 6;
 
 constexpr int kSectionLabelHeight = 20;
 constexpr int kSectionLabelGap = kRowGap + 2;
-constexpr int kRadioRowHeight = 22;         // Rendering / Pitch mode toggles
-constexpr int kTimelineModeRowHeight = 32;  // Beats | Time
+constexpr int kSegmentedRowHeight = 26;     // Rendering / Time / Pitch mode
 constexpr int kControlRowHeight = 26;       // label + control rows
 constexpr int kLanguageRowHeight = 26;          // language selector row
 constexpr int kMidiButtonHeight = 28;
 constexpr int kMidiExportRowGap = kRowGap + 1;
 
 constexpr int kSynthesisCardHeight =
-    kInnerPadY + kSectionLabelHeight + kSectionLabelGap + kRadioRowHeight + kInnerPadY;
+    kInnerPadY + kSectionLabelHeight + kSectionLabelGap + kSegmentedRowHeight + kInnerPadY;
 
 // The inference device row is optional: it adds itself, leading gap included,
 // only while it is showing.
 constexpr int kRenderDeviceRowExtraHeight = (kRowGap + 1) + kControlRowHeight;
 constexpr int kTimeCardHeight =
-    kInnerPadY + kSectionLabelHeight + kSectionLabelGap + kTimelineModeRowHeight +
+    kInnerPadY + kSectionLabelHeight + kSectionLabelGap + kSegmentedRowHeight +
     (kRowGap + 1) + kControlRowHeight + (kRowGap + kControlRowHeight) * 2 + kInnerPadY;
 constexpr int kPitchCardHeight =
-    kInnerPadY + kSectionLabelHeight + kSectionLabelGap + kRadioRowHeight +
+    kInnerPadY + kSectionLabelHeight + kSectionLabelGap + kSegmentedRowHeight +
     ((kRowGap + 1) + kControlRowHeight) * 3 + kInnerPadY;
 constexpr int kUiCardHeight =
     kInnerPadY + kSectionLabelHeight + kSectionLabelGap +
@@ -336,20 +335,46 @@ ParameterPanel::ParameterPanel()
         toggle->addListener(this);
     }
 
-    for (auto* radio : { &chromaticToggle, &scaleToggle,
-                         &beatsTimelineToggle, &timeTimelineToggle,
-                         &vocoderEngineToggle, &psolaEngineToggle })
+    addAndMakeVisible(pitchModeControl);
+    pitchModeControl.onChange = [this](int index)
     {
-        addAndMakeVisible(radio);
-        radio->setClickingTogglesState(true);
-        radio->addListener(this);
-    }
+        if (isUpdating)
+            return;
+        if (index == 0)
+        {
+            setScaleModeInternal(ScaleMode::Chromatic, true);
+        }
+        else
+        {
+            ScaleMode target = selectedScaleMode;
+            if (target == ScaleMode::None || target == ScaleMode::Chromatic)
+                target = (lastNonChromaticMode == ScaleMode::None ||
+                          lastNonChromaticMode == ScaleMode::Chromatic)
+                             ? ScaleMode::Major
+                             : lastNonChromaticMode;
+            if (selectedScaleRootNote < 0)
+                setScaleRootInternal(0, true);
+            setScaleModeInternal(target, true);
+        }
+        if (onParameterChanged)
+            onParameterChanged();
+    };
 
-    // The button text stays plain language; the algorithm names live here, so
-    // they are discoverable without putting "PC-NSF-HiFiGAN" in a 55px label.
-    vocoderEngineToggle.setTooltip(TR(aiResynthesisAvailable ? "tooltip.engine_vocoder"
-                                                             : "tooltip.engine_vocoder_unavailable"));
-    psolaEngineToggle.setTooltip(TR("tooltip.engine_psola"));
+    addAndMakeVisible(timelineModeControl);
+    timelineModeControl.onChange = [this](int index)
+    {
+        if (!isUpdating)
+            setTimelineDisplayModeInternal(
+                index == 0 ? TimelineDisplayMode::Beats : TimelineDisplayMode::Time, true);
+    };
+
+    addAndMakeVisible(renderingControl);
+    renderingControl.onChange = [this](int index)
+    {
+        if (!isUpdating)
+            setSynthesisEngineInternal(
+                index == 0 ? SynthesisEngineType::Vocoder : SynthesisEngineType::Psola, true);
+    };
 
     // Device row: added hidden. It appears only once the host tells us the
     // engine is AI Resynthesis and there is more than one device to run it on
@@ -504,8 +529,8 @@ ParameterPanel::ParameterPanel()
     dragSnapModeButton.setEnabled(snapToSemitones);
     timelineSnapCycleToggle.setToggleState(timelineSnapCycle, juce::dontSendNotification);
 
-    const std::array<juce::Component*, 9> pitchComponents {{
-        &pitchSectionLabel, &chromaticToggle, &scaleToggle,
+    const std::array<juce::Component*, 8> pitchComponents {{
+        &pitchSectionLabel, &pitchModeControl,
         &referenceLabel, &referenceSlider,
         &snapToSemitonesToggle, &dragSnapModeButton, &doubleClickSnapLabel, &doubleClickSnapBox
     }};
@@ -627,36 +652,7 @@ void ParameterPanel::resized()
     synthesisSectionLabel.setBounds(bounds.removeFromTop(kSectionLabelHeight));
     bounds.removeFromTop(kSectionLabelGap);
 
-    // Both options stay on one row, sharing it in proportion to how wide each
-    // label actually is rather than in half. Measured with GlyphArrangement
-    // against the real typeface at the real size, so this holds through a font
-    // change, DPI scaling or translation - an estimate would not.
-    //
-    // Splitting the space left after the two radio circles, rather than the
-    // row itself, is what makes the proportion work: each label then gets the
-    // same fraction of what it needs, so if the pair cannot fit at full size
-    // they shrink together instead of the long one being squashed while the
-    // short one keeps its size. RadioButton paints through drawFittedText,
-    // which only ever shrinks, so any slack simply renders at full size.
-    auto engineRow = bounds.removeFromTop(kRadioRowHeight);
-    const auto engineFont = AppFont::getFont(15.0f);
-    constexpr int radioInset = 30; // circle plus gap, as paintButton trims
-
-    const int vocoderTextWidth = juce::GlyphArrangement::getStringWidthInt(
-        engineFont, vocoderEngineToggle.getButtonText());
-    const int psolaTextWidth = juce::GlyphArrangement::getStringWidthInt(
-        engineFont, psolaEngineToggle.getButtonText());
-    const int totalTextWidth = juce::jmax(1, vocoderTextWidth + psolaTextWidth);
-
-    const int sharedTextWidth =
-        juce::jmax(0, engineRow.getWidth() - columnGap - 2 * radioInset);
-    const int vocoderWidth =
-        radioInset + (sharedTextWidth * vocoderTextWidth) / totalTextWidth;
-
-    auto vocoderArea = engineRow.removeFromLeft(vocoderWidth);
-    engineRow.removeFromLeft(columnGap);
-    vocoderEngineToggle.setBounds(vocoderArea);
-    psolaEngineToggle.setBounds(engineRow);
+    renderingControl.setBounds(bounds.removeFromTop(kSegmentedRowHeight));
 
     if (renderDeviceRowVisible)
     {
@@ -703,11 +699,7 @@ void ParameterPanel::resized()
     bounds.removeFromTop(kSectionLabelGap);
 
     // Timeline mode: Beats | Time
-    auto timelineModeRow = bounds.removeFromTop(kTimelineModeRowHeight);
-    constexpr int radioButtonWidth = 82;
-    beatsTimelineToggle.setBounds(timelineModeRow.removeFromLeft(radioButtonWidth));
-    timelineModeRow.removeFromLeft(columnGap);
-    timeTimelineToggle.setBounds(timelineModeRow.removeFromLeft(radioButtonWidth));
+    timelineModeControl.setBounds(bounds.removeFromTop(kSegmentedRowHeight));
 
     bounds.removeFromTop(rowGap + 1);
 
@@ -748,11 +740,7 @@ void ParameterPanel::resized()
     bounds.removeFromTop(kSectionLabelGap);
 
     // Mode toggles: Chromatic | Scale
-    auto modeRow = bounds.removeFromTop(kRadioRowHeight);
-    auto chromaticArea = modeRow.removeFromLeft((modeRow.getWidth() - columnGap) / 2);
-    modeRow.removeFromLeft(columnGap);
-    chromaticToggle.setBounds(chromaticArea);
-    scaleToggle.setBounds(modeRow);
+    pitchModeControl.setBounds(bounds.removeFromTop(kSegmentedRowHeight));
 
     bounds.removeFromTop(rowGap + 1);
 
@@ -898,85 +886,9 @@ void ParameterPanel::buttonClicked(juce::Button* button)
         setTimelineSnapCycleInternal(timelineSnapCycleToggle.getToggleState(), true);
         return;
     }
-    if (button == &beatsTimelineToggle)
-    {
-        if (beatsTimelineToggle.getToggleState())
-        {
-            setTimelineDisplayModeInternal(TimelineDisplayMode::Beats, true);
-        }
-        else if (!timeTimelineToggle.getToggleState())
-        {
-            setTimelineDisplayModeInternal(TimelineDisplayMode::Time, true);
-        }
-        return;
-    }
-    if (button == &timeTimelineToggle)
-    {
-        if (timeTimelineToggle.getToggleState())
-        {
-            setTimelineDisplayModeInternal(TimelineDisplayMode::Time, true);
-        }
-        else if (!beatsTimelineToggle.getToggleState())
-        {
-            setTimelineDisplayModeInternal(TimelineDisplayMode::Beats, true);
-        }
-        return;
-    }
-
-    if (button == &vocoderEngineToggle || button == &psolaEngineToggle)
-    {
-        auto picked = synthesisEngine;
-        if (button == &vocoderEngineToggle && vocoderEngineToggle.getToggleState())
-            picked = SynthesisEngineType::Vocoder;
-        else if (button == &psolaEngineToggle && psolaEngineToggle.getToggleState())
-            picked = SynthesisEngineType::Psola;
-
-        // Clicking the active one toggles it off; put it back rather than
-        // leaving the group with nothing selected.
-        if (picked != synthesisEngine)
-            setSynthesisEngineInternal(picked, true);
-        else
-            refreshSynthesisToggles();
-        return;
-    }
-
     if (button == &snapToSemitonesToggle)
     {
         setSnapToSemitonesInternal(snapToSemitonesToggle.getToggleState(), true);
-        if (onParameterChanged)
-            onParameterChanged();
-        return;
-    }
-    if (button == &chromaticToggle)
-    {
-        if (chromaticToggle.getToggleState())
-        {
-            setScaleModeInternal(ScaleMode::Chromatic, true);
-        }
-        else
-            refreshModeToggles();
-
-        if (onParameterChanged)
-            onParameterChanged();
-        return;
-    }
-    if (button == &scaleToggle)
-    {
-        if (scaleToggle.getToggleState())
-        {
-            ScaleMode target = selectedScaleMode;
-            if (target == ScaleMode::None || target == ScaleMode::Chromatic)
-                target = (lastNonChromaticMode == ScaleMode::None ||
-                          lastNonChromaticMode == ScaleMode::Chromatic)
-                             ? ScaleMode::Major
-                             : lastNonChromaticMode;
-            if (selectedScaleRootNote < 0)
-                setScaleRootInternal(0, true);
-            setScaleModeInternal(target, true);
-        }
-        else
-            refreshModeToggles();
-
         if (onParameterChanged)
             onParameterChanged();
     }
@@ -1015,14 +927,14 @@ void ParameterPanel::refreshLocalisedText()
     midiReferenceVisibilityToggle.setButtonText(TR("param.show_midi_reference"));
     refreshMidiReferenceControls();
 
-    chromaticToggle.setButtonText(TR("param.chromatic"));
-    scaleToggle.setButtonText(TR("param.scale"));
+    pitchModeControl.setOptions({ TR("param.chromatic"), TR("param.scale") });
 
-    vocoderEngineToggle.setButtonText(TR("param.engine_vocoder"));
-    psolaEngineToggle.setButtonText(TR("param.engine_psola"));
-    vocoderEngineToggle.setTooltip(TR(aiResynthesisAvailable ? "tooltip.engine_vocoder"
-                                                             : "tooltip.engine_vocoder_unavailable"));
-    psolaEngineToggle.setTooltip(TR("tooltip.engine_psola"));
+    // The option text stays plain language; the algorithm names live in the
+    // tooltips, so they are discoverable without crowding the control.
+    renderingControl.setOptions({ TR("param.engine_vocoder"), TR("param.engine_psola") });
+    renderingControl.setOptionTooltip(0, TR(aiResynthesisAvailable ? "tooltip.engine_vocoder"
+                                                                   : "tooltip.engine_vocoder_unavailable"));
+    renderingControl.setOptionTooltip(1, TR("tooltip.engine_psola"));
 
     renderDeviceLabel.setText(TR("param.device"), juce::dontSendNotification);
 
@@ -1031,8 +943,7 @@ void ParameterPanel::refreshLocalisedText()
 
     snapToSemitonesToggle.setButtonText(TR("param.drag_snap"));
 
-    beatsTimelineToggle.setButtonText(TR("param.beats"));
-    timeTimelineToggle.setButtonText(TR("param.time_mode"));
+    timelineModeControl.setOptions({ TR("param.beats"), TR("param.time_mode") });
     timelineBeatLabel.setText(TR("param.beat"), juce::dontSendNotification);
     timelineTempoLabel.setText(TR("param.tempo"), juce::dontSendNotification);
     timelineTempoSlider.setName(TR("param.tempo"));
@@ -1332,12 +1243,10 @@ void ParameterPanel::updateGlobalSliders()
 
 void ParameterPanel::refreshModeToggles()
 {
-    const bool isChromatic = selectedScaleMode == ScaleMode::Chromatic;
-    const bool isScale =
-        selectedScaleMode != ScaleMode::None && selectedScaleMode != ScaleMode::Chromatic;
-
-    chromaticToggle.setToggleState(isChromatic, juce::dontSendNotification);
-    scaleToggle.setToggleState(isScale, juce::dontSendNotification);
+    pitchModeControl.setSelectedIndex(
+        selectedScaleMode == ScaleMode::Chromatic ? 0
+        : selectedScaleMode == ScaleMode::None    ? -1
+                                                  : 1);
 }
 
 void ParameterPanel::setSynthesisEngine(SynthesisEngineType type)
@@ -1356,19 +1265,16 @@ void ParameterPanel::setSynthesisEngineInternal(SynthesisEngineType type, bool n
 
 void ParameterPanel::refreshSynthesisToggles()
 {
-    vocoderEngineToggle.setToggleState(synthesisEngine == SynthesisEngineType::Vocoder,
-                                       juce::dontSendNotification);
-    psolaEngineToggle.setToggleState(synthesisEngine == SynthesisEngineType::Psola,
-                                     juce::dontSendNotification);
+    renderingControl.setSelectedIndex(synthesisEngine == SynthesisEngineType::Vocoder ? 0 : 1);
     refreshRenderDeviceRow();
 }
 
 void ParameterPanel::setAiResynthesisAvailable(bool available)
 {
     aiResynthesisAvailable = available;
-    vocoderEngineToggle.setEnabled(available);
-    vocoderEngineToggle.setTooltip(TR(available ? "tooltip.engine_vocoder"
-                                                : "tooltip.engine_vocoder_unavailable"));
+    renderingControl.setOptionEnabled(0, available);
+    renderingControl.setOptionTooltip(0, TR(available ? "tooltip.engine_vocoder"
+                                                      : "tooltip.engine_vocoder_unavailable"));
 }
 
 void ParameterPanel::setRenderDeviceOptions(const juce::StringArray& deviceNames,
@@ -1452,9 +1358,7 @@ void ParameterPanel::showRenderDeviceMenu()
 
 void ParameterPanel::refreshTimelineModeToggles()
 {
-    const bool beatsMode = timelineDisplayMode == TimelineDisplayMode::Beats;
-    beatsTimelineToggle.setToggleState(beatsMode, juce::dontSendNotification);
-    timeTimelineToggle.setToggleState(!beatsMode, juce::dontSendNotification);
+    timelineModeControl.setSelectedIndex(timelineDisplayMode == TimelineDisplayMode::Beats ? 0 : 1);
 }
 
 void ParameterPanel::setScaleRootInternal(int rootNote, bool notify)
