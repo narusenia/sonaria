@@ -367,5 +367,10 @@
   "update.title": "Update Available",
   "command.note_engine": "Note Engine",
   "command.note_engine.desp": "Choose the synthesis engine for the selected notes",
-  "engine.default": "Default (app setting)"
+  "engine.default": "Default (app setting)",
+  "panel.selected_note": "Selected Note",
+  "param.engine": "Engine",
+  "param.deviation": "Deviation",
+  "engine.default_short": "Default",
+  "engine.ai_short": "AI"
 }

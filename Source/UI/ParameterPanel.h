@@ -18,7 +18,8 @@
 
 class ParameterPanel : public juce::Component,
                        public juce::Button::Listener,
-                       public PanelContent
+                       public PanelContent,
+                       private juce::Timer
 {
 public:
     ParameterPanel();
@@ -87,6 +88,12 @@ public:
     std::function<void(SynthesisEngineType)> onSynthesisEngineChanged;
     std::function<void(int)> onRenderDeviceChanged;
 
+    // Selected note card. Each call is one edit of the whole selection, so
+    // the owner can record it as one undo step.
+    std::function<void(NoteEngine)> onSelectedNotesEngineChanged;
+    std::function<void(float)> onSelectedNotesVolumeChanged;
+    std::function<void(float)> onSelectedNotesFormantChanged;
+
     // MIDI card. Dragging the button asks the owner for a freshly written
     // .mid file and hands it to the OS as a file drag; a click saves instead.
     std::function<juce::File()> onCreateMidiDragFile;
@@ -98,6 +105,8 @@ public:
     void refreshMidiReference();
 
 private:
+    void timerCallback() override;
+    void refreshNoteCard();
     void setupTextButton(juce::TextButton& button);
     void showLanguageMenu();
     void refreshLanguageButtonText();
@@ -133,6 +142,21 @@ private:
 
     // Card titles and control captions all come from the string table; see
     // refreshLocalisedText(), which is also what a language change calls.
+    // Selected note card: shown only while non-rest notes are selected.
+    juce::Label noteSectionLabel;
+    juce::Rectangle<int> noteCardBounds;
+    bool noteCardVisible = false;
+    juce::Label noteEngineLabel;
+    SegmentedControl noteEngineControl; // Default | AI | Classic, as NoteEngine
+    juce::Label noteDeviationLabel;
+    juce::Label noteDeviationValue;
+    juce::Label noteVolumeLabel;
+    SliderBox noteVolumeSlider { "Volume" };
+    juce::Label noteFormantLabel;
+    SliderBox noteFormantSlider { "Formant" };
+    // A slider drag edits the notes once, on release, so it is one undo step.
+    bool noteSliderDragging = false;
+
     juce::Label pitchSectionLabel;
     juce::Rectangle<int> pitchCardBounds;
     juce::Label timeSectionLabel;

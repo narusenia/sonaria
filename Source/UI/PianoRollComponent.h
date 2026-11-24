@@ -183,6 +183,9 @@ public:
   // Moves the selection by a scale degree (3 = a third up, -8 = an octave down).
   bool shiftSelectedNotesByDegree(int degree);
   bool setSelectedNotesEngine(NoteEngine engine);
+  // A level edit on the existing render, recorded as one undo step.
+  bool setSelectedNotesVolumeDb(float volumeDb);
+  bool setSelectedNotesFormantShift(float semitones);
   bool centerOnCurrentPitchRange();
   void fitPitchRangeToView(float minMidi, float maxMidi);
   int getVisibleContentWidth() const;

@@ -1,8 +1,11 @@
 #include "ParameterPanel.h"
 #include "../Audio/IO/MidiExporter.h"
 #include "../Utils/Localization.h"
+#include "../Utils/NoteDeviation.h"
+#include <algorithm>
 #include <array>
 #include <cmath>
+#include <limits>
 
 namespace
 {
@@ -43,6 +46,10 @@ constexpr int kTimeCardHeight =
     kInnerPadY + kSectionLabelHeight + kSectionLabelGap + kSegmentedRowHeight +
     (kRowGap + 1) + kControlRowHeight + (kRowGap + kControlRowHeight) * 2 + kInnerPadY;
 constexpr int kPitchCardHeight =
+    kInnerPadY + kSectionLabelHeight + kSectionLabelGap + kSegmentedRowHeight +
+    ((kRowGap + 1) + kControlRowHeight) * 3 + kInnerPadY;
+// Only counted while notes are selected; see getPreferredHeight().
+constexpr int kNoteCardHeight =
     kInnerPadY + kSectionLabelHeight + kSectionLabelGap + kSegmentedRowHeight +
     ((kRowGap + 1) + kControlRowHeight) * 3 + kInnerPadY;
 constexpr int kUiCardHeight =
@@ -264,6 +271,69 @@ private:
 
 ParameterPanel::ParameterPanel()
 {
+    // Selected note card, added hidden until a note is selected.
+    for (auto* label : { &noteSectionLabel, &noteEngineLabel, &noteDeviationLabel,
+                         &noteDeviationValue, &noteVolumeLabel, &noteFormantLabel })
+        addChildComponent(label);
+    noteSectionLabel.setColour(juce::Label::textColourId, APP_COLOR_PANEL_SECTION_TITLE);
+    noteSectionLabel.setFont(AppFont::getBoldFont(16.0f));
+    for (auto* label : { &noteEngineLabel, &noteDeviationLabel, &noteVolumeLabel, &noteFormantLabel })
+    {
+        label->setColour(juce::Label::textColourId, APP_COLOR_PANEL_LABEL);
+        label->setFont(AppFont::getFont(14.0f));
+    }
+    noteDeviationValue.setColour(juce::Label::textColourId, APP_COLOR_CONTROL_TEXT);
+    noteDeviationValue.setFont(AppFont::getFont(14.0f));
+
+    addChildComponent(noteEngineControl);
+    noteEngineControl.onChange = [this](int index)
+    {
+        if (onSelectedNotesEngineChanged)
+            onSelectedNotesEngineChanged(static_cast<NoteEngine>(index));
+    };
+
+    const auto setupNoteSlider = [this](SliderBox& slider, double minimum, double maximum,
+                                        const juce::String& suffix,
+                                        std::function<void(float)> ParameterPanel::* callback)
+    {
+        slider.setRange(minimum, maximum, 0.1);
+        slider.setValue(0.0, juce::dontSendNotification);
+        slider.setDoubleClickReturnValue(true, 0.0);
+        slider.setNumDecimalPlacesToDisplay(1);
+        slider.setTextValueSuffix(suffix);
+        slider.setHideSuffixWhileEditing(true);
+        slider.setTextBoxStyle(juce::Slider::TextBoxLeft, false, 64, 22);
+        // The wheel scrolls the panel instead; each wheel step would be its own undo.
+        slider.setScrollWheelEnabled(false);
+        slider.setColour(juce::Slider::backgroundColourId, APP_COLOR_CONTROL_FILL);
+        slider.setColour(juce::Slider::trackColourId, APP_COLOR_CONTROL_FILL);
+        slider.setColour(juce::Slider::textBoxBackgroundColourId, juce::Colours::transparentBlack);
+        slider.setColour(juce::Slider::textBoxOutlineColourId, juce::Colours::transparentBlack);
+        slider.setColour(juce::Slider::textBoxTextColourId, APP_COLOR_CONTROL_TEXT);
+        const auto commit = [this, &slider, callback]
+        {
+            if (this->*callback)
+                (this->*callback)(static_cast<float>(slider.getValue()));
+        };
+        slider.onDragStart = [this] { noteSliderDragging = true; };
+        slider.onDragEnd = [this, commit]
+        {
+            noteSliderDragging = false;
+            commit();
+        };
+        // Typed values and double-click resets arrive here outside a drag.
+        slider.onValueChange = [this, commit]
+        {
+            if (!isUpdating && !noteSliderDragging)
+                commit();
+        };
+        addChildComponent(slider);
+    };
+    setupNoteSlider(noteVolumeSlider, -60.0, 24.0, " dB",
+                    &ParameterPanel::onSelectedNotesVolumeChanged);
+    setupNoteSlider(noteFormantSlider, -12.0, 12.0, " st",
+                    &ParameterPanel::onSelectedNotesFormantChanged);
+
     addAndMakeVisible(pitchSectionLabel);
     pitchSectionLabel.setColour(juce::Label::textColourId, APP_COLOR_PANEL_SECTION_TITLE);
     pitchSectionLabel.setFont(AppFont::getBoldFont(16.0f));
@@ -543,6 +613,7 @@ ParameterPanel::ParameterPanel()
 
     // Every caption above is a translated string, applied in one place.
     refreshLocalisedText();
+    startTimer(150);
 }
 
 ParameterPanel::~ParameterPanel()
@@ -564,6 +635,15 @@ void ParameterPanel::paint(juce::Graphics& g)
 {
     // Two separate cards for Pitch and Time sections
     const float radius = 8.0f;
+
+    if (!noteCardBounds.isEmpty())
+    {
+        const auto rect = noteCardBounds.toFloat();
+        g.setColour(APP_COLOR_PANEL_CARD);
+        g.fillRoundedRectangle(rect, radius);
+        g.setColour(APP_COLOR_BORDER.withAlpha(0.4f));
+        g.drawRoundedRectangle(rect.reduced(0.5f), radius, 0.75f);
+    }
 
     if (!pitchCardBounds.isEmpty())
     {
@@ -643,6 +723,38 @@ void ParameterPanel::resized()
     // Cards stack top down in this order; each starts where the last ended.
     int nextCardTop = cardArea.getY();
     juce::Rectangle<int> bounds;
+
+    // =========================================================================
+    // SELECTED NOTE CARD
+    // =========================================================================
+    noteCardBounds = {};
+    if (noteCardVisible)
+    {
+        noteCardBounds = { cardArea.getX(), nextCardTop, cardArea.getWidth(), kNoteCardHeight };
+        bounds = noteCardBounds.reduced(innerPadX, innerPadY);
+        noteSectionLabel.setBounds(bounds.removeFromTop(kSectionLabelHeight));
+        bounds.removeFromTop(kSectionLabelGap);
+
+        const int noteLabelWidth = juce::jlimit(
+            60, juce::jmax(60, bounds.getWidth() - 120),
+            std::max({ textWidth(noteEngineLabel), textWidth(noteDeviationLabel),
+                         textWidth(noteVolumeLabel), textWidth(noteFormantLabel) }));
+        auto engineRow = bounds.removeFromTop(kSegmentedRowHeight);
+        noteEngineLabel.setBounds(engineRow.removeFromLeft(noteLabelWidth));
+        noteEngineControl.setBounds(engineRow);
+
+        const auto layoutRow = [&](juce::Label& label, juce::Component& control)
+        {
+            bounds.removeFromTop(rowGap + 1);
+            auto row = bounds.removeFromTop(kControlRowHeight);
+            label.setBounds(row.removeFromLeft(noteLabelWidth));
+            control.setBounds(row.reduced(0, 2));
+        };
+        layoutRow(noteDeviationLabel, noteDeviationValue);
+        layoutRow(noteVolumeLabel, noteVolumeSlider);
+        layoutRow(noteFormantLabel, noteFormantSlider);
+        nextCardTop = noteCardBounds.getBottom() + cardGap;
+    }
 
     // =========================================================================
     // PITCH CARD
@@ -860,7 +972,8 @@ void ParameterPanel::resized()
 int ParameterPanel::getPreferredHeight() const
 {
     return kPreferredPanelHeight +
-           (renderDeviceRowVisible ? kRenderDeviceRowExtraHeight : 0);
+           (renderDeviceRowVisible ? kRenderDeviceRowExtraHeight : 0) +
+           (noteCardVisible ? kNoteCardHeight + kCardGap : 0);
 }
 
 void ParameterPanel::buttonClicked(juce::Button* button)
@@ -919,6 +1032,18 @@ void ParameterPanel::setProject(Project* proj)
 void ParameterPanel::refreshLocalisedText()
 {
     languageSectionLabel.setText(TR("panel.language"), juce::dontSendNotification);
+
+    noteSectionLabel.setText(TR("panel.selected_note"), juce::dontSendNotification);
+    noteEngineLabel.setText(TR("param.engine"), juce::dontSendNotification);
+    noteEngineControl.setOptions({ TR("engine.default_short"), TR("engine.ai_short"),
+                                   TR("param.engine_psola") });
+    noteEngineControl.setOptionTooltip(0, TR("engine.default"));
+    noteEngineControl.setOptionTooltip(1, TR("param.engine_vocoder"));
+    noteDeviationLabel.setText(TR("param.deviation"), juce::dontSendNotification);
+    noteVolumeLabel.setText(TR("param.volume"), juce::dontSendNotification);
+    noteVolumeSlider.setName(TR("param.volume"));
+    noteFormantLabel.setText(TR("param.formant"), juce::dontSendNotification);
+    noteFormantSlider.setName(TR("param.formant"));
     refreshLanguageButtonText();
 
     pitchSectionLabel.setText(TR("panel.pitch"), juce::dontSendNotification);
@@ -1188,6 +1313,67 @@ void ParameterPanel::updateFromNote()
 {
     midiDragButton.setEnabled(project != nullptr &&
                               MidiExporter::hasExportableNotes(project->getNotes()));
+    refreshNoteCard();
+}
+
+void ParameterPanel::timerCallback()
+{
+    // Selection changes from many places in the piano roll (clicks, box select,
+    // keys, undo) without one shared callback, so the card polls it.
+    if (isShowing())
+        refreshNoteCard();
+}
+
+void ParameterPanel::refreshNoteCard()
+{
+    std::vector<const Note*> notes;
+    if (project != nullptr)
+        for (const auto* note : project->getSelectedNotes())
+            if (!note->isRest())
+                notes.push_back(note);
+
+    const bool show = !notes.empty();
+    if (show != noteCardVisible)
+    {
+        noteCardVisible = show;
+        for (auto* component : std::initializer_list<juce::Component*>{
+                 &noteSectionLabel, &noteEngineLabel, &noteEngineControl, &noteDeviationLabel,
+                 &noteDeviationValue, &noteVolumeLabel, &noteVolumeSlider, &noteFormantLabel,
+                 &noteFormantSlider })
+            component->setVisible(show);
+        resized();
+        repaint();
+        if (onPreferredHeightChanged)
+            onPreferredHeightChanged();
+    }
+    if (!show)
+        return;
+
+    const auto* first = notes.front();
+    const bool sharedEngine = std::all_of(notes.begin(), notes.end(), [first](const Note* note)
+                                          { return note->getEngine() == first->getEngine(); });
+    noteEngineControl.setSelectedIndex(sharedEngine ? static_cast<int>(first->getEngine()) : -1);
+
+    int lowest = std::numeric_limits<int>::max(), highest = std::numeric_limits<int>::min();
+    for (const auto* note : notes)
+    {
+        const int cents = juce::roundToInt(NoteDeviation::cents(*project, *note));
+        lowest = std::min(lowest, cents);
+        highest = std::max(highest, cents);
+    }
+    const auto formatCents = [](int cents) { return (cents > 0 ? "+" : "") + juce::String(cents); };
+    noteDeviationValue.setText(lowest == highest
+                                   ? formatCents(lowest) + " ct"
+                                   : formatCents(lowest) + " ~ " + formatCents(highest) + " ct",
+                               juce::dontSendNotification);
+
+    // shortcut: a mixed selection shows the first note's level and formant, and
+    // an edit sets them all to that value; show a range if users ask for one.
+    if (!noteSliderDragging)
+    {
+        noteVolumeSlider.setValue(first->getVolumeDb(), juce::dontSendNotification);
+        noteFormantSlider.setValue(first->getFormantShift(), juce::dontSendNotification);
+    }
 }
 
 void ParameterPanel::updateGlobalSliders()

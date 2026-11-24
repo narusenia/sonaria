@@ -3362,6 +3362,38 @@ bool PianoRollComponent::setSelectedNotesEngine(NoteEngine engine)
   return editSelectedNotes([engine](Note &note) { note.setEngine(engine); });
 }
 
+bool PianoRollComponent::setSelectedNotesFormantShift(float semitones)
+{
+  return editSelectedNotes([semitones](Note &note) { note.setFormantShift(semitones); });
+}
+
+bool PianoRollComponent::setSelectedNotesVolumeDb(float volumeDb)
+{
+  if (project == nullptr)
+    return false;
+
+  // Same path as the amplitude handle: no resynthesis, just the gain.
+  std::vector<Note *> notes;
+  std::vector<float> before;
+  for (auto *note : project->getSelectedNotes())
+    if (note != nullptr && !note->isRest() && note->getVolumeDb() != volumeDb)
+    {
+      notes.push_back(note);
+      before.push_back(note->getVolumeDb());
+    }
+  if (notes.empty())
+    return false;
+
+  std::vector<float> after(notes.size(), volumeDb);
+  auto action = std::make_unique<AmplitudeAction>(
+      *project, notes, std::move(before), std::move(after),
+      pitchToolController ? pitchToolController->onAmplitudeEdited : std::function<void()>{});
+  action->redo();
+  if (undoManager)
+    undoManager->addAction(std::move(action));
+  return true;
+}
+
 bool PianoRollComponent::quantizeSelectedNotes()
 {
   if (project == nullptr)

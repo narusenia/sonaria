@@ -325,5 +325,10 @@
   "update.title": "アップデートがあります",
   "command.note_engine": "ノートのエンジン",
   "command.note_engine.desp": "選んだノートの合成エンジンを選ぶ",
-  "engine.default": "既定（アプリ設定）"
+  "engine.default": "既定（アプリ設定）",
+  "panel.selected_note": "選択ノート",
+  "param.engine": "エンジン",
+  "param.deviation": "ずれ",
+  "engine.default_short": "既定",
+  "engine.ai_short": "AI"
 }

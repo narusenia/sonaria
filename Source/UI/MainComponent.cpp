@@ -916,6 +916,12 @@ MainComponent::MainComponent(bool enableAudioDevice)
     if (editorController)
       editorController->setSynthesisEngineType(type);
   };
+  parameterPanel.onSelectedNotesEngineChanged = [this](NoteEngine engine)
+  { pianoRoll.setSelectedNotesEngine(engine); };
+  parameterPanel.onSelectedNotesVolumeChanged = [this](float volumeDb)
+  { pianoRoll.setSelectedNotesVolumeDb(volumeDb); };
+  parameterPanel.onSelectedNotesFormantChanged = [this](float semitones)
+  { pianoRoll.setSelectedNotesFormantShift(semitones); };
   parameterPanel.setAiResynthesisAvailable(GpuDeviceList::hasGpuInference());
   refreshRenderDeviceOptions();
   parameterPanel.onRenderDeviceChanged = [this](int deviceId)
