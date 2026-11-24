@@ -320,7 +320,7 @@ ParameterPanel::ParameterPanel()
             onExportMidiClicked();
     };
 
-    // Language card: always present, directly below Rendering.
+    // Language card: always present.
     addAndMakeVisible(languageSectionLabel);
     languageSectionLabel.setColour(juce::Label::textColourId, APP_COLOR_PANEL_SECTION_TITLE);
     languageSectionLabel.setFont(AppFont::getBoldFont(16.0f));
@@ -640,98 +640,14 @@ void ParameterPanel::resized()
     };
 
     auto cardArea = outerBounds.reduced(kCardPadX, cardPadY);
-    // =========================================================================
-    // SYNTHESIS CARD
-    // =========================================================================
-    const int synthesisCardStart = cardArea.getY();
-    auto bounds = juce::Rectangle<int>(cardArea.getX() + innerPadX,
-                                       synthesisCardStart + innerPadY,
-                                       cardArea.getWidth() - innerPadX * 2,
-                                       cardArea.getBottom() - synthesisCardStart - innerPadY * 2);
-
-    synthesisSectionLabel.setBounds(bounds.removeFromTop(kSectionLabelHeight));
-    bounds.removeFromTop(kSectionLabelGap);
-
-    renderingControl.setBounds(bounds.removeFromTop(kSegmentedRowHeight));
-
-    if (renderDeviceRowVisible)
-    {
-        bounds.removeFromTop(rowGap + 1);
-        auto deviceRow = bounds.removeFromTop(kControlRowHeight);
-        renderDeviceLabel.setBounds(deviceRow.removeFromLeft(52));
-        renderDeviceButton.setBounds(deviceRow.reduced(0, 2));
-    }
-
-    const int synthesisCardBottom = bounds.getY() + innerPadY;
-    synthesisCardBounds = juce::Rectangle<int>(
-        cardArea.getX(), synthesisCardStart, cardArea.getWidth(),
-        synthesisCardBottom - synthesisCardStart);
-
-    // =========================================================================
-    // LANGUAGE CARD
-    //
-    // Sits directly below Rendering and is always present, so its height is
-    // part of kPreferredPanelHeight.
-    // =========================================================================
-    const int languageCardStart = synthesisCardBottom + cardGap;
-    bounds = juce::Rectangle<int>(cardArea.getX() + innerPadX,
-                                  languageCardStart + innerPadY,
-                                  cardArea.getWidth() - innerPadX * 2,
-                                  cardArea.getBottom() - languageCardStart - innerPadY * 2);
-
-    languageSectionLabel.setBounds(bounds.removeFromTop(kSectionLabelHeight));
-    bounds.removeFromTop(kSectionLabelGap);
-    languageSelectorButton.setBounds(bounds.removeFromTop(kLanguageRowHeight));
-
-    const int languageCardBottom = bounds.getY() + innerPadY;
-    languageCardBounds = juce::Rectangle<int>(cardArea.getX(), languageCardStart,
-                                              cardArea.getWidth(),
-                                              languageCardBottom - languageCardStart);
-
-    // =========================================================================
-    // TIME CARD
-    // =========================================================================
-    const int timeCardStart = languageCardBottom + cardGap;
-    bounds = juce::Rectangle<int>(cardArea.getX() + innerPadX, timeCardStart + innerPadY,
-                                   cardArea.getWidth() - innerPadX * 2, cardArea.getBottom() - timeCardStart - innerPadY * 2);
-
-    timeSectionLabel.setBounds(bounds.removeFromTop(kSectionLabelHeight));
-    bounds.removeFromTop(kSectionLabelGap);
-
-    // Timeline mode: Beats | Time
-    timelineModeControl.setBounds(bounds.removeFromTop(kSegmentedRowHeight));
-
-    bounds.removeFromTop(rowGap + 1);
-
-    // Beat / Tempo row
-    auto beatTempoRow = bounds.removeFromTop(kControlRowHeight);
-    const int timeLabelWidth = juce::jmax(textWidth(timelineBeatLabel), textWidth(timelineGridLabel));
-    timelineBeatLabel.setBounds(beatTempoRow.removeFromLeft(timeLabelWidth));
-    auto beatButtonArea = beatTempoRow.removeFromLeft(44);
-    timelineBeatButton.setBounds(beatButtonArea.withSizeKeepingCentre(40, 22));
-    beatTempoRow.removeFromLeft(10);
-    timelineTempoLabel.setBounds(beatTempoRow.removeFromLeft(textWidth(timelineTempoLabel)));
-    timelineTempoSlider.setBounds(beatTempoRow.reduced(0, 2));
-
-    bounds.removeFromTop(rowGap);
-
-    // Grid / Snap Cycle row
-    auto gridRow = bounds.removeFromTop(kControlRowHeight);
-    timelineGridLabel.setBounds(gridRow.removeFromLeft(timeLabelWidth));
-    timelineGridButton.setBounds(
-        gridRow.removeFromLeft(44).withSizeKeepingCentre(40, 22));
-
-    bounds.removeFromTop(rowGap);
-    timelineSnapCycleToggle.setBounds(bounds.removeFromTop(kControlRowHeight));
-
-    int timeCardBottom = bounds.getY() + innerPadY;
-    timeCardBounds = juce::Rectangle<int>(cardArea.getX(), timeCardStart,
-                                           cardArea.getWidth(), timeCardBottom - timeCardStart);
+    // Cards stack top down in this order; each starts where the last ended.
+    int nextCardTop = cardArea.getY();
+    juce::Rectangle<int> bounds;
 
     // =========================================================================
     // PITCH CARD
     // =========================================================================
-    const int pitchCardStart = timeCardBottom + cardGap;
+    const int pitchCardStart = nextCardTop;
     bounds = juce::Rectangle<int>(cardArea.getX() + innerPadX, pitchCardStart + innerPadY,
                                   cardArea.getWidth() - innerPadX * 2,
                                   cardArea.getBottom() - pitchCardStart - innerPadY * 2);
@@ -773,7 +689,80 @@ void ParameterPanel::resized()
                                cardArea.getWidth(), pitchCardBottom - pitchCardStart)
         : juce::Rectangle<int>();
 
-    const int midiReferenceTop = pitchCardBottom + cardGap;
+    nextCardTop = pitchCardBottom + cardGap;
+
+    // =========================================================================
+    // TIME CARD
+    // =========================================================================
+    const int timeCardStart = nextCardTop;
+    bounds = juce::Rectangle<int>(cardArea.getX() + innerPadX, timeCardStart + innerPadY,
+                                   cardArea.getWidth() - innerPadX * 2, cardArea.getBottom() - timeCardStart - innerPadY * 2);
+
+    timeSectionLabel.setBounds(bounds.removeFromTop(kSectionLabelHeight));
+    bounds.removeFromTop(kSectionLabelGap);
+
+    // Timeline mode: Beats | Time
+    timelineModeControl.setBounds(bounds.removeFromTop(kSegmentedRowHeight));
+
+    bounds.removeFromTop(rowGap + 1);
+
+    // Beat / Tempo row
+    auto beatTempoRow = bounds.removeFromTop(kControlRowHeight);
+    const int timeLabelWidth = juce::jmax(textWidth(timelineBeatLabel), textWidth(timelineGridLabel));
+    timelineBeatLabel.setBounds(beatTempoRow.removeFromLeft(timeLabelWidth));
+    auto beatButtonArea = beatTempoRow.removeFromLeft(44);
+    timelineBeatButton.setBounds(beatButtonArea.withSizeKeepingCentre(40, 22));
+    beatTempoRow.removeFromLeft(10);
+    timelineTempoLabel.setBounds(beatTempoRow.removeFromLeft(textWidth(timelineTempoLabel)));
+    timelineTempoSlider.setBounds(beatTempoRow.reduced(0, 2));
+
+    bounds.removeFromTop(rowGap);
+
+    // Grid / Snap Cycle row
+    auto gridRow = bounds.removeFromTop(kControlRowHeight);
+    timelineGridLabel.setBounds(gridRow.removeFromLeft(timeLabelWidth));
+    timelineGridButton.setBounds(
+        gridRow.removeFromLeft(44).withSizeKeepingCentre(40, 22));
+
+    bounds.removeFromTop(rowGap);
+    timelineSnapCycleToggle.setBounds(bounds.removeFromTop(kControlRowHeight));
+
+    int timeCardBottom = bounds.getY() + innerPadY;
+    timeCardBounds = juce::Rectangle<int>(cardArea.getX(), timeCardStart,
+                                           cardArea.getWidth(), timeCardBottom - timeCardStart);
+
+    nextCardTop = timeCardBottom + cardGap;
+
+    // =========================================================================
+    // SYNTHESIS CARD
+    // =========================================================================
+    const int synthesisCardStart = nextCardTop;
+    bounds = juce::Rectangle<int>(cardArea.getX() + innerPadX,
+                                       synthesisCardStart + innerPadY,
+                                       cardArea.getWidth() - innerPadX * 2,
+                                       cardArea.getBottom() - synthesisCardStart - innerPadY * 2);
+
+    synthesisSectionLabel.setBounds(bounds.removeFromTop(kSectionLabelHeight));
+    bounds.removeFromTop(kSectionLabelGap);
+
+    renderingControl.setBounds(bounds.removeFromTop(kSegmentedRowHeight));
+
+    if (renderDeviceRowVisible)
+    {
+        bounds.removeFromTop(rowGap + 1);
+        auto deviceRow = bounds.removeFromTop(kControlRowHeight);
+        renderDeviceLabel.setBounds(deviceRow.removeFromLeft(52));
+        renderDeviceButton.setBounds(deviceRow.reduced(0, 2));
+    }
+
+    const int synthesisCardBottom = bounds.getY() + innerPadY;
+    synthesisCardBounds = juce::Rectangle<int>(
+        cardArea.getX(), synthesisCardStart, cardArea.getWidth(),
+        synthesisCardBottom - synthesisCardStart);
+
+    nextCardTop = synthesisCardBottom + cardGap;
+
+    const int midiReferenceTop = nextCardTop;
     midiReferenceCardBounds = {cardArea.getX(), midiReferenceTop,
                                cardArea.getWidth(), kMidiReferenceCardHeight};
     bounds = midiReferenceCardBounds.reduced(innerPadX, innerPadY);
@@ -791,11 +780,34 @@ void ParameterPanel::resized()
 
     bounds.removeFromTop(rowGap);
     midiReferenceVisibilityToggle.setBounds(bounds.removeFromTop(kControlRowHeight));
+    nextCardTop = midiReferenceCardBounds.getBottom() + cardGap;
+
+    // =========================================================================
+    // LANGUAGE CARD
+    //
+    // Always present, so its height is part of kPreferredPanelHeight.
+    // =========================================================================
+    const int languageCardStart = nextCardTop;
+    bounds = juce::Rectangle<int>(cardArea.getX() + innerPadX,
+                                  languageCardStart + innerPadY,
+                                  cardArea.getWidth() - innerPadX * 2,
+                                  cardArea.getBottom() - languageCardStart - innerPadY * 2);
+
+    languageSectionLabel.setBounds(bounds.removeFromTop(kSectionLabelHeight));
+    bounds.removeFromTop(kSectionLabelGap);
+    languageSelectorButton.setBounds(bounds.removeFromTop(kLanguageRowHeight));
+
+    const int languageCardBottom = bounds.getY() + innerPadY;
+    languageCardBounds = juce::Rectangle<int>(cardArea.getX(), languageCardStart,
+                                              cardArea.getWidth(),
+                                              languageCardBottom - languageCardStart);
+
+    nextCardTop = languageCardBottom + cardGap;
 
     // =========================================================================
     // UI CARD
     // =========================================================================
-    const int uiCardStart = midiReferenceCardBounds.getBottom() + cardGap;
+    const int uiCardStart = nextCardTop;
     bounds = juce::Rectangle<int>(cardArea.getX() + innerPadX,
                                   uiCardStart + innerPadY,
                                   cardArea.getWidth() - innerPadX * 2,
