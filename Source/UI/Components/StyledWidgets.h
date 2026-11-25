@@ -578,7 +578,7 @@ public:
             }
             g.setColour((isSelected ? APP_COLOR_TEXT_ON_PRIMARY : APP_COLOR_TEXT_PRIMARY)
                             .withMultipliedAlpha(enabled[static_cast<size_t>(i)] && isEnabled() ? 1.0f : 0.4f));
-            g.drawFittedText(options[i], segment.reduced(4.0f, 0.0f).toNearestInt(),
+            g.drawFittedText(options[i], segment.reduced(2.0f, 0.0f).toNearestInt(),
                              juce::Justification::centred, 1, 0.8f);
         }
     }
