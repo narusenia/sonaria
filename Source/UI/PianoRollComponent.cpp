@@ -3685,6 +3685,15 @@ bool PianoRollComponent::keyPressed(const juce::KeyPress &key)
     return false;
 
   const int keyCode = key.getKeyCode();
+  // A/B: held B plays the selected notes' original recording.
+  if (juce::CharacterFunctions::toLowerCase(static_cast<juce::juce_wchar>(keyCode)) == 'b' &&
+      !mods.isAltDown() && !mods.isShiftDown() && onOriginalAuditionChanged &&
+      !project->getSelectedNotes().empty())
+  {
+    setOriginalAuditionHeld(true);
+    return true;
+  }
+
   if (keyCode == juce::KeyPress::leftKey || keyCode == juce::KeyPress::rightKey)
     return !mods.isAltDown() &&
            selectAdjacentNote(keyCode == juce::KeyPress::rightKey, mods.isShiftDown());
@@ -3727,8 +3736,31 @@ bool PianoRollComponent::keyPressed(const juce::KeyPress &key,
   return keyPressed(key);
 }
 
+bool PianoRollComponent::keyStateChanged(bool isKeyDown)
+{
+  if (originalAuditionHeld && !juce::KeyPress::isKeyCurrentlyDown('B') &&
+      !juce::KeyPress::isKeyCurrentlyDown('b'))
+  {
+    setOriginalAuditionHeld(false);
+    return true;
+  }
+  return juce::Component::keyStateChanged(isKeyDown);
+}
+
+void PianoRollComponent::setOriginalAuditionHeld(bool held)
+{
+  // Key repeats arrive as more presses; only the change is reported.
+  if (originalAuditionHeld == held)
+    return;
+  originalAuditionHeld = held;
+  if (onOriginalAuditionChanged)
+    onOriginalAuditionChanged(held);
+}
+
 void PianoRollComponent::focusLost(FocusChangeType cause)
 {
+  // A key released while focus is elsewhere never reaches keyStateChanged.
+  setOriginalAuditionHeld(false);
   juce::ignoreUnused(cause);
   // Don't automatically re-grab focus - let the host manage focus normally
   // Focus will be re-acquired when user clicks on the piano roll

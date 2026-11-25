@@ -2,6 +2,7 @@
 
 #include "../JuceHeader.h"
 #include "../Models/Project.h"
+#include "OriginalAudition.h"
 #include <atomic>
 #include <functional>
 #include <memory>
@@ -45,6 +46,11 @@ public:
                          int sampleRate);
   void endAuditionLoop();
   bool isAuditioning() const { return auditionActive.load(); }
+
+  // A/B (REQ-WF-006): while `on`, the slices of the original recording play
+  // in place of the render, faded in and out over about 10 ms. Message thread.
+  void setOriginalAudition(std::vector<originalaudition::Slice> slices);
+  void setOriginalAuditionOn(bool on) { originalAuditionOn.store(on); }
 
   bool isPlaying() const { return playing; }
   double getPosition() const; // Returns position in seconds
@@ -151,6 +157,13 @@ private:
 
   // Volume control (linear gain, lock-free for audio thread)
   std::atomic<float> volumeGain{1.0f};
+
+  // A/B audition. The previous list is kept here so it is freed on the
+  // message thread, not by the audio thread dropping the last reference.
+  std::shared_ptr<const std::vector<originalaudition::Slice>> originalSlices;
+  std::shared_ptr<const std::vector<originalaudition::Slice>> retiredOriginalSlices;
+  std::atomic<bool> originalAuditionOn{false};
+  float originalMix = 0.0f; // audio thread only
 
   // Loop range (in waveform samples)
   std::atomic<bool> loopEnabled{false};

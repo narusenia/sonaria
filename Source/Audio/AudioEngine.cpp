@@ -108,6 +108,8 @@ void AudioEngine::getNextAudioBlock(
   if (!playing ||
       (auditioning ? auditionWaveform.getNumSamples()
                    : currentWaveform.getNumSamples()) == 0) {
+    // Nothing to fade while silent; start the next play in the held state.
+    originalMix = originalAuditionOn.load() ? 1.0f : 0.0f;
     bufferToFill.clearActiveBufferRegion();
     return;
   }
@@ -232,6 +234,8 @@ void AudioEngine::getNextAudioBlock(
     interpolator.reset();
   }
 
+  const int64_t blockStartPosition = pos;
+
   // Use interpolator for sample rate conversion
   const float *inputData = activeWaveform.getReadPointer(0);
   float *outputData = outputBuffer->getWritePointer(0, startSample);
@@ -281,6 +285,17 @@ void AudioEngine::getNextAudioBlock(
     }
   }
 
+  // shortcut: positions are read as one run from the block start, so a loop
+  // wrap inside a block misplaces the original for the rest of that block
+  // (the slice edges still fade); track the wrap if that is audible.
+  if (!auditioning)
+    if (auto slices = std::atomic_load(&originalSlices))
+      originalaudition::blend(outputData, numOutputSamples - samplesRemaining,
+                              static_cast<double>(blockStartPosition),
+                              activePlaybackRatio, *slices,
+                              originalAuditionOn.load(), originalMix,
+                              static_cast<int>(waveformSampleRate * 0.01));
+
   // Apply volume gain (lock-free read)
   float gain = volumeGain.load();
   if (std::abs(gain - 1.0f) > 0.0001f) // Only apply if not unity gain
@@ -327,6 +342,16 @@ void AudioEngine::getNextAudioBlock(
 }
 
 void AudioEngine::changeListenerCallback(juce::ChangeBroadcaster *source) {}
+
+void AudioEngine::setOriginalAudition(
+    std::vector<originalaudition::Slice> slices) {
+  retiredOriginalSlices = std::atomic_load(&originalSlices);
+  std::atomic_store(
+      &originalSlices,
+      std::shared_ptr<const std::vector<originalaudition::Slice>>(
+          std::make_shared<std::vector<originalaudition::Slice>>(
+              std::move(slices))));
+}
 
 void AudioEngine::publishWaveform(const juce::AudioBuffer<float> &buffer,
                                   int sampleRate) {

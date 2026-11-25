@@ -87,6 +87,8 @@ public:
   bool keyPressed(const juce::KeyPress &key) override;
   bool keyPressed(const juce::KeyPress &key,
                   juce::Component *originatingComponent) override;
+  // Releases the A/B key (B).
+  bool keyStateChanged(bool isKeyDown) override;
 
   void requestCanvasKeyboardFocus();
 
@@ -266,6 +268,8 @@ public:
   std::function<void(Note *)> onNoteSelected;
   std::function<void()> onPitchEdited;
   std::function<void()> onPitchEditFinished; // Called when dragging ends
+  // A/B: true while B is held (the selection plays the original), then false.
+  std::function<void(bool)> onOriginalAuditionChanged;
   std::function<void()> onAmplitudeEdited; // Gain commit, undo, or redo
   // Restore actions are applied here and then handed to the host exactly as
   // an undo/redo is: same UI refresh, same resynthesis trigger, nothing sent
@@ -473,6 +477,8 @@ private:
   std::unique_ptr<PitchEditor> pitchEditor;
   std::unique_ptr<BoxSelector> boxSelector;
   std::unique_ptr<NoteSplitter> noteSplitter;
+  bool originalAuditionHeld = false;
+  void setOriginalAuditionHeld(bool held);
   // Smart split candidates: (note start frame, split frames) per note.
   std::vector<std::pair<int, std::vector<int>>> smartSplitPreview;
   std::vector<std::pair<int, std::vector<int>>> findSmartSplits(float sensitivity) const;

@@ -254,6 +254,7 @@ public:
   void showDegreeShiftMenu();
   void showNoteEngineMenu();
   void showSmartSplitPopup();
+  void setOriginalAudition(bool held);
   void fitAnalyzedPitchRangeToView() override;
 
   // Plugin mode callbacks

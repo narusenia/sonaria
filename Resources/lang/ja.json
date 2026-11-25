@@ -59,7 +59,7 @@
   "command.straighten_selection.desp": "選択したノートのゆっくりした揺れを取る（ビブラートは残す）",
   "command.show_shortcuts": "キーボードショートカット",
   "command.show_shortcuts.desp": "キーボードショートカットの一覧を出す",
-  "shortcuts.list": "← / →  —  前 / 次のノートを選択\nShift + ← / →  —  選択を広げる\n↑ / ↓  —  選択をスケール上で 1 音動かす\nShift + ↑ / ↓  —  選択を 1 オクターブ動かす\nAlt + ↑ / ↓  —  選択を 1 セント動かす（Shift で 10 セント）\nN / Shift + N  —  次 / 前のずれたノートへ\nQ  —  選択をスケールにクオンタイズ\nW  —  選択をまっすぐにする（ビブラートは残す）\nH  —  度数シフト（ハモリ）\nE  —  ノートのエンジンを選ぶ\n1〜4  —  選択 / 分割 / 描画 / タイミングのツール\nSpace  —  再生 / 一時停止\nCmd + Z / Shift + Cmd + Z  —  取り消し / やり直し",
+  "shortcuts.list": "← / →  —  前 / 次のノートを選択\nShift + ← / →  —  選択を広げる\n↑ / ↓  —  選択をスケール上で 1 音動かす\nShift + ↑ / ↓  —  選択を 1 オクターブ動かす\nAlt + ↑ / ↓  —  選択を 1 セント動かす（Shift で 10 セント）\nN / Shift + N  —  次 / 前のずれたノートへ\nQ  —  選択をスケールにクオンタイズ\nW  —  選択をまっすぐにする（ビブラートは残す）\nH  —  度数シフト（ハモリ）\nE  —  ノートのエンジンを選ぶ\nB（押している間）  —  選択を原音で鳴らす（A/B）\n1〜4  —  選択 / 分割 / 描画 / タイミングのツール\nSpace  —  再生 / 一時停止\nCmd + Z / Shift + Cmd + Z  —  取り消し / やり直し",
   "command.next_deviated_note": "次のずれたノート",
   "command.next_deviated_note.desp": "修正が要るほどずれた次のノートを選択",
   "command.previous_deviated_note": "前のずれたノート",

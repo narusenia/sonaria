@@ -885,6 +885,9 @@ MainComponent::MainComponent(bool enableAudioDevice)
   { pianoRoll.setSelectedNotesFormantShift(semitones); };
   parameterPanel.onAlignToReference = [this](float strength)
   { pianoRoll.alignSelectedNotesToReference(strength); };
+  // The plug-in has no A/B blend yet, so B stays free for the host there.
+  if (!isPluginMode())
+    pianoRoll.onOriginalAuditionChanged = [this](bool held) { setOriginalAudition(held); };
   parameterPanel.setAiResynthesisAvailable(GpuDeviceList::hasGpuInference());
   refreshRenderDeviceOptions();
   parameterPanel.onRenderDeviceChanged = [this](int deviceId)
@@ -3146,6 +3149,57 @@ void MainComponent::showDegreeShiftMenu()
                        if (safeThis != nullptr && result != 0)
                          safeThis->pianoRoll.shiftSelectedNotesByDegree(result - 100);
                      });
+}
+
+void MainComponent::setOriginalAudition(bool held)
+{
+  // shortcut: Standalone only; the plug-in renders through its processor,
+  // which has no A/B blend yet.
+  auto *audioEngine = editorController ? editorController->getAudioEngine() : nullptr;
+  auto *project = getProject();
+  if (audioEngine == nullptr || project == nullptr)
+    return;
+  if (!held)
+  {
+    audioEngine->setOriginalAuditionOn(false);
+    return;
+  }
+
+  // shortcut: the original is read at the note's current place, so a note
+  // moved in time plays whatever was recorded there; map through the note's
+  // time map if that matters.
+  const auto &audio = project->getAudioData();
+  const auto &original = audio.originalWaveform;
+  if (original.getNumSamples() == 0)
+    return;
+  std::vector<std::pair<int64_t, int64_t>> ranges;
+  const double samplesPerFrame = static_cast<double>(HOP_SIZE) * audio.sampleRate / SAMPLE_RATE;
+  for (const auto *note : project->getSelectedNotes())
+    if (!note->isRest())
+      ranges.emplace_back(static_cast<int64_t>(note->getStartFrame() * samplesPerFrame),
+                          static_cast<int64_t>(note->getEndFrame() * samplesPerFrame));
+  std::sort(ranges.begin(), ranges.end());
+  std::vector<originalaudition::Slice> slices;
+  int64_t sliceEnd = -1;
+  for (auto [start, end] : ranges)
+  {
+    start = std::max<int64_t>(0, start);
+    end = std::min<int64_t>(original.getNumSamples(), end);
+    if (end <= start)
+      continue;
+    // Touching notes become one slice, so there is no fade between them.
+    if (!slices.empty() && start <= sliceEnd)
+      start = sliceEnd;
+    else
+      slices.push_back({start, {}});
+    if (end <= start)
+      continue;
+    const auto *data = original.getReadPointer(0);
+    slices.back().samples.insert(slices.back().samples.end(), data + start, data + end);
+    sliceEnd = end;
+  }
+  audioEngine->setOriginalAudition(std::move(slices));
+  audioEngine->setOriginalAuditionOn(true);
 }
 
 void MainComponent::showSmartSplitPopup()
