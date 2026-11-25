@@ -84,8 +84,10 @@ public:
 
     // engine: -2 hides the note engine rows (no note under the pointer), -1
     // shows them with none ticked (a mixed selection), 0..2 ticks a NoteEngine.
-    // The rows report choices 8..10.
-    Content(std::shared_ptr<int> result, bool canUndo, bool canRedo, int engine = -2)
+    // The rows report choices 8..10. The note block also offers Smart Split
+    // (choice 11) and Align to Reference (choice 12, enabled by canAlign).
+    Content(std::shared_ptr<int> result, bool canUndo, bool canRedo, int engine = -2,
+            bool canAlign = false)
         : juce::PopupMenu::CustomComponent(false), choice(std::move(result)),
           withEngine(engine >= -1), topHeight(getTopHeight(engine >= -1))
     {
@@ -93,14 +95,15 @@ public:
             TR("canvas.select_all"), TR("canvas.select"), TR("canvas.split"),
             TR("canvas.pitch_drawing"),    TR("canvas.timing"), TR("command.undo"),
             TR("command.redo"), TR("engine.default"), TR("param.engine_vocoder"),
-            TR("param.engine_psola")
+            TR("param.engine_psola"), TR("command.smart_split"),
+            TR("command.align_to_reference")
         };
         // Same icons as the toolbar's tool buttons.
         const char* icons[] = { BinaryData::lucide_mouse_pointer_2_svg,
                                 BinaryData::lucide_scissors_svg,
                                 BinaryData::lucide_pencil_svg,
                                 BinaryData::lucide_move_horizontal_svg };
-        for (int i = 0; i < 10; ++i)
+        for (int i = 0; i < 12; ++i)
         {
             buttons[i] = std::make_unique<ActionButton>(names[i]);
             if (i > 0 && i < 5)
@@ -119,15 +122,16 @@ public:
         topWidth = juce::GlyphArrangement::getStringWidthInt(
                       AppFont::getFont(14), names[0]) + 24;
         engineHeader = TR("command.note_engine");
-        for (int i = 7; i < 10; ++i)
+        for (int i = 7; i < 12; ++i)
         {
             buttons[i]->setVisible(withEngine);
-            buttons[i]->tickable = true;
+            buttons[i]->tickable = i < 10;
             buttons[i]->ticked = engine == i - 7;
             if (withEngine)
                 topWidth = juce::jmax(topWidth, juce::GlyphArrangement::getStringWidthInt(
                                                     AppFont::getFont(14), names[i]) + 34);
         }
+        buttons[11]->setEnabled(canAlign);
     }
 
     void getIdealSize(int& width, int& height) override
@@ -144,7 +148,7 @@ public:
                    topWidth - 16, 1);
         if (withEngine)
         {
-            const int y = padding + 3 * rowHeight + separatorHeight;
+            const int y = padding + 5 * rowHeight + separatorHeight;
             g.fillRect(8, y + separatorHeight / 2, topWidth - 16, 1);
             g.setColour(APP_COLOR_TEXT_MUTED);
             g.setFont(AppFont::getFont(13));
@@ -159,8 +163,11 @@ public:
         buttons[6]->setBounds(0, padding + rowHeight, topWidth, rowHeight);
         buttons[0]->setBounds(0, padding + 2 * rowHeight + separatorHeight,
                               topWidth, rowHeight);
+        for (int i = 10; i < 12; ++i)
+            buttons[i]->setBounds(0, padding + (i - 7) * rowHeight + separatorHeight,
+                                  topWidth, rowHeight);
         for (int i = 7; i < 10; ++i)
-            buttons[i]->setBounds(0, padding + (i - 3) * rowHeight + 2 * separatorHeight,
+            buttons[i]->setBounds(0, padding + (i - 1) * rowHeight + 2 * separatorHeight,
                                   topWidth, rowHeight);
         for (int i = 1; i < 5; ++i)
             buttons[i]->setBounds((i - 1) * (buttonWidth + 1), topHeight + 1,
@@ -170,17 +177,18 @@ public:
 private:
     static constexpr int padding = 4, rowHeight = 26, separatorHeight = 8;
     static constexpr int buttonWidth = 22, buttonHeight = 21;
-    // Engine block: separator, header row, three choice rows.
+    // Note block: Smart Split and Align rows, separator, header row, three
+    // engine choice rows.
     static constexpr int getTopHeight(bool withEngine)
     {
         return 2 * padding + 3 * rowHeight + separatorHeight +
-               (withEngine ? separatorHeight + 4 * rowHeight : 0);
+               (withEngine ? separatorHeight + 6 * rowHeight : 0);
     }
     int topWidth = 0;
     std::shared_ptr<int> choice;
     bool withEngine = false;
     int topHeight = 0;
     juce::String engineHeader;
-    std::array<std::unique_ptr<ActionButton>, 10> buttons;
+    std::array<std::unique_ptr<ActionButton>, 12> buttons;
 };
 }

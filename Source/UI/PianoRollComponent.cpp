@@ -1,4 +1,5 @@
 #include "PianoRollComponent.h"
+#include "Commands.h"
 #include <map>
 #include "../Utils/PitchMacroScope.h"
 #include "../Utils/AppLogger.h"
@@ -2206,7 +2207,8 @@ void PianoRollComponent::mouseDown(const juce::MouseEvent &e)
     auto choice = std::make_shared<int>(0);
     menu.addCustomItem(1, std::make_unique<canvasPopupMenu::Content>(
         choice, undoManager && undoManager->canUndo() && bool(onUndoRequested),
-        undoManager && undoManager->canRedo() && bool(onRedoRequested), engine));
+        undoManager && undoManager->canRedo() && bool(onRedoRequested), engine,
+        hasTimingReference()));
     juce::Component::SafePointer<PianoRollComponent> safeThis(this);
     menu.showMenuAsync(juce::PopupMenu::Options()
                           .withTargetScreenArea(canvasPopupMenu::Content::getTargetArea(
@@ -2229,6 +2231,9 @@ void PianoRollComponent::mouseDown(const juce::MouseEvent &e)
         safeThis->onRedoRequested();
       else if (*choice >= 8 && *choice <= 10)
         safeThis->setSelectedNotesEngine(static_cast<NoteEngine>(*choice - 8));
+      else if ((*choice == 11 || *choice == 12) && safeThis->onCommandRequested)
+        safeThis->onCommandRequested(*choice == 11 ? CommandIDs::smartSplit
+                                                   : CommandIDs::alignToReference);
       else if (*choice >= 2 && *choice <= 5)
       {
         const EditMode modes[] = { EditMode::Select, EditMode::Split,

@@ -268,6 +268,8 @@ public:
   std::function<void(EditMode)> onEditModeRequested;
   std::function<void()> onUndoRequested;
   std::function<void()> onRedoRequested;
+  // Runs a MainComponent command (CommandIDs), so menu rows share its handler.
+  std::function<void(int)> onCommandRequested;
   std::function<void(Note *)> onNoteSelected;
   std::function<void()> onPitchEdited;
   std::function<void()> onPitchEditFinished; // Called when dragging ends

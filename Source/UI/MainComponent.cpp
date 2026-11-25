@@ -1005,6 +1005,8 @@ MainComponent::MainComponent(bool enableAudioDevice)
   };
   pianoRoll.onUndoRequested = [this]() { undo(); };
   pianoRoll.onRedoRequested = [this]() { redo(); };
+  pianoRoll.onCommandRequested = [this](int commandId)
+  { perform(juce::ApplicationCommandTarget::InvocationInfo(commandId)); };
   toolbar.onUndo = [this]() { undo(); };
   toolbar.onRedo = [this]() { redo(); };
   toolbar.onToggleRecord = [this](bool armed) {
