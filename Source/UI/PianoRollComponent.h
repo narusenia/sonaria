@@ -194,6 +194,8 @@ public:
   bool alignSelectedNotesToReference(float strength);
   // True when a pinned track has notes to align to.
   bool hasTimingReference() const;
+  // Select All: in ARA mode one playback region first, then every note.
+  void selectAllNotes();
   // Smart split (REQ-WF-008) of the selected notes at a sensitivity (0..1):
   // preview lines while the dialog is open, then one undo step on OK.
   void setSmartSplitPreview(float sensitivity);

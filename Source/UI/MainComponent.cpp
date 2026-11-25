@@ -4599,11 +4599,7 @@ bool MainComponent::perform(const ApplicationCommandTarget::InvocationInfo &info
     return true;
 
   case CommandIDs::selectAll:
-    if (auto *project = getProject())
-    {
-      project->selectAllNotes();
-      pianoRoll.repaint();
-    }
+    pianoRoll.selectAllNotes();
     return true;
 
   case CommandIDs::nextDeviatedNote:

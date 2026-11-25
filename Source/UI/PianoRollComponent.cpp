@@ -1,5 +1,6 @@
 #include "PianoRollComponent.h"
 #include "Commands.h"
+#include "../Models/RegionSelectAll.h"
 #include <map>
 #include "../Utils/PitchMacroScope.h"
 #include "../Utils/AppLogger.h"
@@ -2003,6 +2004,37 @@ std::vector<juce::Rectangle<float>> PianoRollComponent::trackNoteBounds(const No
   return result;
 }
 
+void PianoRollComponent::selectAllNotes()
+{
+  if (project == nullptr)
+    return;
+  // The playback regions that window this Project (none in standalone).
+  std::vector<regionselect::RegionSpan> regions;
+  if (regionPreviews)
+    for (const auto& region : *regionPreviews)
+      if (!region.pinned && region.sourceProject == project)
+        regions.push_back({region.startSeconds, region.endSeconds,
+                           region.projectHostOffsetSeconds - framesToSeconds(region.sourceFirstFrame)});
+  std::vector<Note*> notes;
+  std::vector<double> starts;
+  std::vector<bool> selected;
+  for (auto& note : project->getNotes())
+    if (!note.isRest()) {
+      notes.push_back(&note);
+      starts.push_back(framesToSeconds(note.getStartFrame()));
+      selected.push_back(note.isSelected());
+    }
+  const auto picked = regionselect::pickNotes(starts, selected, regions,
+                                              projectToTimeline(cursorTime));
+  for (auto* note : notes)
+    note->setSelected(false);
+  for (const auto index : picked)
+    notes[index]->setSelected(true);
+  updatePitchToolHandlesFromSelection();
+  updatePreviewButtonBounds();
+  repaint();
+}
+
 void PianoRollComponent::syncTrackPreviewSelection()
 {
   if (regionPreviews)
@@ -2219,12 +2251,7 @@ void PianoRollComponent::mouseDown(const juce::MouseEvent &e)
       if (safeThis == nullptr || !safeThis->project || result == 0)
         return;
       if (*choice == 1)
-      {
-        safeThis->project->selectAllNotes();
-        safeThis->updatePitchToolHandlesFromSelection();
-        safeThis->updatePreviewButtonBounds();
-        safeThis->repaint();
-      }
+        safeThis->selectAllNotes();
       else if (*choice == 6 && safeThis->onUndoRequested)
         safeThis->onUndoRequested();
       else if (*choice == 7 && safeThis->onRedoRequested)
