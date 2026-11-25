@@ -6,6 +6,7 @@
 #include "../../JuceHeader.h"
 #include "ExportHelper.h"
 #include "../../Utils/PlatformPaths.h"
+#include "../../Utils/CorrectionPreset.h"
 #include <functional>
 
 /**
@@ -97,6 +98,8 @@ public:
   }
   bool getJumpIncludesCaution() const { return jumpIncludesCaution; }
   void setJumpIncludesCaution(bool include) { jumpIncludesCaution = include; }
+  const std::vector<CorrectionPreset> &getCorrectionPresets() const { return correctionPresets; }
+  void setCorrectionPresets(std::vector<CorrectionPreset> presets) { correctionPresets = std::move(presets); }
   bool getShowBreathsAndSibilance() const { return showBreathsAndSibilance; }
   void setNoiseVisibility(bool show) { showBreathsAndSibilance = show; }
   bool getLiveAuditionEnabled() const { return liveAuditionEnabled; }
@@ -188,6 +191,7 @@ private:
   double deviationCautionCents = 10.0;
   double deviationFixCents = 30.0;
   bool jumpIncludesCaution = false;
+  std::vector<CorrectionPreset> correctionPresets;
   bool showBreathsAndSibilance = true;
   bool liveAuditionEnabled = false;
   bool followPlayback = true;

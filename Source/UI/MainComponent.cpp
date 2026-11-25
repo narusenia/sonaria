@@ -885,6 +885,24 @@ MainComponent::MainComponent(bool enableAudioDevice)
   { pianoRoll.setSelectedNotesFormantShift(semitones); };
   parameterPanel.onAlignToReference = [this](float strength)
   { pianoRoll.alignSelectedNotesToReference(strength); };
+  parameterPanel.onApplyCorrectionPreset = [this](const juce::String &name)
+  {
+    for (const auto &preset : settingsManager->getCorrectionPresets())
+      if (preset.name == name)
+        pianoRoll.applyCorrectionPreset(preset);
+  };
+  parameterPanel.onSaveCorrectionPreset = [this](const juce::String &name) { saveCorrectionPreset(name); };
+  parameterPanel.onDeleteCorrectionPreset = [this](const juce::String &name)
+  {
+    auto presets = settingsManager->getCorrectionPresets();
+    presets.erase(std::remove_if(presets.begin(), presets.end(),
+                                 [&name](const CorrectionPreset &p) { return p.name == name; }),
+                  presets.end());
+    settingsManager->setCorrectionPresets(std::move(presets));
+    settingsManager->saveConfig();
+    refreshCorrectionPresets({});
+  };
+  refreshCorrectionPresets({});
   // The plug-in has no A/B blend yet, so B stays free for the host there.
   if (!isPluginMode())
     pianoRoll.onOriginalAuditionChanged = [this](bool held) { setOriginalAudition(held); };
@@ -3149,6 +3167,47 @@ void MainComponent::showDegreeShiftMenu()
                        if (safeThis != nullptr && result != 0)
                          safeThis->pianoRoll.shiftSelectedNotesByDegree(result - 100);
                      });
+}
+
+void MainComponent::refreshCorrectionPresets(const juce::String &selected)
+{
+  juce::StringArray names;
+  for (const auto &preset : settingsManager->getCorrectionPresets())
+    names.add(preset.name);
+  parameterPanel.setCorrectionPresetNames(names, selected);
+}
+
+void MainComponent::saveCorrectionPreset(const juce::String &name)
+{
+  auto *project = getProject();
+  if (project == nullptr)
+    return;
+  const auto selected = project->getSelectedNotes();
+  const auto first = std::find_if(selected.begin(), selected.end(),
+                                  [](const Note *note) { return !note->isRest(); });
+  if (first == selected.end())
+    return;
+
+  // The first selected note's correction, plus the Pitch Center popup's
+  // toggles, which notes do not keep.
+  CorrectionPreset preset;
+  preset.name = name;
+  preset.pitchCenter = (*first)->getMacroPitchCenter();
+  preset.pitchDrift = std::round(juce::jlimit(0.0f, 100.0f, (1.0f - (*first)->getPitchDrift()) * 100.0f));
+  preset.snapToScale = pianoRollView.getPitchCenterSnapToScale();
+  preset.keepVibrato = pianoRollView.getStraightenKeepsVibrato();
+  preset.engine = (*first)->getEngine();
+
+  auto presets = settingsManager->getCorrectionPresets();
+  const auto existing = std::find_if(presets.begin(), presets.end(),
+                                     [&name](const CorrectionPreset &p) { return p.name == name; });
+  if (existing != presets.end())
+    *existing = preset;
+  else
+    presets.push_back(preset);
+  settingsManager->setCorrectionPresets(std::move(presets));
+  settingsManager->saveConfig();
+  refreshCorrectionPresets(name);
 }
 
 void MainComponent::setOriginalAudition(bool held)

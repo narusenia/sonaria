@@ -336,5 +336,13 @@
   "param.align_strength": "揃える強さ",
   "command.smart_split": "スマート分割...",
   "command.smart_split.desp": "選んだノートを、ピッチが別の音に移る位置で分割する",
-  "smart_split.sensitivity": "感度"
+  "smart_split.sensitivity": "感度",
+  "param.preset": "プリセット",
+  "preset.none": "プリセットなし",
+  "preset.apply": "適用",
+  "preset.save": "保存",
+  "preset.delete": "削除",
+  "preset.tooltip": "ピッチセンター・ピッチドリフト・スケールにスナップ・ビブラートを残す・エンジンを、名前を付けて保存したもの",
+  "preset.save_title": "プリセットを保存",
+  "preset.save_message": "最初に選んだノートのピッチセンター・ピッチドリフト・エンジンと、ピッチセンターのポップアップで選んでいる「スケールにスナップ」「ビブラートを残す」を保存します。同じ名前のプリセットは置き換えます。"
 }

@@ -23,6 +23,9 @@ public:
   void setProject(Project *project);
   void dismissPitchCenterPopup();
   void showPitchCenterPopup();
+  // The Pitch Center popup's toggles as last used (saved into presets).
+  bool getPitchCenterSnapToScale() const { return pitchCenterSnapToScale; }
+  bool getStraightenKeepsVibrato() const { return straightenKeepsVibrato; }
   std::function<std::vector<TrackPitchMacroTarget>()> getTrackPitchMacroTargets;
   void refreshOverview();
   void repaintOverviewViewport();

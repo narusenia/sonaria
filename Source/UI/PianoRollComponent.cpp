@@ -3610,6 +3610,28 @@ bool PianoRollComponent::quantizeSelectedNotes()
   });
 }
 
+bool PianoRollComponent::applyCorrectionPreset(const CorrectionPreset &preset)
+{
+  if (project == nullptr)
+    return false;
+  const auto mode = ScaleUtils::keyScaleMode(*project);
+  const int root = project->getScaleRootNote(), referenceHz = project->getPitchReferenceHz();
+  const float straighten = preset.pitchDrift / 100.0f;
+  // The Pitch Center popup's rule at the preset's values.
+  return editSelectedNotes([&](Note &note)
+  {
+    const float meanShift = NoteDeviation::meanMidi(*project, note) - note.getMidiNote();
+    note.setMidiNoteFromPitchCorrection(pitchCenterCorrectedMidi(
+        note.getLastNonMacroMidiNote(), meanShift, preset.pitchCenter,
+        preset.snapToScale, mode, root, referenceHz));
+    note.setMacroPitchCenter(preset.pitchCenter);
+    note.setPitchDrift(1.0f - straighten);
+    if (!preset.keepVibrato)
+      note.setVibrato(note.getVibrato() * (1.0f - straighten));
+    note.setEngine(preset.engine);
+  });
+}
+
 bool PianoRollComponent::straightenSelectedNotes()
 {
   // The keyboard form keeps vibrato; the macro dialog can flatten it too.

@@ -1,4 +1,5 @@
 #include "PianoRollWorkspaceView.h"
+#include "../Utils/CorrectionPreset.h"
 #include "../Utils/UI/Theme.h"
 #include "../Utils/Constants.h"
 #include "../Utils/Localization.h"
@@ -482,34 +483,15 @@ void PianoRollWorkspaceView::showPitchCenterPopup()
               continue;
             }
             const float amount = centerEdited ? value : center.strength;
-            const float maximumDeviation = (100.0f - amount) * 0.005f;
             center.note->setMacroPitchCenter(amount);
             // Calculate from the latest regular edit, never from an earlier
             // macro result. This lets a lower amount restore that edit without
             // compounding correction or discarding edits made between passes.
-            const float sourceMidi = center.sourceMidiNote;
             // Correct the note's mean pitch, which is what the deviation colour measures.
-            const float sourceMean = sourceMidi + center.meanShift;
-            const float corrected = (snapToScale
-                ? ScaleUtils::snapMidiToScale(sourceMean, correctionScaleMode,
-                                               state.target.project->getScaleRootNote(),
-                                               state.target.project->getPitchReferenceHz())
-                : std::round(sourceMean)) - center.meanShift;
-            const float signedDeviation = sourceMidi - corrected;
-            if (snapToScale)
-            {
-              // Scale mode interpolates every note toward its closest scale tone:
-              // 100% reaches it, while lower values retain that fraction of the
-              // note's original scale-distance.
-              center.note->setMidiNoteFromPitchCorrection(
-                  corrected + signedDeviation *
-                  ((100.0f - amount) / 100.0f));
-            }
-            else if (std::abs(signedDeviation) > maximumDeviation)
-              center.note->setMidiNoteFromPitchCorrection(
-                  corrected + std::copysign(maximumDeviation, signedDeviation));
-            else
-              center.note->setMidiNoteFromPitchCorrection(sourceMidi);
+            center.note->setMidiNoteFromPitchCorrection(pitchCenterCorrectedMidi(
+                center.sourceMidiNote, center.meanShift, amount, snapToScale,
+                correctionScaleMode, state.target.project->getScaleRootNote(),
+                state.target.project->getPitchReferenceHz()));
           }
         }
         pianoRoll.repaint();

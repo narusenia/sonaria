@@ -50,7 +50,7 @@ constexpr int kPitchCardHeight =
 // Only counted while notes are selected; see getPreferredHeight().
 constexpr int kNoteCardHeight =
     kInnerPadY + kSectionLabelHeight + kSectionLabelGap + kSegmentedRowHeight +
-    ((kRowGap + 1) + kControlRowHeight) * 5 + kInnerPadY;
+    ((kRowGap + 1) + kControlRowHeight) * 7 + kInnerPadY;
 constexpr int kMidiReferenceCardHeight =
     kInnerPadY * 2 + kSectionLabelHeight + kSectionLabelGap +
     kMidiButtonHeight * 2 + kControlRowHeight + kMidiExportRowGap + kRowGap;
@@ -265,12 +265,12 @@ ParameterPanel::ParameterPanel()
     // Selected note card, added hidden until a note is selected.
     for (auto* label : { &noteSectionLabel, &noteEngineLabel, &noteDeviationLabel,
                          &noteDeviationValue, &noteVolumeLabel, &noteFormantLabel,
-                         &noteAlignLabel })
+                         &noteAlignLabel, &notePresetLabel })
         addChildComponent(label);
     noteSectionLabel.setColour(juce::Label::textColourId, APP_COLOR_PANEL_SECTION_TITLE);
     noteSectionLabel.setFont(AppFont::getBoldFont(16.0f));
     for (auto* label : { &noteEngineLabel, &noteDeviationLabel, &noteVolumeLabel, &noteFormantLabel,
-                         &noteAlignLabel })
+                         &noteAlignLabel, &notePresetLabel })
     {
         label->setColour(juce::Label::textColourId, APP_COLOR_PANEL_LABEL);
         label->setFont(AppFont::getFont(14.0f));
@@ -349,6 +349,26 @@ ParameterPanel::ParameterPanel()
             onAlignToReference(getAlignStrength());
     };
     addChildComponent(noteAlignButton);
+
+    addChildComponent(notePresetButton);
+    notePresetButton.onClick = [this] { showPresetMenu(); };
+    for (auto* button : { &notePresetApplyButton, &notePresetSaveButton, &notePresetDeleteButton })
+    {
+        setupTextButton(*button);
+        addChildComponent(button);
+    }
+    notePresetApplyButton.onClick = [this]
+    {
+        if (selectedPresetName.isNotEmpty() && onApplyCorrectionPreset)
+            onApplyCorrectionPreset(selectedPresetName);
+    };
+    notePresetSaveButton.onClick = [this] { askPresetName(); };
+    notePresetDeleteButton.onClick = [this]
+    {
+        if (selectedPresetName.isNotEmpty() && onDeleteCorrectionPreset)
+            onDeleteCorrectionPreset(selectedPresetName);
+    };
+    refreshPresetControls();
 
     addAndMakeVisible(pitchSectionLabel);
     pitchSectionLabel.setColour(juce::Label::textColourId, APP_COLOR_PANEL_SECTION_TITLE);
@@ -659,7 +679,7 @@ void ParameterPanel::resized()
             60, juce::jmax(60, bounds.getWidth() - 120),
             std::max({ textWidth(noteEngineLabel), textWidth(noteDeviationLabel),
                          textWidth(noteVolumeLabel), textWidth(noteFormantLabel),
-                         textWidth(noteAlignLabel) }));
+                         textWidth(noteAlignLabel), textWidth(notePresetLabel) }));
         auto engineRow = bounds.removeFromTop(kSegmentedRowHeight);
         noteEngineLabel.setBounds(engineRow.removeFromLeft(noteLabelWidth));
         noteEngineControl.setBounds(engineRow);
@@ -677,6 +697,15 @@ void ParameterPanel::resized()
         layoutRow(noteAlignLabel, noteAlignSlider);
         bounds.removeFromTop(rowGap + 1);
         noteAlignButton.setBounds(bounds.removeFromTop(kControlRowHeight).reduced(0, 2));
+        layoutRow(notePresetLabel, notePresetButton);
+        bounds.removeFromTop(rowGap + 1);
+        auto presetActions = bounds.removeFromTop(kControlRowHeight).reduced(0, 2);
+        const int actionWidth = (presetActions.getWidth() - columnGap * 2) / 3;
+        notePresetApplyButton.setBounds(presetActions.removeFromLeft(actionWidth));
+        presetActions.removeFromLeft(columnGap);
+        notePresetSaveButton.setBounds(presetActions.removeFromLeft(actionWidth));
+        presetActions.removeFromLeft(columnGap);
+        notePresetDeleteButton.setBounds(presetActions);
         nextCardTop = noteCardBounds.getBottom() + cardGap;
     }
 
@@ -907,6 +936,12 @@ void ParameterPanel::refreshLocalisedText()
     noteAlignSlider.setName(TR("param.align_strength"));
     noteAlignButton.setButtonText(TR("command.align_to_reference"));
     noteAlignButton.setTooltip(TR("command.align_to_reference.desp"));
+    notePresetLabel.setText(TR("param.preset"), juce::dontSendNotification);
+    notePresetApplyButton.setButtonText(TR("preset.apply"));
+    notePresetSaveButton.setButtonText(TR("preset.save"));
+    notePresetDeleteButton.setButtonText(TR("preset.delete"));
+    notePresetButton.setTooltip(TR("preset.tooltip"));
+    refreshPresetControls();
 
     pitchSectionLabel.setText(TR("panel.pitch"), juce::dontSendNotification);
     timeSectionLabel.setText(TR("panel.time"), juce::dontSendNotification);
@@ -1087,7 +1122,9 @@ void ParameterPanel::refreshNoteCard()
         for (auto* component : std::initializer_list<juce::Component*>{
                  &noteSectionLabel, &noteEngineLabel, &noteEngineControl, &noteDeviationLabel,
                  &noteDeviationValue, &noteVolumeLabel, &noteVolumeSlider, &noteFormantLabel,
-                 &noteFormantSlider, &noteAlignLabel, &noteAlignSlider, &noteAlignButton })
+                 &noteFormantSlider, &noteAlignLabel, &noteAlignSlider, &noteAlignButton,
+                 &notePresetLabel, &notePresetButton, &notePresetApplyButton,
+                 &notePresetSaveButton, &notePresetDeleteButton })
             component->setVisible(show);
         resized();
         repaint();
@@ -1122,6 +1159,72 @@ void ParameterPanel::refreshNoteCard()
         noteVolumeSlider.setValue(first->getVolumeDb(), juce::dontSendNotification);
         noteFormantSlider.setValue(first->getFormantShift(), juce::dontSendNotification);
     }
+}
+
+void ParameterPanel::setCorrectionPresetNames(const juce::StringArray& names,
+                                              const juce::String& selected)
+{
+    presetNames = names;
+    selectedPresetName = names.contains(selected) ? selected
+                         : names.contains(selectedPresetName) ? selectedPresetName
+                         : names.isEmpty() ? juce::String() : names[0];
+    refreshPresetControls();
+}
+
+void ParameterPanel::refreshPresetControls()
+{
+    notePresetButton.setButtonText(selectedPresetName.isNotEmpty() ? selectedPresetName
+                                                                   : TR("preset.none"));
+    notePresetButton.setEnabled(!presetNames.isEmpty());
+    notePresetApplyButton.setEnabled(selectedPresetName.isNotEmpty());
+    notePresetDeleteButton.setEnabled(selectedPresetName.isNotEmpty());
+}
+
+void ParameterPanel::showPresetMenu()
+{
+    if (presetNames.isEmpty())
+        return;
+    juce::PopupMenu menu;
+    menu.setLookAndFeel(&getPitchPopupLookAndFeel());
+    for (int i = 0; i < presetNames.size(); ++i)
+        menu.addCustomItem(i + 1,
+                           std::make_unique<HoverMenuItemComponent>(
+                               presetNames[i], presetNames[i] == selectedPresetName),
+                           nullptr, presetNames[i]);
+    menu.showMenuAsync(
+        juce::PopupMenu::Options()
+            .withTargetComponent(&notePresetButton)
+            .withParentComponent(this)
+            .withMinimumWidth(notePresetButton.getWidth()),
+        [safeThis = juce::Component::SafePointer<ParameterPanel>(this)](int result)
+        {
+            if (safeThis == nullptr || result <= 0 || result > safeThis->presetNames.size())
+                return;
+            safeThis->selectedPresetName = safeThis->presetNames[result - 1];
+            safeThis->refreshPresetControls();
+        });
+}
+
+void ParameterPanel::askPresetName()
+{
+    auto* window = new juce::AlertWindow(TR("preset.save_title"), TR("preset.save_message"),
+                                         juce::MessageBoxIconType::NoIcon, this);
+    window->addTextEditor("name", selectedPresetName);
+    window->addButton(TR("dialog.ok"), 1, juce::KeyPress(juce::KeyPress::returnKey));
+    window->addButton(TR("dialog.cancel"), 0, juce::KeyPress(juce::KeyPress::escapeKey));
+    window->enterModalState(
+        true,
+        juce::ModalCallbackFunction::create(
+            [safeThis = juce::Component::SafePointer<ParameterPanel>(this), window](int result)
+            {
+                const auto name = window->getTextEditorContents("name").trim();
+                if (safeThis == nullptr || result != 1 || name.isEmpty())
+                    return;
+                safeThis->selectedPresetName = name;
+                if (safeThis->onSaveCorrectionPreset)
+                    safeThis->onSaveCorrectionPreset(name);
+            }),
+        true);
 }
 
 void ParameterPanel::updateGlobalSliders()

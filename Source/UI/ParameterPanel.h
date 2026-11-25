@@ -87,6 +87,12 @@ public:
     std::function<void(float)> onAlignToReference;
     float getAlignStrength() const { return static_cast<float>(noteAlignSlider.getValue() / 100.0); }
 
+    // Correction presets: the owner keeps them; the card shows their names.
+    void setCorrectionPresetNames(const juce::StringArray& names, const juce::String& selected);
+    std::function<void(const juce::String&)> onApplyCorrectionPreset;
+    std::function<void(const juce::String&)> onSaveCorrectionPreset; // new or same name
+    std::function<void(const juce::String&)> onDeleteCorrectionPreset;
+
     // MIDI card. Dragging the button asks the owner for a freshly written
     // .mid file and hands it to the OS as a file drag; a click saves instead.
     std::function<juce::File()> onCreateMidiDragFile;
@@ -147,6 +153,14 @@ private:
     juce::Label noteAlignLabel;
     SliderBox noteAlignSlider { "Strength" };
     juce::TextButton noteAlignButton;
+    juce::Label notePresetLabel;
+    ComboSelectionButton notePresetButton;
+    juce::TextButton notePresetApplyButton, notePresetSaveButton, notePresetDeleteButton;
+    juce::StringArray presetNames;
+    juce::String selectedPresetName;
+    void showPresetMenu();
+    void askPresetName();
+    void refreshPresetControls();
     // A slider drag edits the notes once, on release, so it is one undo step.
     bool noteSliderDragging = false;
 

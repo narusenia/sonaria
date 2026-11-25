@@ -24,6 +24,7 @@
 #include "PianoRoll/ScrollZoomController.h"
 #include "Buttons.h"
 #include "RegionPreview.h"
+#include "../Utils/CorrectionPreset.h"
 
 #include <memory>
 #include <optional>
@@ -198,6 +199,8 @@ public:
   void setSmartSplitPreview(float sensitivity);
   void clearSmartSplitPreview();
   bool applySmartSplit(float sensitivity);
+  // A correction preset on the selected notes, as one undo step.
+  bool applyCorrectionPreset(const CorrectionPreset &preset);
   bool centerOnCurrentPitchRange();
   void fitPitchRangeToView(float minMidi, float maxMidi);
   int getVisibleContentWidth() const;

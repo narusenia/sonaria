@@ -251,6 +251,7 @@ void SettingsManager::loadConfig()
               static_cast<double>(configObj->getProperty("deviationFixCents")));
         if (configObj->hasProperty("jumpIncludesCaution"))
           jumpIncludesCaution = static_cast<bool>(configObj->getProperty("jumpIncludesCaution"));
+        correctionPresets = CorrectionPreset::listFromVar(configObj->getProperty("correctionPresets"));
         if (configObj->hasProperty("showBreathsAndSibilance"))
           showBreathsAndSibilance =
               static_cast<bool>(configObj->getProperty("showBreathsAndSibilance"));
@@ -327,6 +328,7 @@ void SettingsManager::saveConfig()
   config->setProperty("deviationCautionCents", deviationCautionCents);
   config->setProperty("deviationFixCents", deviationFixCents);
   config->setProperty("jumpIncludesCaution", jumpIncludesCaution);
+  config->setProperty("correctionPresets", CorrectionPreset::listToVar(correctionPresets));
   config->setProperty("showBreathsAndSibilance", showBreathsAndSibilance);
   config->setProperty("liveAuditionEnabled", liveAuditionEnabled);
   config->setProperty("followPlayback", followPlayback);

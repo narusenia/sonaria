@@ -255,6 +255,8 @@ public:
   void showNoteEngineMenu();
   void showSmartSplitPopup();
   void setOriginalAudition(bool held);
+  void refreshCorrectionPresets(const juce::String &selected);
+  void saveCorrectionPreset(const juce::String &name);
   void fitAnalyzedPitchRangeToView() override;
 
   // Plugin mode callbacks
