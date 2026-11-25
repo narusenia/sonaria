@@ -301,10 +301,18 @@ void PianoRollWorkspaceView::showPitchCenterPopup()
     float finalPitchCenter = 0.0f;
   };
   auto states = std::make_shared<std::vector<State>>();
+  // Track mode spans several projects, so a selection anywhere on the track limits every one.
+  bool trackHasSelection = false;
+  if (track)
+    for (auto& target : targets)
+      for (auto* note : collectPitchMacroNotes(*target.project, true, target.frames))
+        trackHasSelection |= note->isSelected();
   for (auto& target : targets) {
     State state{target, target.project->getPitchCenter(), {}};
     for (auto* note : collectPitchMacroNotes(*target.project, track, target.frames))
     {
+      if (trackHasSelection && !note->isSelected())
+        continue;
       // shortcut: the shift is measured once at open, so a Pitch Drift change in the
       // same session moves the mean slightly off the target; re-measure per preview if that matters.
       const float meanShift = NoteDeviation::meanMidi(*target.project, *note) - note->getMidiNote();
