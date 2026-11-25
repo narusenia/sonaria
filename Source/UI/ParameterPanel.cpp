@@ -50,7 +50,7 @@ constexpr int kPitchCardHeight =
 // Only counted while notes are selected; see getPreferredHeight().
 constexpr int kNoteCardHeight =
     kInnerPadY + kSectionLabelHeight + kSectionLabelGap + kSegmentedRowHeight +
-    ((kRowGap + 1) + kControlRowHeight) * 3 + kInnerPadY;
+    ((kRowGap + 1) + kControlRowHeight) * 5 + kInnerPadY;
 constexpr int kMidiReferenceCardHeight =
     kInnerPadY * 2 + kSectionLabelHeight + kSectionLabelGap +
     kMidiButtonHeight * 2 + kControlRowHeight + kMidiExportRowGap + kRowGap;
@@ -264,11 +264,13 @@ ParameterPanel::ParameterPanel()
 {
     // Selected note card, added hidden until a note is selected.
     for (auto* label : { &noteSectionLabel, &noteEngineLabel, &noteDeviationLabel,
-                         &noteDeviationValue, &noteVolumeLabel, &noteFormantLabel })
+                         &noteDeviationValue, &noteVolumeLabel, &noteFormantLabel,
+                         &noteAlignLabel })
         addChildComponent(label);
     noteSectionLabel.setColour(juce::Label::textColourId, APP_COLOR_PANEL_SECTION_TITLE);
     noteSectionLabel.setFont(AppFont::getBoldFont(16.0f));
-    for (auto* label : { &noteEngineLabel, &noteDeviationLabel, &noteVolumeLabel, &noteFormantLabel })
+    for (auto* label : { &noteEngineLabel, &noteDeviationLabel, &noteVolumeLabel, &noteFormantLabel,
+                         &noteAlignLabel })
     {
         label->setColour(juce::Label::textColourId, APP_COLOR_PANEL_LABEL);
         label->setFont(AppFont::getFont(14.0f));
@@ -324,6 +326,29 @@ ParameterPanel::ParameterPanel()
                     &ParameterPanel::onSelectedNotesVolumeChanged);
     setupNoteSlider(noteFormantSlider, -12.0, 12.0, " st",
                     &ParameterPanel::onSelectedNotesFormantChanged);
+
+    // Timing align: the slider is only the strength; the button applies it.
+    noteAlignSlider.setRange(0.0, 100.0, 1.0);
+    noteAlignSlider.setValue(100.0, juce::dontSendNotification);
+    noteAlignSlider.setDoubleClickReturnValue(true, 100.0);
+    noteAlignSlider.setNumDecimalPlacesToDisplay(0);
+    noteAlignSlider.setTextValueSuffix(" %");
+    noteAlignSlider.setHideSuffixWhileEditing(true);
+    noteAlignSlider.setTextBoxStyle(juce::Slider::TextBoxLeft, false, 64, 22);
+    noteAlignSlider.setScrollWheelEnabled(false);
+    for (auto id : { juce::Slider::backgroundColourId, juce::Slider::trackColourId })
+        noteAlignSlider.setColour(id, APP_COLOR_CONTROL_FILL);
+    noteAlignSlider.setColour(juce::Slider::textBoxBackgroundColourId, juce::Colours::transparentBlack);
+    noteAlignSlider.setColour(juce::Slider::textBoxOutlineColourId, juce::Colours::transparentBlack);
+    noteAlignSlider.setColour(juce::Slider::textBoxTextColourId, APP_COLOR_CONTROL_TEXT);
+    addChildComponent(noteAlignSlider);
+    setupTextButton(noteAlignButton);
+    noteAlignButton.onClick = [this]
+    {
+        if (onAlignToReference)
+            onAlignToReference(getAlignStrength());
+    };
+    addChildComponent(noteAlignButton);
 
     addAndMakeVisible(pitchSectionLabel);
     pitchSectionLabel.setColour(juce::Label::textColourId, APP_COLOR_PANEL_SECTION_TITLE);
@@ -633,7 +658,8 @@ void ParameterPanel::resized()
         const int noteLabelWidth = juce::jlimit(
             60, juce::jmax(60, bounds.getWidth() - 120),
             std::max({ textWidth(noteEngineLabel), textWidth(noteDeviationLabel),
-                         textWidth(noteVolumeLabel), textWidth(noteFormantLabel) }));
+                         textWidth(noteVolumeLabel), textWidth(noteFormantLabel),
+                         textWidth(noteAlignLabel) }));
         auto engineRow = bounds.removeFromTop(kSegmentedRowHeight);
         noteEngineLabel.setBounds(engineRow.removeFromLeft(noteLabelWidth));
         noteEngineControl.setBounds(engineRow);
@@ -648,6 +674,9 @@ void ParameterPanel::resized()
         layoutRow(noteDeviationLabel, noteDeviationValue);
         layoutRow(noteVolumeLabel, noteVolumeSlider);
         layoutRow(noteFormantLabel, noteFormantSlider);
+        layoutRow(noteAlignLabel, noteAlignSlider);
+        bounds.removeFromTop(rowGap + 1);
+        noteAlignButton.setBounds(bounds.removeFromTop(kControlRowHeight).reduced(0, 2));
         nextCardTop = noteCardBounds.getBottom() + cardGap;
     }
 
@@ -874,6 +903,10 @@ void ParameterPanel::refreshLocalisedText()
     noteVolumeSlider.setName(TR("param.volume"));
     noteFormantLabel.setText(TR("param.formant"), juce::dontSendNotification);
     noteFormantSlider.setName(TR("param.formant"));
+    noteAlignLabel.setText(TR("param.align_strength"), juce::dontSendNotification);
+    noteAlignSlider.setName(TR("param.align_strength"));
+    noteAlignButton.setButtonText(TR("command.align_to_reference"));
+    noteAlignButton.setTooltip(TR("command.align_to_reference.desp"));
 
     pitchSectionLabel.setText(TR("panel.pitch"), juce::dontSendNotification);
     timeSectionLabel.setText(TR("panel.time"), juce::dontSendNotification);
@@ -1054,7 +1087,7 @@ void ParameterPanel::refreshNoteCard()
         for (auto* component : std::initializer_list<juce::Component*>{
                  &noteSectionLabel, &noteEngineLabel, &noteEngineControl, &noteDeviationLabel,
                  &noteDeviationValue, &noteVolumeLabel, &noteVolumeSlider, &noteFormantLabel,
-                 &noteFormantSlider })
+                 &noteFormantSlider, &noteAlignLabel, &noteAlignSlider, &noteAlignButton })
             component->setVisible(show);
         resized();
         repaint();

@@ -186,6 +186,11 @@ public:
   // A level edit on the existing render, recorded as one undo step.
   bool setSelectedNotesVolumeDb(float volumeDb);
   bool setSelectedNotesFormantShift(float semitones);
+  // Moves the selected notes' starts and ends toward the best-overlapping
+  // note of the pinned tracks by strength (0..1); one undo step.
+  bool alignSelectedNotesToReference(float strength);
+  // True when a pinned track has notes to align to.
+  bool hasTimingReference() const;
   bool centerOnCurrentPitchRange();
   void fitPitchRangeToView(float minMidi, float maxMidi);
   int getVisibleContentWidth() const;

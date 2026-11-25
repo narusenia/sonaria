@@ -882,6 +882,8 @@ MainComponent::MainComponent(bool enableAudioDevice)
   { pianoRoll.setSelectedNotesVolumeDb(volumeDb); };
   parameterPanel.onSelectedNotesFormantChanged = [this](float semitones)
   { pianoRoll.setSelectedNotesFormantShift(semitones); };
+  parameterPanel.onAlignToReference = [this](float strength)
+  { pianoRoll.alignSelectedNotesToReference(strength); };
   parameterPanel.setAiResynthesisAvailable(GpuDeviceList::hasGpuInference());
   refreshRenderDeviceOptions();
   parameterPanel.onRenderDeviceChanged = [this](int deviceId)
@@ -4154,6 +4156,7 @@ void MainComponent::getAllCommands(juce::Array<juce::CommandID> &commands)
       CommandIDs::straightenSelection,
       CommandIDs::shiftByDegree,
       CommandIDs::noteEngine,
+      CommandIDs::alignToReference,
       CommandIDs::showShortcuts,
 
       // View commands
@@ -4280,6 +4283,11 @@ void MainComponent::getCommandInfo(juce::CommandID commandID,
     result.setInfo(TR("command.note_engine"), TR("command.note_engine.desp"), TR("menu.edit"), 0);
     result.addDefaultKeypress('e', 0);
     result.setActive(project != nullptr);
+    break;
+
+  case CommandIDs::alignToReference:
+    result.setInfo(TR("command.align_to_reference"), TR("command.align_to_reference.desp"), TR("menu.edit"), 0);
+    result.setActive(project != nullptr && pianoRoll.hasTimingReference());
     break;
 
   case CommandIDs::showShortcuts:
@@ -4471,6 +4479,10 @@ bool MainComponent::perform(const ApplicationCommandTarget::InvocationInfo &info
 
   case CommandIDs::noteEngine:
     showNoteEngineMenu();
+    return true;
+
+  case CommandIDs::alignToReference:
+    pianoRoll.alignSelectedNotesToReference(parameterPanel.getAlignStrength());
     return true;
 
   case CommandIDs::showShortcuts:

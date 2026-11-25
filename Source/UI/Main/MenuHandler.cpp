@@ -31,6 +31,7 @@ juce::PopupMenu MenuHandler::getMenuForIndex(int menuIndex, const juce::String& 
                 menu.addCommandItem(commandManager, CommandIDs::straightenSelection);
                 menu.addCommandItem(commandManager, CommandIDs::shiftByDegree);
                 menu.addCommandItem(commandManager, CommandIDs::noteEngine);
+                menu.addCommandItem(commandManager, CommandIDs::alignToReference);
                 menu.addSeparator();
                 menu.addCommandItem(commandManager, CommandIDs::showShortcuts);
                 menu.addSeparator();
@@ -91,6 +92,7 @@ juce::PopupMenu MenuHandler::getMenuForIndex(int menuIndex, const juce::String& 
                 menu.addCommandItem(commandManager, CommandIDs::straightenSelection);
                 menu.addCommandItem(commandManager, CommandIDs::shiftByDegree);
                 menu.addCommandItem(commandManager, CommandIDs::noteEngine);
+                menu.addCommandItem(commandManager, CommandIDs::alignToReference);
                 menu.addSeparator();
                 menu.addCommandItem(commandManager, CommandIDs::showShortcuts);
                 menu.addSeparator();

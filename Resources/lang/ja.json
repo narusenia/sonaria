@@ -330,5 +330,8 @@
   "param.engine": "エンジン",
   "param.deviation": "ずれ",
   "engine.default_short": "既定",
-  "engine.ai_short": "AI"
+  "engine.ai_short": "AI",
+  "command.align_to_reference": "主旋律に揃える",
+  "command.align_to_reference.desp": "選んだノートの開始と終了を、ピン留めしたトラックの重なりが最大のノートに寄せる",
+  "param.align_strength": "揃える強さ"
 }

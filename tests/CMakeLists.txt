@@ -32,6 +32,7 @@ set(PITCHNET_TEST_SOURCES
     PluginStateArchiveTests.cpp
     ProjectModificationRangeTests.cpp
     TimelineCoordinateTests.cpp
+    TimingAlignTests.cpp
     VisualWaveformEnvelopeTests.cpp)
 
 foreach(test_source IN LISTS PITCHNET_TEST_SOURCES)

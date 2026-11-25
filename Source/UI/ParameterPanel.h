@@ -83,6 +83,9 @@ public:
     std::function<void(NoteEngine)> onSelectedNotesEngineChanged;
     std::function<void(float)> onSelectedNotesVolumeChanged;
     std::function<void(float)> onSelectedNotesFormantChanged;
+    // Align to the pinned tracks at the card's strength (0..1).
+    std::function<void(float)> onAlignToReference;
+    float getAlignStrength() const { return static_cast<float>(noteAlignSlider.getValue() / 100.0); }
 
     // MIDI card. Dragging the button asks the owner for a freshly written
     // .mid file and hands it to the OS as a file drag; a click saves instead.
@@ -141,6 +144,9 @@ private:
     SliderBox noteVolumeSlider { "Volume" };
     juce::Label noteFormantLabel;
     SliderBox noteFormantSlider { "Formant" };
+    juce::Label noteAlignLabel;
+    SliderBox noteAlignSlider { "Strength" };
+    juce::TextButton noteAlignButton;
     // A slider drag edits the notes once, on release, so it is one undo step.
     bool noteSliderDragging = false;
 

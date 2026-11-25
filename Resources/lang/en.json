@@ -372,5 +372,8 @@
   "param.engine": "Engine",
   "param.deviation": "Deviation",
   "engine.default_short": "Default",
-  "engine.ai_short": "AI"
+  "engine.ai_short": "AI",
+  "command.align_to_reference": "Align to Reference",
+  "command.align_to_reference.desp": "Move the selected notes' start and end toward the best-overlapping note of the pinned tracks",
+  "param.align_strength": "Align Strength"
 }

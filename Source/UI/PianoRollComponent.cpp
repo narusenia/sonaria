@@ -14,6 +14,7 @@
 #include "../Utils/PitchCurveProcessor.h"
 #include "../Utils/NoteDeviation.h"
 #include "../Utils/TimingRegionUtils.h"
+#include "../Audio/TimingAlign.h"
 #include "PianoRoll/BreathSibilanceRenderer.h"
 #include "PianoRoll/PianoRollViewHelpers.h"
 #include "PianoRoll/VisualWaveformEnvelope.h"
@@ -3381,6 +3382,105 @@ bool PianoRollComponent::setSelectedNotesEngine(NoteEngine engine)
 bool PianoRollComponent::setSelectedNotesFormantShift(float semitones)
 {
   return editSelectedNotes([semitones](Note &note) { note.setFormantShift(semitones); });
+}
+
+bool PianoRollComponent::hasTimingReference() const
+{
+  if (!regionPreviews)
+    return false;
+  return std::any_of(regionPreviews->begin(), regionPreviews->end(),
+                     [](const MainViewRegionPreview &region)
+                     { return region.pinned && !region.notes.empty(); });
+}
+
+bool PianoRollComponent::alignSelectedNotesToReference(float strength)
+{
+  if (project == nullptr || !regionPreviews)
+    return false;
+
+  // Reference: the notes of the pinned tracks, in host-timeline seconds.
+  std::vector<timingalign::Span> references;
+  for (const auto &region : *regionPreviews)
+    if (region.pinned)
+      for (const auto &shape : region.notes)
+        references.push_back({shape.startSeconds, shape.endSeconds});
+  if (references.empty())
+    return false;
+
+  std::vector<Note *> notes;
+  for (auto &note : project->getNotes())
+    if (!note.isRest())
+      notes.push_back(&note);
+  std::sort(notes.begin(), notes.end(), [](const Note *a, const Note *b)
+            { return a->getStartFrame() < b->getStartFrame(); });
+
+  const auto toHost = [this](int frame)
+  { return projectToTimeline(framesToSeconds(frame)); };
+  const auto toFrame = [this](double hostSeconds)
+  {
+    return static_cast<int>(std::lround(timelineToProject(hostSeconds) *
+                                        SAMPLE_RATE / HOP_SIZE));
+  };
+
+  const int frameCount = project->getAudioData().getNumFrames();
+  std::vector<timingalign::FrameSpan> spans;
+  std::vector<std::optional<timingalign::FrameSpan>> targets;
+  bool anyTarget = false;
+  for (auto *note : notes)
+  {
+    // shortcut: a region's lead and tail only stay inside the audio; they may
+    // still run into a neighbouring region (the drag stops there). Add that
+    // limit if aligned takes collide.
+    timingalign::FrameSpan span{note->getStartFrame(), note->getEndFrame(), 0,
+                                frameCount};
+    const auto region = timingRegions::getSourceRegion(*project, *note);
+    if (timingRegions::isFirstNote(*project, *note))
+      span.minStart = note->getSrcStartFrame() - region.start;
+    if (timingRegions::isLastNote(*project, *note))
+      span.maxEnd = frameCount - (region.end - note->getSrcEndFrame());
+    spans.push_back(span);
+
+    std::optional<timingalign::FrameSpan> target;
+    if (note->isSelected())
+    {
+      const timingalign::Span own{toHost(span.start), toHost(span.end)};
+      const int match = timingalign::bestReference(own, references);
+      if (match >= 0)
+      {
+        const auto moved = timingalign::aligned(
+            own, references[static_cast<size_t>(match)], strength);
+        target = timingalign::FrameSpan{toFrame(moved.start), toFrame(moved.end)};
+        anyTarget = true;
+      }
+    }
+    targets.push_back(target);
+  }
+  if (!anyTarget)
+    return false;
+
+  const auto moved = timingalign::moveBoundaries(spans, targets);
+  std::vector<NoteTimingState> before, after;
+  for (size_t i = 0; i < notes.size(); ++i)
+    if (moved[i].start != spans[i].start || moved[i].end != spans[i].end)
+    {
+      before.push_back(NoteTimingState::capture(*notes[i]));
+      after.push_back({notes[i], moved[i].start, moved[i].end});
+    }
+  if (after.empty())
+    return false;
+
+  // Same commit as a timing-tool drag, so consonants keep their length.
+  applyNoteTimingStates(*project, after);
+  invalidateBasePitchCache();
+  if (undoManager)
+    undoManager->addAction(std::make_unique<TimingAction>(
+        *project, std::move(before), std::move(after), "Align Timing"));
+  if (onPitchEdited)
+    onPitchEdited();
+  if (onPitchEditFinished)
+    onPitchEditFinished();
+  repaint();
+  return true;
 }
 
 bool PianoRollComponent::setSelectedNotesVolumeDb(float volumeDb)
