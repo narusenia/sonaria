@@ -5,6 +5,9 @@
 #include "../../Undo/UndoActions.h"
 #include "CoordinateMapper.h"
 #include <functional>
+#include <memory>
+#include <utility>
+#include <vector>
 
 /**
  * Handles note splitting operations.
@@ -30,6 +33,12 @@ public:
     bool splitNoteAtFrame(Note* note, int splitFrame);
 
     /**
+     * Splits several notes, each (note start frame, split frames), as one
+     * undo step. Returns true if any split was made.
+     */
+    bool splitNotesAtFrames(const std::vector<std::pair<int, std::vector<int>>>& splits);
+
+    /**
      * Split note at world X coordinate.
      * Returns true if split was successful.
      */
@@ -45,6 +54,9 @@ public:
     std::function<void()> onNoteSplit;
 
 private:
+    // The split itself; its undo action, or nullptr when the frame is outside.
+    std::unique_ptr<UndoableAction> performSplit(Note* note, int splitFrame);
+
     Project* project = nullptr;
     PitchUndoManager* undoManager = nullptr;
     CoordinateMapper* coordMapper = nullptr;

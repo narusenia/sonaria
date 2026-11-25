@@ -31,6 +31,7 @@ namespace CommandIDs
         shiftByDegree       = 0x2017,
         noteEngine          = 0x2018,
         alignToReference    = 0x2019,
+        smartSplit          = 0x201A,
         
         // View Menu Commands (0x2020-0x202F)
         showDeltaPitch      = 0x2020,

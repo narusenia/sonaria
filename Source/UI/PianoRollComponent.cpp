@@ -15,6 +15,8 @@
 #include "../Utils/NoteDeviation.h"
 #include "../Utils/TimingRegionUtils.h"
 #include "../Audio/TimingAlign.h"
+#include "../Audio/SmartSplit.h"
+#include "../Audio/NoteTiming.h"
 #include "PianoRoll/BreathSibilanceRenderer.h"
 #include "PianoRoll/PianoRollViewHelpers.h"
 #include "PianoRoll/VisualWaveformEnvelope.h"
@@ -583,6 +585,7 @@ void PianoRollComponent::paint(juce::Graphics &g)
     if (currentHandler_)
       currentHandler_->draw(g);
     drawNotes(g, NoteRenderPass::Overlay);
+    drawSmartSplitPreview(g);
     drawGameValuesDebugOverlay(g);
     drawSelectionRect(g);
 
@@ -3382,6 +3385,86 @@ bool PianoRollComponent::setSelectedNotesEngine(NoteEngine engine)
 bool PianoRollComponent::setSelectedNotesFormantShift(float semitones)
 {
   return editSelectedNotes([semitones](Note &note) { note.setFormantShift(semitones); });
+}
+
+std::vector<std::pair<int, std::vector<int>>>
+PianoRollComponent::findSmartSplits(float sensitivity) const
+{
+  std::vector<std::pair<int, std::vector<int>>> result;
+  if (project == nullptr)
+    return result;
+  const auto settings = smartsplit::settingsFor(sensitivity);
+  const double frameMs = 1000.0 * HOP_SIZE / SAMPLE_RATE;
+  const int stableFrames =
+      std::max(1, static_cast<int>(std::ceil(settings.stableMs / frameMs)));
+  const auto &audio = project->getAudioData();
+  // The recorded pitch, not the corrected one: split where the singer moved.
+  const auto &f0 = audio.rawF0.empty() ? audio.f0 : audio.rawF0;
+  for (const auto *note : project->getSelectedNotes())
+  {
+    if (note == nullptr || note->isRest() || note->getDurationFrames() < 2)
+      continue;
+    const auto map = notetiming::forNote(audio, *note);
+    std::vector<float> midi;
+    for (int frame = note->getStartFrame(); frame < note->getEndFrame(); ++frame)
+    {
+      const int source = static_cast<int>(std::floor(map.sourceAt(frame + 0.5)));
+      const float hz = source >= 0 && source < static_cast<int>(f0.size())
+                           ? f0[static_cast<size_t>(source)]
+                           : 0.0f;
+      midi.push_back(hz > 0.0f ? freqToMidi(hz) : 0.0f);
+    }
+    auto offsets = smartsplit::findSplitPoints(midi, settings.thresholdCents, stableFrames);
+    if (offsets.empty())
+      continue;
+    for (auto &offset : offsets)
+      offset += note->getStartFrame();
+    result.emplace_back(note->getStartFrame(), std::move(offsets));
+  }
+  return result;
+}
+
+void PianoRollComponent::setSmartSplitPreview(float sensitivity)
+{
+  smartSplitPreview = findSmartSplits(sensitivity);
+  repaint();
+}
+
+void PianoRollComponent::clearSmartSplitPreview()
+{
+  smartSplitPreview.clear();
+  repaint();
+}
+
+bool PianoRollComponent::applySmartSplit(float sensitivity)
+{
+  smartSplitPreview.clear();
+  const bool split = noteSplitter->splitNotesAtFrames(findSmartSplits(sensitivity));
+  repaint();
+  return split;
+}
+
+void PianoRollComponent::drawSmartSplitPreview(juce::Graphics &g) const
+{
+  if (smartSplitPreview.empty() || project == nullptr)
+    return;
+  g.setColour(APP_COLOR_TIMING_BOUNDARY_SELECTED);
+  for (const auto &[noteStart, frames] : smartSplitPreview)
+  {
+    const auto &notes = project->getNotes();
+    const auto note = std::find_if(notes.begin(), notes.end(), [start = noteStart](const Note &n)
+                                   { return !n.isRest() && n.getStartFrame() == start; });
+    if (note == notes.end())
+      continue;
+    // The line covers the note's row and a semitone either side.
+    const float top = midiToY(note->getAdjustedMidiNote() + 1.0f);
+    const float bottom = midiToY(note->getAdjustedMidiNote() - 1.0f) + pixelsPerSemitone;
+    for (const int frame : frames)
+    {
+      const float x = static_cast<float>(framesToSeconds(frame) * pixelsPerSecond);
+      g.fillRect(x - 1.0f, top, 2.0f, bottom - top);
+    }
+  }
 }
 
 bool PianoRollComponent::hasTimingReference() const

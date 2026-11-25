@@ -191,6 +191,11 @@ public:
   bool alignSelectedNotesToReference(float strength);
   // True when a pinned track has notes to align to.
   bool hasTimingReference() const;
+  // Smart split (REQ-WF-008) of the selected notes at a sensitivity (0..1):
+  // preview lines while the dialog is open, then one undo step on OK.
+  void setSmartSplitPreview(float sensitivity);
+  void clearSmartSplitPreview();
+  bool applySmartSplit(float sensitivity);
   bool centerOnCurrentPitchRange();
   void fitPitchRangeToView(float minMidi, float maxMidi);
   int getVisibleContentWidth() const;
@@ -468,6 +473,10 @@ private:
   std::unique_ptr<PitchEditor> pitchEditor;
   std::unique_ptr<BoxSelector> boxSelector;
   std::unique_ptr<NoteSplitter> noteSplitter;
+  // Smart split candidates: (note start frame, split frames) per note.
+  std::vector<std::pair<int, std::vector<int>>> smartSplitPreview;
+  std::vector<std::pair<int, std::vector<int>>> findSmartSplits(float sensitivity) const;
+  void drawSmartSplitPreview(juce::Graphics &g) const;
   std::unique_ptr<PitchToolHandles> pitchToolHandles;
   std::unique_ptr<PitchToolController> pitchToolController;
 

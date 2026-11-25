@@ -333,5 +333,8 @@
   "engine.ai_short": "AI",
   "command.align_to_reference": "主旋律に揃える",
   "command.align_to_reference.desp": "選んだノートの開始と終了を、ピン留めしたトラックの重なりが最大のノートに寄せる",
-  "param.align_strength": "揃える強さ"
+  "param.align_strength": "揃える強さ",
+  "command.smart_split": "スマート分割...",
+  "command.smart_split.desp": "選んだノートを、ピッチが別の音に移る位置で分割する",
+  "smart_split.sensitivity": "感度"
 }

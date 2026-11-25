@@ -85,8 +85,46 @@ Note* NoteSplitter::findNoteAt(float x, float y) {
 }
 
 bool NoteSplitter::splitNoteAtFrame(Note* note, int splitFrame) {
-    if (!note || !project)
+    auto action = performSplit(note, splitFrame);
+    if (!action)
         return false;
+    if (undoManager)
+        undoManager->addAction(std::move(action));
+    if (onNoteSplit)
+        onNoteSplit();
+    return true;
+}
+
+bool NoteSplitter::splitNotesAtFrames(const std::vector<std::pair<int, std::vector<int>>>& splits) {
+    if (!project)
+        return false;
+    std::vector<std::unique_ptr<UndoableAction>> actions;
+    for (const auto& [noteStart, frames] : splits) {
+        auto sorted = frames;
+        // Right to left, so the left part keeps the note's start frame and
+        // can be found again after addNote() moves the notes.
+        std::sort(sorted.rbegin(), sorted.rend());
+        for (const int frame : sorted) {
+            Note* note = nullptr;
+            for (auto& candidate : project->getNotes())
+                if (!candidate.isRest() && candidate.getStartFrame() == noteStart)
+                    note = &candidate;
+            if (auto action = performSplit(note, frame))
+                actions.push_back(std::move(action));
+        }
+    }
+    if (actions.empty())
+        return false;
+    if (undoManager)
+        undoManager->addAction(std::make_unique<CompoundAction>(std::move(actions), "Smart Split"));
+    if (onNoteSplit)
+        onNoteSplit();
+    return true;
+}
+
+std::unique_ptr<UndoableAction> NoteSplitter::performSplit(Note* note, int splitFrame) {
+    if (!note || !project)
+        return nullptr;
 
     int startFrame = note->getStartFrame();
     int endFrame = note->getEndFrame();
@@ -94,7 +132,7 @@ bool NoteSplitter::splitNoteAtFrame(Note* note, int splitFrame) {
 
     // Keep at least one analysis frame on each side of the split.
     if (splitFrame <= startFrame || splitFrame >= endFrame)
-        return false;
+        return nullptr;
 
     // Store original note data for undo
     Note originalNote = *note;
@@ -264,16 +302,8 @@ bool NoteSplitter::splitNoteAtFrame(Note* note, int splitFrame) {
 
     // Create undo action - don't pass callback to avoid lifetime issues
     // UI refresh is handled by UndoManager's onUndoRedo callback
-    if (undoManager) {
-        auto action = std::make_unique<NoteSplitAction>(
-            project, originalNote, firstNote, secondNote, nullptr);
-        undoManager->addAction(std::move(action));
-    }
-
-    if (onNoteSplit)
-        onNoteSplit();
-
-    return true;
+    return std::make_unique<NoteSplitAction>(
+        project, originalNote, firstNote, secondNote, nullptr);
 }
 
 bool NoteSplitter::splitNoteAtX(Note* note, float x) {

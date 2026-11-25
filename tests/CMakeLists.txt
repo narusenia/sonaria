@@ -31,6 +31,7 @@ set(PITCHNET_TEST_SOURCES
     PitchDriftTests.cpp
     PluginStateArchiveTests.cpp
     ProjectModificationRangeTests.cpp
+    SmartSplitTests.cpp
     TimelineCoordinateTests.cpp
     TimingAlignTests.cpp
     VisualWaveformEnvelopeTests.cpp)

@@ -4,7 +4,9 @@
 #include "../Models/Note.h"
 #include "../Models/Project.h"
 #include <vector>
+#include <algorithm>
 #include <functional>
+#include <memory>
 
 /**
  * Generic action for changing a single float property on a Note.
@@ -356,6 +358,39 @@ private:
     Note firstNote;
     Note secondNote;
     std::function<void()> onChanged;
+};
+
+/**
+ * Several actions as one undo step: redone in order, undone in reverse.
+ */
+class CompoundAction : public UndoableAction
+{
+public:
+    CompoundAction(std::vector<std::unique_ptr<UndoableAction>> parts, juce::String name)
+        : actions(std::move(parts)), actionName(std::move(name)) {}
+
+    void undo() override
+    {
+        for (auto it = actions.rbegin(); it != actions.rend(); ++it)
+            (*it)->undo();
+    }
+
+    void redo() override
+    {
+        for (auto &action : actions)
+            action->redo();
+    }
+
+    juce::String getName() const override { return actionName; }
+    bool requiresAudioResynthesis() const override
+    {
+        return std::any_of(actions.begin(), actions.end(),
+                           [](const auto &action) { return action->requiresAudioResynthesis(); });
+    }
+
+private:
+    std::vector<std::unique_ptr<UndoableAction>> actions;
+    juce::String actionName;
 };
 
 /**

@@ -4,6 +4,7 @@
 #include "Main/MacMenuIconHelper.h"
 #include "Polyphonic/PolyLab.h"
 #include "Components/DarkLookAndFeel.h"
+#include "Dialogs/SmartSplitDialog.h"
 #include "../Audio/RealtimePitchProcessor.h"
 #include "../Audio/IO/MidiExporter.h"
 #include "../Models/ProjectSerializer.h"
@@ -3147,6 +3148,30 @@ void MainComponent::showDegreeShiftMenu()
                      });
 }
 
+void MainComponent::showSmartSplitPopup()
+{
+  auto *project = getProject();
+  if (project == nullptr || project->getSelectedNotes().empty())
+    return;
+  juce::Component::SafePointer<MainComponent> safeThis(this);
+  SmartSplitDialog::showPopup(
+      this, getLocalArea(&pianoRoll, pianoRoll.getLocalBounds()),
+      [safeThis](float sensitivity)
+      {
+        if (safeThis != nullptr)
+          safeThis->pianoRoll.setSmartSplitPreview(sensitivity);
+      },
+      [safeThis](bool accepted, float sensitivity)
+      {
+        if (safeThis == nullptr)
+          return;
+        if (accepted)
+          safeThis->pianoRoll.applySmartSplit(sensitivity);
+        else
+          safeThis->pianoRoll.clearSmartSplitPreview();
+      });
+}
+
 void MainComponent::showNoteEngineMenu()
 {
   auto *project = getProject();
@@ -4157,6 +4182,7 @@ void MainComponent::getAllCommands(juce::Array<juce::CommandID> &commands)
       CommandIDs::shiftByDegree,
       CommandIDs::noteEngine,
       CommandIDs::alignToReference,
+      CommandIDs::smartSplit,
       CommandIDs::showShortcuts,
 
       // View commands
@@ -4288,6 +4314,11 @@ void MainComponent::getCommandInfo(juce::CommandID commandID,
   case CommandIDs::alignToReference:
     result.setInfo(TR("command.align_to_reference"), TR("command.align_to_reference.desp"), TR("menu.edit"), 0);
     result.setActive(project != nullptr && pianoRoll.hasTimingReference());
+    break;
+
+  case CommandIDs::smartSplit:
+    result.setInfo(TR("command.smart_split"), TR("command.smart_split.desp"), TR("menu.edit"), 0);
+    result.setActive(project != nullptr);
     break;
 
   case CommandIDs::showShortcuts:
@@ -4483,6 +4514,10 @@ bool MainComponent::perform(const ApplicationCommandTarget::InvocationInfo &info
 
   case CommandIDs::alignToReference:
     pianoRoll.alignSelectedNotesToReference(parameterPanel.getAlignStrength());
+    return true;
+
+  case CommandIDs::smartSplit:
+    showSmartSplitPopup();
     return true;
 
   case CommandIDs::showShortcuts:

@@ -375,5 +375,8 @@
   "engine.ai_short": "AI",
   "command.align_to_reference": "Align to Reference",
   "command.align_to_reference.desp": "Move the selected notes' start and end toward the best-overlapping note of the pinned tracks",
-  "param.align_strength": "Align Strength"
+  "param.align_strength": "Align Strength",
+  "command.smart_split": "Smart Split...",
+  "command.smart_split.desp": "Split the selected notes where their pitch moves to another tone",
+  "smart_split.sensitivity": "Sensitivity"
 }

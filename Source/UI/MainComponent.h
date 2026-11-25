@@ -253,6 +253,7 @@ public:
   void jumpToDeviatedNote(bool forward);
   void showDegreeShiftMenu();
   void showNoteEngineMenu();
+  void showSmartSplitPopup();
   void fitAnalyzedPitchRangeToView() override;
 
   // Plugin mode callbacks
