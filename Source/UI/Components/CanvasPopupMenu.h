@@ -34,6 +34,9 @@ class ActionButton final : public juce::Button
 public:
     explicit ActionButton(const juce::String& label) : juce::Button(label) {}
     juce::Image sprite;
+    // Choice rows indent their text and mark the current choice with a dot.
+    bool tickable = false;
+    bool ticked = false;
 
     void paintButton(juce::Graphics& g, bool over, bool down) override
     {
@@ -50,9 +53,14 @@ public:
             g.setColour(APP_COLOR_MENU_ITEM_HIGHLIGHT);
             g.fillRoundedRectangle(getLocalBounds().toFloat().reduced(2, 1), 5);
         }
+        if (ticked)
+        {
+            g.setColour(APP_COLOR_MENU_TICK);
+            g.fillEllipse(8.0f, getHeight() * 0.5f - 3.5f, 7.0f, 7.0f);
+        }
         g.setColour(APP_COLOR_TEXT_PRIMARY.withMultipliedAlpha(isEnabled() ? 1.0f : 0.4f));
         g.setFont(AppFont::getFont(14));
-        g.drawText(getButtonText(), getLocalBounds().withTrimmedLeft(12),
+        g.drawText(getButtonText(), getLocalBounds().withTrimmedLeft(tickable ? 22 : 12),
                    juce::Justification::centredLeft);
     }
 };
@@ -60,28 +68,34 @@ public:
 class Content final : public juce::PopupMenu::CustomComponent
 {
 public:
-    static juce::Rectangle<int> getTargetArea(juce::Point<int> mousePosition)
+    static juce::Rectangle<int> getTargetArea(juce::Point<int> mousePosition,
+                                              bool withEngine = false)
     {
         const juce::Point<int> selectCentre(buttonWidth / 2,
-                                           topHeight + 1 + buttonHeight / 2);
+                                           getTopHeight(withEngine) + 1 + buttonHeight / 2);
         // JUCE places the menu below the target rectangle's bottom edge.
         return { mousePosition.x - selectCentre.x,
                  mousePosition.y - selectCentre.y - 1, 1, 1 };
     }
 
-    Content(std::shared_ptr<int> result, bool canUndo, bool canRedo)
-        : juce::PopupMenu::CustomComponent(false), choice(std::move(result))
+    // engine: -2 hides the note engine rows (no note under the pointer), -1
+    // shows them with none ticked (a mixed selection), 0..2 ticks a NoteEngine.
+    // The rows report choices 8..10.
+    Content(std::shared_ptr<int> result, bool canUndo, bool canRedo, int engine = -2)
+        : juce::PopupMenu::CustomComponent(false), choice(std::move(result)),
+          withEngine(engine >= -1), topHeight(getTopHeight(engine >= -1))
     {
         const juce::String names[] = {
             TR("canvas.select_all"), TR("canvas.select"), TR("canvas.split"),
             TR("canvas.pitch_drawing"),    TR("canvas.timing"), TR("command.undo"),
-            TR("command.redo")
+            TR("command.redo"), TR("engine.default"), TR("param.engine_vocoder"),
+            TR("param.engine_psola")
         };
         const void* data[] = { BinaryData::selectmenu_png, BinaryData::splitmenu_png,
                                BinaryData::drawingmenu_png, BinaryData::timingmenu_png };
         const int sizes[] = { BinaryData::selectmenu_pngSize, BinaryData::splitmenu_pngSize,
                               BinaryData::drawingmenu_pngSize, BinaryData::timingmenu_pngSize };
-        for (int i = 0; i < 7; ++i)
+        for (int i = 0; i < 10; ++i)
         {
             buttons[i] = std::make_unique<ActionButton>(names[i]);
             if (i > 0 && i < 5)
@@ -97,6 +111,16 @@ public:
         buttons[6]->setEnabled(canRedo);
         topWidth = juce::GlyphArrangement::getStringWidthInt(
                       AppFont::getFont(14), names[0]) + 24;
+        engineHeader = TR("command.note_engine");
+        for (int i = 7; i < 10; ++i)
+        {
+            buttons[i]->setVisible(withEngine);
+            buttons[i]->tickable = true;
+            buttons[i]->ticked = engine == i - 7;
+            if (withEngine)
+                topWidth = juce::jmax(topWidth, juce::GlyphArrangement::getStringWidthInt(
+                                                    AppFont::getFont(14), names[i]) + 34);
+        }
     }
 
     void getIdealSize(int& width, int& height) override
@@ -111,6 +135,15 @@ public:
         g.setColour(APP_COLOR_MENU_SEPARATOR);
         g.fillRect(8, padding + 2 * rowHeight + separatorHeight / 2,
                    topWidth - 16, 1);
+        if (withEngine)
+        {
+            const int y = padding + 3 * rowHeight + separatorHeight;
+            g.fillRect(8, y + separatorHeight / 2, topWidth - 16, 1);
+            g.setColour(APP_COLOR_TEXT_MUTED);
+            g.setFont(AppFont::getFont(13));
+            g.drawText(engineHeader, 12, y + separatorHeight, topWidth - 24, rowHeight,
+                       juce::Justification::centredLeft);
+        }
     }
 
     void resized() override
@@ -119,6 +152,9 @@ public:
         buttons[6]->setBounds(0, padding + rowHeight, topWidth, rowHeight);
         buttons[0]->setBounds(0, padding + 2 * rowHeight + separatorHeight,
                               topWidth, rowHeight);
+        for (int i = 7; i < 10; ++i)
+            buttons[i]->setBounds(0, padding + (i - 3) * rowHeight + 2 * separatorHeight,
+                                  topWidth, rowHeight);
         for (int i = 1; i < 5; ++i)
             buttons[i]->setBounds((i - 1) * (buttonWidth + 1), topHeight + 1,
                                   buttonWidth, buttonHeight);
@@ -126,10 +162,18 @@ public:
 
 private:
     static constexpr int padding = 4, rowHeight = 26, separatorHeight = 8;
-    static constexpr int topHeight = 2 * padding + 3 * rowHeight + separatorHeight;
     static constexpr int buttonWidth = 22, buttonHeight = 21;
+    // Engine block: separator, header row, three choice rows.
+    static constexpr int getTopHeight(bool withEngine)
+    {
+        return 2 * padding + 3 * rowHeight + separatorHeight +
+               (withEngine ? separatorHeight + 4 * rowHeight : 0);
+    }
     int topWidth = 0;
     std::shared_ptr<int> choice;
-    std::array<std::unique_ptr<ActionButton>, 7> buttons;
+    bool withEngine = false;
+    int topHeight = 0;
+    juce::String engineHeader;
+    std::array<std::unique_ptr<ActionButton>, 10> buttons;
 };
 }

@@ -2183,16 +2183,30 @@ void PianoRollComponent::mouseDown(const juce::MouseEvent &e)
 
   if (e.mods.isPopupMenu() && isCanvasPoint(e))
   {
+    // On a note, the menu also picks the note engine for the selection,
+    // selecting the note first like a left click would.
+    int engine = -2;
+    if (auto *note = project ? findNoteAt(adjustedX, adjustedY) : nullptr;
+        note != nullptr && !note->isRest())
+    {
+      if (!note->isSelected())
+        selectOnlyNote(*note);
+      engine = static_cast<int>(note->getEngine());
+      for (const auto *selected : project->getSelectedNotes())
+        if (!selected->isRest() && selected->getEngine() != note->getEngine())
+          engine = -1;
+    }
+
     juce::PopupMenu menu;
     menu.setLookAndFeel(&canvasPopupMenu::getLookAndFeel());
     auto choice = std::make_shared<int>(0);
     menu.addCustomItem(1, std::make_unique<canvasPopupMenu::Content>(
         choice, undoManager && undoManager->canUndo() && bool(onUndoRequested),
-        undoManager && undoManager->canRedo() && bool(onRedoRequested)));
+        undoManager && undoManager->canRedo() && bool(onRedoRequested), engine));
     juce::Component::SafePointer<PianoRollComponent> safeThis(this);
     menu.showMenuAsync(juce::PopupMenu::Options()
                           .withTargetScreenArea(canvasPopupMenu::Content::getTargetArea(
-                              e.getScreenPosition()))
+                              e.getScreenPosition(), engine >= -1))
                           .withDeletionCheck(*this),
                       [safeThis, choice](int result)
     {
@@ -2209,6 +2223,8 @@ void PianoRollComponent::mouseDown(const juce::MouseEvent &e)
         safeThis->onUndoRequested();
       else if (*choice == 7 && safeThis->onRedoRequested)
         safeThis->onRedoRequested();
+      else if (*choice >= 8 && *choice <= 10)
+        safeThis->setSelectedNotesEngine(static_cast<NoteEngine>(*choice - 8));
       else if (*choice >= 2 && *choice <= 5)
       {
         const EditMode modes[] = { EditMode::Select, EditMode::Split,
