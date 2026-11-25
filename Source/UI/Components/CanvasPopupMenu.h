@@ -2,6 +2,7 @@
 
 #include "PitchPopupMenu.h"
 #include "../../Utils/Localization.h"
+#include "../Buttons.h"
 #include "BinaryData.h"
 #include <array>
 
@@ -33,19 +34,22 @@ class ActionButton final : public juce::Button
 {
 public:
     explicit ActionButton(const juce::String& label) : juce::Button(label) {}
-    juce::Image sprite;
+    // Tool strip buttons draw a Lucide icon on a tile instead of a text row.
+    ButtonIcon icon;
     // Choice rows indent their text and mark the current choice with a dot.
     bool tickable = false;
     bool ticked = false;
 
     void paintButton(juce::Graphics& g, bool over, bool down) override
     {
-        if (sprite.isValid())
+        if (icon.isValid())
         {
-            const int frameHeight = sprite.getHeight() / 3;
-            g.drawImage(sprite, 0, 0, getWidth(), getHeight(), 0,
-                        (down ? 2 : over ? 1 : 0) * frameHeight,
-                        sprite.getWidth(), frameHeight);
+            // Tile steps match the former sprite: dark, lighter on hover, dark glyph when pressed.
+            g.setColour(juce::Colour(over || down ? 0xFF5B5B5Bu : 0xFF2E2E2Du));
+            g.fillRoundedRectangle(getLocalBounds().toFloat(), 3.0f);
+            icon.states[down ? 1 : 0]->drawWithin(
+                g, getLocalBounds().withSizeKeepingCentre(14, 14).toFloat(),
+                juce::RectanglePlacement::centred, 1.0f);
             return;
         }
         if (isEnabled() && (over || down || hasKeyboardFocus(false)))
@@ -91,15 +95,18 @@ public:
             TR("command.redo"), TR("engine.default"), TR("param.engine_vocoder"),
             TR("param.engine_psola")
         };
-        const void* data[] = { BinaryData::selectmenu_png, BinaryData::splitmenu_png,
-                               BinaryData::drawingmenu_png, BinaryData::timingmenu_png };
-        const int sizes[] = { BinaryData::selectmenu_pngSize, BinaryData::splitmenu_pngSize,
-                              BinaryData::drawingmenu_pngSize, BinaryData::timingmenu_pngSize };
+        // Same icons as the toolbar's tool buttons.
+        const char* icons[] = { BinaryData::lucide_mouse_pointer_2_svg,
+                                BinaryData::lucide_scissors_svg,
+                                BinaryData::lucide_pencil_svg,
+                                BinaryData::lucide_move_horizontal_svg };
         for (int i = 0; i < 10; ++i)
         {
             buttons[i] = std::make_unique<ActionButton>(names[i]);
             if (i > 0 && i < 5)
-                buttons[i]->sprite = juce::ImageCache::getFromMemory(data[i - 1], sizes[i - 1]);
+                buttons[i]->icon.set(icons[i - 1], nullptr,
+                                     { juce::Colour(0xFF9A9A9Au), juce::Colour(0xFF2E2E2Du),
+                                       {}, {} });
             buttons[i]->onClick = [this, i]
             {
                 *choice = i + 1;
