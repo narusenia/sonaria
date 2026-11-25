@@ -32,7 +32,6 @@ constexpr int kSectionLabelHeight = 20;
 constexpr int kSectionLabelGap = kRowGap + 2;
 constexpr int kSegmentedRowHeight = 26;     // Rendering / Time / Pitch mode
 constexpr int kControlRowHeight = 26;       // label + control rows
-constexpr int kLanguageRowHeight = 26;          // language selector row
 constexpr int kMidiButtonHeight = 28;
 constexpr int kMidiExportRowGap = kRowGap + 1;
 
@@ -52,23 +51,15 @@ constexpr int kPitchCardHeight =
 constexpr int kNoteCardHeight =
     kInnerPadY + kSectionLabelHeight + kSectionLabelGap + kSegmentedRowHeight +
     ((kRowGap + 1) + kControlRowHeight) * 3 + kInnerPadY;
-constexpr int kUiCardHeight =
-    kInnerPadY + kSectionLabelHeight + kSectionLabelGap +
-    kControlRowHeight * 5 + kRowGap * 4 + kInnerPadY;
-constexpr int kLanguageCardHeight =
-    kInnerPadY + kSectionLabelHeight + kSectionLabelGap + kLanguageRowHeight + kInnerPadY;
 constexpr int kMidiReferenceCardHeight =
     kInnerPadY * 2 + kSectionLabelHeight + kSectionLabelGap +
     kMidiButtonHeight * 2 + kControlRowHeight + kMidiExportRowGap + kRowGap;
 
-// Six cards with a gap between each.
+// Four cards with a gap between each, then the settings button.
 constexpr int kPreferredPanelHeight =
-    kCardPadY * 2 + kCardGap * 5 + kSynthesisCardHeight + kLanguageCardHeight +
-    kTimeCardHeight + kPitchCardHeight + kMidiReferenceCardHeight + kUiCardHeight;
+    kCardPadY * 2 + kCardGap * 4 + kSynthesisCardHeight + kTimeCardHeight +
+    kPitchCardHeight + kMidiReferenceCardHeight + kMidiButtonHeight;
 
-// "System default" sits above the real languages in the picker.
-constexpr int kLanguageMenuAutoId = 7601;
-constexpr int kLanguageMenuBaseId = 7602;
 constexpr int kRenderDeviceMenuBaseId = 7501;
 
 
@@ -350,11 +341,6 @@ ParameterPanel::ParameterPanel()
     addAndMakeVisible(synthesisSectionLabel);
     synthesisSectionLabel.setColour(juce::Label::textColourId, APP_COLOR_PANEL_SECTION_TITLE);
     synthesisSectionLabel.setFont(AppFont::getBoldFont(16.0f));
-    addAndMakeVisible(uiSectionLabel);
-    uiSectionLabel.setColour(juce::Label::textColourId,
-                             APP_COLOR_PANEL_SECTION_TITLE);
-    uiSectionLabel.setFont(AppFont::getBoldFont(16.0f));
-
     addAndMakeVisible(midiReferenceSectionLabel);
     midiReferenceSectionLabel.setColour(juce::Label::textColourId, APP_COLOR_PANEL_SECTION_TITLE);
     midiReferenceSectionLabel.setFont(AppFont::getBoldFont(16.0f));
@@ -390,13 +376,12 @@ ParameterPanel::ParameterPanel()
             onExportMidiClicked();
     };
 
-    // Language card: always present.
-    addAndMakeVisible(languageSectionLabel);
-    languageSectionLabel.setColour(juce::Label::textColourId, APP_COLOR_PANEL_SECTION_TITLE);
-    languageSectionLabel.setFont(AppFont::getBoldFont(16.0f));
-    addAndMakeVisible(languageSelectorButton);
-    languageSelectorButton.addListener(this);
-    selectedLanguageCode = Localization::getInstance().getPersistedLanguageCode();
+    addAndMakeVisible(settingsButton);
+    settingsButton.onClick = [this]
+    {
+        if (onShowSettingsClicked)
+            onShowSettingsClicked();
+    };
 
     for (auto* toggle : { &snapToSemitonesToggle, &timelineSnapCycleToggle })
     {
@@ -456,16 +441,14 @@ ParameterPanel::ParameterPanel()
     renderDeviceButton.addListener(this);
 
     for (auto* label : { &referenceLabel, &timelineBeatLabel,
-                         &timelineTempoLabel, &timelineGridLabel, &brightnessLabel,
-                         &deviationLabels[0], &deviationLabels[1] })
+                         &timelineTempoLabel, &timelineGridLabel })
     {
         addAndMakeVisible(label);
         label->setColour(juce::Label::textColourId, APP_COLOR_TEXT_MUTED);
     }
 
     for (auto* label : { &referenceLabel, &timelineBeatLabel,
-                         &timelineTempoLabel, &timelineGridLabel, &brightnessLabel,
-                         &deviationLabels[0], &deviationLabels[1] })
+                         &timelineTempoLabel, &timelineGridLabel })
     {
         label->setColour(juce::Label::textColourId, APP_COLOR_PANEL_LABEL);
         label->setFont(AppFont::getFont(14.0f));
@@ -526,73 +509,6 @@ ParameterPanel::ParameterPanel()
     };
     addAndMakeVisible(timelineTempoSlider);
 
-    brightnessSlider.setRange(75.0, 200.0, 1.0);
-    brightnessSlider.setValue(uiBrightnessPercent, juce::dontSendNotification);
-    brightnessSlider.setNumDecimalPlacesToDisplay(0);
-    brightnessSlider.setTextValueSuffix(" %");
-    brightnessSlider.setSliderStyle(juce::Slider::LinearHorizontal);
-    brightnessSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-    brightnessSlider.setLookAndFeel(&brightnessSliderLookAndFeel);
-    brightnessSlider.setDoubleClickReturnValue(true, 100.0);
-    brightnessSlider.onValueChange = [this]()
-    {
-        if (isUpdating)
-            return;
-
-        uiBrightnessPercent = brightnessSlider.getValue();
-        if (onUiBrightnessChanged)
-            onUiBrightnessChanged(uiBrightnessPercent);
-    };
-    addAndMakeVisible(brightnessSlider);
-
-    for (size_t i = 0; i < deviationSliders.size(); ++i)
-    {
-        auto& slider = deviationSliders[i];
-        slider.setRange(1.0, i == 0 ? 50.0 : 100.0, 1.0);
-        slider.setValue(i == 0 ? 10.0 : 30.0, juce::dontSendNotification);
-        slider.setDoubleClickReturnValue(true, i == 0 ? 10.0 : 30.0);
-        slider.setNumDecimalPlacesToDisplay(0);
-        slider.setTextValueSuffix(" ct");
-        slider.setSliderStyle(juce::Slider::LinearHorizontal);
-        slider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
-        slider.setLookAndFeel(&brightnessSliderLookAndFeel);
-        slider.onValueChange = [this, i]()
-        {
-            if (isUpdating)
-                return;
-            // Keep caution below fix by pushing the other threshold along.
-            auto& caution = deviationSliders[0];
-            auto& fix = deviationSliders[1];
-            if (fix.getValue() <= caution.getValue())
-            {
-                if (i == 0)
-                    fix.setValue(caution.getValue() + 1.0, juce::dontSendNotification);
-                else
-                    caution.setValue(fix.getValue() - 1.0, juce::dontSendNotification);
-            }
-            if (onDeviationThresholdsChanged)
-                onDeviationThresholdsChanged(caution.getValue(), fix.getValue());
-        };
-        addAndMakeVisible(slider);
-    }
-
-    addAndMakeVisible(jumpIncludesCautionToggle);
-    jumpIncludesCautionToggle.setClickingTogglesState(true);
-    jumpIncludesCautionToggle.onClick = [this]()
-    {
-        if (onJumpIncludesCautionChanged)
-            onJumpIncludesCautionChanged(jumpIncludesCautionToggle.getToggleState());
-    };
-
-    addAndMakeVisible(showBreathsAndSibilanceToggle);
-    showBreathsAndSibilanceToggle.setClickingTogglesState(true);
-    showBreathsAndSibilanceToggle.setToggleState(true, juce::dontSendNotification);
-    showBreathsAndSibilanceToggle.onClick = [this]()
-    {
-        if (onNoiseVisibilityChanged)
-            onNoiseVisibilityChanged(showBreathsAndSibilanceToggle.getToggleState());
-    };
-
     timelineBeatButton.setButtonText(getTimelineBeatLabel(timelineBeatNumerator, timelineBeatDenominator));
     timelineGridButton.setButtonText(getTimelineGridLabel(timelineGridDivision));
     dragSnapModeButton.setButtonText(getDragSnapModeLabel(dragSnapMode));
@@ -618,9 +534,6 @@ ParameterPanel::ParameterPanel()
 
 ParameterPanel::~ParameterPanel()
 {
-    brightnessSlider.setLookAndFeel(nullptr);
-    for (auto& slider : deviationSliders)
-        slider.setLookAndFeel(nullptr);
 }
 
 void ParameterPanel::setupTextButton(juce::TextButton& button)
@@ -670,24 +583,6 @@ void ParameterPanel::paint(juce::Graphics& g)
         g.fillRoundedRectangle(synthesisRect, radius);
         g.setColour(APP_COLOR_BORDER.withAlpha(0.4f));
         g.drawRoundedRectangle(synthesisRect.reduced(0.5f), radius, 0.75f);
-    }
-
-    if (!languageCardBounds.isEmpty())
-    {
-        auto languageRect = languageCardBounds.toFloat();
-        g.setColour(APP_COLOR_PANEL_CARD);
-        g.fillRoundedRectangle(languageRect, radius);
-        g.setColour(APP_COLOR_BORDER.withAlpha(0.4f));
-        g.drawRoundedRectangle(languageRect.reduced(0.5f), radius, 0.75f);
-    }
-
-    if (!uiCardBounds.isEmpty())
-    {
-        auto uiRect = uiCardBounds.toFloat();
-        g.setColour(APP_COLOR_PANEL_CARD);
-        g.fillRoundedRectangle(uiRect, radius);
-        g.setColour(APP_COLOR_BORDER.withAlpha(0.4f));
-        g.drawRoundedRectangle(uiRect.reduced(0.5f), radius, 0.75f);
     }
 
     if (!midiReferenceCardBounds.isEmpty())
@@ -894,68 +789,8 @@ void ParameterPanel::resized()
     midiReferenceVisibilityToggle.setBounds(bounds.removeFromTop(kControlRowHeight));
     nextCardTop = midiReferenceCardBounds.getBottom() + cardGap;
 
-    // =========================================================================
-    // LANGUAGE CARD
-    //
-    // Always present, so its height is part of kPreferredPanelHeight.
-    // =========================================================================
-    const int languageCardStart = nextCardTop;
-    bounds = juce::Rectangle<int>(cardArea.getX() + innerPadX,
-                                  languageCardStart + innerPadY,
-                                  cardArea.getWidth() - innerPadX * 2,
-                                  cardArea.getBottom() - languageCardStart - innerPadY * 2);
-
-    languageSectionLabel.setBounds(bounds.removeFromTop(kSectionLabelHeight));
-    bounds.removeFromTop(kSectionLabelGap);
-    languageSelectorButton.setBounds(bounds.removeFromTop(kLanguageRowHeight));
-
-    const int languageCardBottom = bounds.getY() + innerPadY;
-    languageCardBounds = juce::Rectangle<int>(cardArea.getX(), languageCardStart,
-                                              cardArea.getWidth(),
-                                              languageCardBottom - languageCardStart);
-
-    nextCardTop = languageCardBottom + cardGap;
-
-    // =========================================================================
-    // UI CARD
-    // =========================================================================
-    const int uiCardStart = nextCardTop;
-    bounds = juce::Rectangle<int>(cardArea.getX() + innerPadX,
-                                  uiCardStart + innerPadY,
-                                  cardArea.getWidth() - innerPadX * 2,
-                                  cardArea.getBottom() - uiCardStart - innerPadY * 2);
-
-    uiSectionLabel.setBounds(bounds.removeFromTop(kSectionLabelHeight));
-    bounds.removeFromTop(kSectionLabelGap);
-    showBreathsAndSibilanceToggle.setBounds(bounds.removeFromTop(kControlRowHeight));
-    bounds.removeFromTop(rowGap);
-
-    // Labels share one width so the three sliders line up.
-    constexpr int minSliderWidth = 64;
-    int sliderLabelWidth = 0;
-    for (auto* label : { &brightnessLabel, &deviationLabels[0], &deviationLabels[1] })
-        sliderLabelWidth = juce::jmax(sliderLabelWidth, juce::GlyphArrangement::getStringWidthInt(
-            label->getFont(), label->getText()) + 12);
-    sliderLabelWidth = juce::jmin(sliderLabelWidth, juce::jmax(0, bounds.getWidth() - minSliderWidth));
-    const auto layoutSliderRow = [&](juce::Label& label, juce::Slider& slider)
-    {
-        auto row = bounds.removeFromTop(kControlRowHeight);
-        label.setBounds(row.removeFromLeft(sliderLabelWidth));
-        slider.setBounds(row.reduced(0, 2));
-    };
-    layoutSliderRow(brightnessLabel, brightnessSlider);
-    for (size_t i = 0; i < deviationSliders.size(); ++i)
-    {
-        bounds.removeFromTop(rowGap);
-        layoutSliderRow(deviationLabels[i], deviationSliders[i]);
-    }
-    bounds.removeFromTop(rowGap);
-    jumpIncludesCautionToggle.setBounds(bounds.removeFromTop(kControlRowHeight));
-
-    const int uiCardBottom = bounds.getY() + innerPadY;
-    uiCardBounds = juce::Rectangle<int>(
-        cardArea.getX(), uiCardStart, cardArea.getWidth(),
-        uiCardBottom - uiCardStart);
+    settingsButton.setBounds(cardArea.getX(), nextCardTop, cardArea.getWidth(), kMidiButtonHeight);
+    const int stackBottom = settingsButton.getBottom();
 
     // The stack is laid out at fixed sizes, so given at least the height it
     // asks for its bottom edge must land exactly where getPreferredHeight()
@@ -964,7 +799,7 @@ void ParameterPanel::resized()
     // out, which is the very case the scrolling exists to avoid.
     const int preferredHeight = getPreferredHeight();
     jassert(outerBounds.getHeight() < preferredHeight ||
-            uiCardBottom + cardPadY - outerBounds.getY() ==
+            stackBottom + cardPadY - outerBounds.getY() ==
                 preferredHeight);
     juce::ignoreUnused(preferredHeight);
 }
@@ -994,11 +829,6 @@ void ParameterPanel::buttonClicked(juce::Button* button)
     if (button == &dragSnapModeButton)
     {
         showDragSnapModeMenu();
-        return;
-    }
-    if (button == &languageSelectorButton)
-    {
-        showLanguageMenu();
         return;
     }
     if (button == &renderDeviceButton)
@@ -1031,7 +861,7 @@ void ParameterPanel::setProject(Project* proj)
 
 void ParameterPanel::refreshLocalisedText()
 {
-    languageSectionLabel.setText(TR("panel.language"), juce::dontSendNotification);
+    settingsButton.setButtonText(TR("command.settings") + juce::String(juce::CharPointer_UTF8("\xe2\x80\xa6")));
 
     noteSectionLabel.setText(TR("panel.selected_note"), juce::dontSendNotification);
     noteEngineLabel.setText(TR("param.engine"), juce::dontSendNotification);
@@ -1044,20 +874,10 @@ void ParameterPanel::refreshLocalisedText()
     noteVolumeSlider.setName(TR("param.volume"));
     noteFormantLabel.setText(TR("param.formant"), juce::dontSendNotification);
     noteFormantSlider.setName(TR("param.formant"));
-    refreshLanguageButtonText();
 
     pitchSectionLabel.setText(TR("panel.pitch"), juce::dontSendNotification);
     timeSectionLabel.setText(TR("panel.time"), juce::dontSendNotification);
     synthesisSectionLabel.setText(TR("panel.rendering"), juce::dontSendNotification);
-    uiSectionLabel.setText(TR("panel.ui"), juce::dontSendNotification);
-    brightnessLabel.setText(TR("param.brightness"), juce::dontSendNotification);
-    brightnessSlider.setName(TR("param.brightness"));
-    showBreathsAndSibilanceToggle.setButtonText(TR("param.show_breaths_and_sibilance"));
-    deviationLabels[0].setText(TR("param.deviation_caution"), juce::dontSendNotification);
-    deviationLabels[1].setText(TR("param.deviation_fix"), juce::dontSendNotification);
-    deviationSliders[0].setName(TR("param.deviation_caution"));
-    deviationSliders[1].setName(TR("param.deviation_fix"));
-    jumpIncludesCautionToggle.setButtonText(TR("param.jump_includes_caution"));
     midiDragButton.setButtonText(TR("param.midi_drag"));
     midiDragButton.setTooltip(TR("tooltip.midi_drag"));
     midiReferenceSectionLabel.setText(TR("panel.midi"), juce::dontSendNotification);
@@ -1185,116 +1005,11 @@ void ParameterPanel::showMidiReferenceTrackMenu()
         });
 }
 
-void ParameterPanel::refreshLanguageButtonText()
-{
-    juce::String text = TR("lang.system_default");
-
-    if (selectedLanguageCode != "auto")
-    {
-        for (const auto& lang : Localization::getInstance().getAvailableLanguages())
-        {
-            if (lang.code == selectedLanguageCode)
-            {
-                text = lang.nativeName;
-                break;
-            }
-        }
-    }
-
-    languageSelectorButton.setButtonText(text);
-}
-
-void ParameterPanel::showLanguageMenu()
-{
-    const auto& langs = Localization::getInstance().getAvailableLanguages();
-
-    juce::PopupMenu menu;
-    menu.setLookAndFeel(&getPitchPopupLookAndFeel());
-
-    const auto autoText = TR("lang.system_default");
-    menu.addCustomItem(kLanguageMenuAutoId,
-                       std::make_unique<HoverMenuItemComponent>(
-                           autoText, selectedLanguageCode == "auto"),
-                       nullptr, autoText);
-
-    for (int i = 0; i < static_cast<int>(langs.size()); ++i)
-    {
-        const auto& lang = langs[static_cast<size_t>(i)];
-        menu.addCustomItem(kLanguageMenuBaseId + i,
-                           std::make_unique<HoverMenuItemComponent>(
-                               lang.nativeName, lang.code == selectedLanguageCode),
-                           nullptr, lang.nativeName);
-    }
-
-    menu.showMenuAsync(
-        juce::PopupMenu::Options()
-            .withTargetComponent(&languageSelectorButton)
-            .withParentComponent(this)
-            .withMinimumWidth(languageSelectorButton.getWidth()),
-        [safeThis = juce::Component::SafePointer<ParameterPanel>(this)](int result)
-        {
-            if (safeThis == nullptr || result == 0)
-                return;
-
-            if (result == kLanguageMenuAutoId)
-            {
-                safeThis->applyLanguageSelection("auto");
-                return;
-            }
-
-            const auto index = static_cast<size_t>(result - kLanguageMenuBaseId);
-            const auto& available =
-                Localization::getInstance().getAvailableLanguages();
-            if (index < available.size())
-                safeThis->applyLanguageSelection(available[index].code);
-        });
-}
-
-void ParameterPanel::applyLanguageSelection(const juce::String& languageCode)
-{
-    if (languageCode == selectedLanguageCode)
-        return;
-
-    selectedLanguageCode = languageCode;
-
-    if (languageCode == "auto")
-        Localization::detectSystemLanguage();
-    else
-        Localization::getInstance().setLanguage(languageCode);
-
-    // Localization broadcasts the change, so this panel and every other
-    // listening component re-read their strings. The owner only persists it.
-    if (onLanguageChanged)
-        onLanguageChanged(languageCode);
-}
-
 void ParameterPanel::setPluginMode(bool pluginMode)
 {
     timelineBeatButton.setEnabled(!pluginMode);
     timelineTempoSlider.setEnabled(!pluginMode);
     timelineGridButton.setEnabled(true);
-}
-
-void ParameterPanel::setUiBrightness(double brightnessPercent)
-{
-    uiBrightnessPercent = juce::jlimit(75.0, 200.0, brightnessPercent);
-    brightnessSlider.setValue(uiBrightnessPercent, juce::dontSendNotification);
-}
-
-void ParameterPanel::setDeviationThresholds(double caution, double fix)
-{
-    deviationSliders[0].setValue(caution, juce::dontSendNotification);
-    deviationSliders[1].setValue(fix, juce::dontSendNotification);
-}
-
-void ParameterPanel::setJumpIncludesCaution(bool include)
-{
-    jumpIncludesCautionToggle.setToggleState(include, juce::dontSendNotification);
-}
-
-void ParameterPanel::setNoiseVisibility(bool show)
-{
-    showBreathsAndSibilanceToggle.setToggleState(show, juce::dontSendNotification);
 }
 
 void ParameterPanel::setHostTimelineState(double bpm, int numerator, int denominator)

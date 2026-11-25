@@ -314,6 +314,7 @@ private:
   void jumpTransport(bool forward);
   void resynthesizeIncremental(); // Incremental synthesis on edit
   void showSettings();
+  void applyDeviationThresholds(double caution, double fix);
   void showPolyphonicLab();
   void openRecentFile(const juce::File &file);
   void addRecentFile(const juce::File &file);

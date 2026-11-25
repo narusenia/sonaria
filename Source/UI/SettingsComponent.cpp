@@ -12,10 +12,11 @@ namespace
 {
   constexpr int kFollowSystemOutputId = 1;
 
+  // The GAME / F0 debug overlays are for development only.
 #if JUCE_DEBUG
-  constexpr bool kShowSettingsTabSelector = true;
+  constexpr bool kShowDebugSettings = true;
 #else
-  constexpr bool kShowSettingsTabSelector = false;
+  constexpr bool kShowDebugSettings = false;
 #endif
 
   juce::String resolveDefaultOutputDeviceName(juce::AudioDeviceManager *deviceManager)
@@ -267,6 +268,89 @@ SettingsComponent::SettingsComponent(
   infoLabel.setJustificationType(juce::Justification::topLeft);
   addAndMakeVisible(infoLabel);
 
+  // Interface settings
+  for (auto *label : {&languageLabel, &showBreathsLabel, &brightnessLabel,
+                      &deviationLabels[0], &deviationLabels[1], &jumpIncludesCautionLabel})
+  {
+    configureRowLabel(*label);
+    addAndMakeVisible(label);
+  }
+
+  languageComboBox.applyStyle();
+  languageComboBox.onChange = [this]()
+  {
+    const int id = languageComboBox.getSelectedId();
+    const auto &languages = Localization::getInstance().getAvailableLanguages();
+    juce::String code = "auto";
+    if (id >= 2 && static_cast<size_t>(id - 2) < languages.size())
+      code = languages[static_cast<size_t>(id - 2)].code;
+    else if (id != 1)
+      return;
+    if (code == Localization::getInstance().getPersistedLanguageCode())
+      return;
+
+    if (code == "auto")
+      Localization::detectSystemLanguage();
+    else
+      Localization::getInstance().setLanguage(code);
+    if (onLanguageChanged)
+      onLanguageChanged(code);
+  };
+  addAndMakeVisible(languageComboBox);
+
+  showBreathsToggle.setClickingTogglesState(true);
+  showBreathsToggle.onClick = [this]()
+  {
+    if (onNoiseVisibilityChanged)
+      onNoiseVisibilityChanged(showBreathsToggle.getToggleState());
+  };
+  addAndMakeVisible(showBreathsToggle);
+
+  brightnessSlider.setRange(75.0, 200.0, 1.0);
+  brightnessSlider.setNumDecimalPlacesToDisplay(0);
+  brightnessSlider.setTextValueSuffix(" %");
+  brightnessSlider.setDoubleClickReturnValue(true, 100.0);
+  brightnessSlider.onValueChange = [this]()
+  {
+    if (onUiBrightnessChanged)
+      onUiBrightnessChanged(brightnessSlider.getValue());
+  };
+  addAndMakeVisible(brightnessSlider);
+
+  for (size_t i = 0; i < deviationSliders.size(); ++i)
+  {
+    auto &slider = deviationSliders[i];
+    slider.setRange(1.0, i == 0 ? 50.0 : 100.0, 1.0);
+    slider.setDoubleClickReturnValue(true, i == 0 ? 10.0 : 30.0);
+    slider.setNumDecimalPlacesToDisplay(0);
+    slider.setTextValueSuffix(" ct");
+    slider.onValueChange = [this, i]()
+    {
+      // Keep caution below fix by pushing the other threshold along.
+      auto &caution = deviationSliders[0];
+      auto &fix = deviationSliders[1];
+      if (fix.getValue() <= caution.getValue())
+      {
+        if (i == 0)
+          fix.setValue(caution.getValue() + 1.0, juce::dontSendNotification);
+        else
+          caution.setValue(fix.getValue() - 1.0, juce::dontSendNotification);
+      }
+      if (onDeviationThresholdsChanged)
+        onDeviationThresholdsChanged(caution.getValue(), fix.getValue());
+    };
+    addAndMakeVisible(slider);
+  }
+
+  jumpIncludesCautionToggle.setClickingTogglesState(true);
+  jumpIncludesCautionToggle.onClick = [this]()
+  {
+    if (onJumpIncludesCautionChanged)
+      onJumpIncludesCautionChanged(jumpIncludesCautionToggle.getToggleState());
+  };
+  addAndMakeVisible(jumpIncludesCautionToggle);
+  refreshInterfaceText();
+
   // Audio device settings (standalone mode only)
   if (!pluginMode && deviceManager != nullptr)
   {
@@ -335,7 +419,7 @@ SettingsComponent::SettingsComponent(
 
   // Set size based on mode
   if (pluginMode)
-    setSize(720, 520);
+    setSize(720, 640);
   else
     setSize(820, 700);
 }
@@ -350,6 +434,7 @@ SettingsComponent::~SettingsComponent()
   deviceComboBox.setLookAndFeel(nullptr);
   gpuDeviceComboBox.setLookAndFeel(nullptr);
   pitchDetectorComboBox.setLookAndFeel(nullptr);
+  languageComboBox.setLookAndFeel(nullptr);
   audioDeviceTypeComboBox.setLookAndFeel(nullptr);
   audioOutputComboBox.setLookAndFeel(nullptr);
   sampleRateComboBox.setLookAndFeel(nullptr);
@@ -427,7 +512,6 @@ void SettingsComponent::resized()
   tabListBounds = {};
 
   const int sidebarWidth = 140;
-  if (kShowSettingsTabSelector)
   {
     sidebarBounds = bounds.removeFromLeft(sidebarWidth);
 
@@ -449,13 +533,6 @@ void SettingsComponent::resized()
     }
 
     bounds.removeFromLeft(10);
-  }
-  else
-  {
-    sidebarBounds = {};
-    tabListBounds = {};
-    generalTabButton.setBounds({});
-    audioTabButton.setBounds({});
   }
 
   auto titleArea = bounds.removeFromTop(34);
@@ -492,13 +569,22 @@ void SettingsComponent::resized()
     }
 
     layoutRow(pitchDetectorLabel, pitchDetectorComboBox);
-    layoutRow(gameChunksDebugLabel, segmentsDebugToggle);
-    layoutRow(gameValuesDebugLabel, gameValuesDebugToggle);
-    layoutRow(noteFramesDebugLabel, noteFramesDebugToggle);
-    layoutRow(actualF0DebugLabel, actualF0DebugToggle);
-    layoutRow(cleanedF0DebugLabel, cleanedF0DebugToggle);
-    layoutRow(uvInterpolationDebugLabel, uvInterpolationDebugToggle);
-    layoutRow(vocoderF0DebugLabel, vocoderF0DebugToggle);
+    layoutRow(languageLabel, languageComboBox);
+    layoutRow(showBreathsLabel, showBreathsToggle);
+    layoutRow(brightnessLabel, brightnessSlider);
+    layoutRow(deviationLabels[0], deviationSliders[0]);
+    layoutRow(deviationLabels[1], deviationSliders[1]);
+    layoutRow(jumpIncludesCautionLabel, jumpIncludesCautionToggle);
+    if (kShowDebugSettings)
+    {
+      layoutRow(gameChunksDebugLabel, segmentsDebugToggle);
+      layoutRow(gameValuesDebugLabel, gameValuesDebugToggle);
+      layoutRow(noteFramesDebugLabel, noteFramesDebugToggle);
+      layoutRow(actualF0DebugLabel, actualF0DebugToggle);
+      layoutRow(cleanedF0DebugLabel, cleanedF0DebugToggle);
+      layoutRow(uvInterpolationDebugLabel, uvInterpolationDebugToggle);
+      layoutRow(vocoderF0DebugLabel, vocoderF0DebugToggle);
+    }
 
     infoLabel.setBounds(content.removeFromTop(56));
     content.removeFromTop(12);
@@ -705,6 +791,7 @@ void SettingsComponent::updateTabVisibility()
       (!pluginMode && deviceManager != nullptr &&
        activeTab == SettingsTab::Audio);
   const bool showGpuDeviceList = shouldShowGpuDeviceList();
+  const bool showDebug = showGeneral && kShowDebugSettings;
 
   deviceLabel.setVisible(showGeneral);
   deviceComboBox.setVisible(showGeneral);
@@ -712,20 +799,26 @@ void SettingsComponent::updateTabVisibility()
   gpuDeviceComboBox.setVisible(showGeneral && showGpuDeviceList);
   pitchDetectorLabel.setVisible(showGeneral);
   pitchDetectorComboBox.setVisible(showGeneral);
-  gameChunksDebugLabel.setVisible(showGeneral);
-  segmentsDebugToggle.setVisible(showGeneral);
-  gameValuesDebugLabel.setVisible(showGeneral);
-  gameValuesDebugToggle.setVisible(showGeneral);
-  noteFramesDebugLabel.setVisible(showGeneral);
-  noteFramesDebugToggle.setVisible(showGeneral);
-  uvInterpolationDebugLabel.setVisible(showGeneral);
-  uvInterpolationDebugToggle.setVisible(showGeneral);
-  actualF0DebugLabel.setVisible(showGeneral);
-  actualF0DebugToggle.setVisible(showGeneral);
-  cleanedF0DebugLabel.setVisible(showGeneral);
-  cleanedF0DebugToggle.setVisible(showGeneral);
-  vocoderF0DebugLabel.setVisible(showGeneral);
-  vocoderF0DebugToggle.setVisible(showGeneral);
+  for (auto *component : std::initializer_list<juce::Component *>{
+           &languageLabel, &languageComboBox, &showBreathsLabel, &showBreathsToggle,
+           &brightnessLabel, &brightnessSlider, &deviationLabels[0], &deviationSliders[0],
+           &deviationLabels[1], &deviationSliders[1], &jumpIncludesCautionLabel,
+           &jumpIncludesCautionToggle})
+    component->setVisible(showGeneral);
+  gameChunksDebugLabel.setVisible(showDebug);
+  segmentsDebugToggle.setVisible(showDebug);
+  gameValuesDebugLabel.setVisible(showDebug);
+  gameValuesDebugToggle.setVisible(showDebug);
+  noteFramesDebugLabel.setVisible(showDebug);
+  noteFramesDebugToggle.setVisible(showDebug);
+  uvInterpolationDebugLabel.setVisible(showDebug);
+  uvInterpolationDebugToggle.setVisible(showDebug);
+  actualF0DebugLabel.setVisible(showDebug);
+  actualF0DebugToggle.setVisible(showDebug);
+  cleanedF0DebugLabel.setVisible(showDebug);
+  cleanedF0DebugToggle.setVisible(showDebug);
+  vocoderF0DebugLabel.setVisible(showDebug);
+  vocoderF0DebugToggle.setVisible(showDebug);
   infoLabel.setVisible(showGeneral);
 
   audioDeviceTypeLabel.setVisible(showAudio);
@@ -739,9 +832,8 @@ void SettingsComponent::updateTabVisibility()
   outputChannelsLabel.setVisible(showAudio);
   outputChannelsComboBox.setVisible(showAudio);
 
-  generalTabButton.setVisible(kShowSettingsTabSelector);
-  audioTabButton.setVisible(kShowSettingsTabSelector &&
-                            !pluginMode && deviceManager != nullptr);
+  generalTabButton.setVisible(true);
+  audioTabButton.setVisible(!pluginMode && deviceManager != nullptr);
 
   if (pluginMode || deviceManager == nullptr)
     setActiveTab(SettingsTab::General);
@@ -945,6 +1037,15 @@ void SettingsComponent::loadSettings()
     showActualF0Debug = settingsManager->getShowActualF0Debug();
     showCleanedF0Debug = settingsManager->getShowCleanedF0Debug();
     showVocoderF0Debug = settingsManager->getShowVocoderF0Debug();
+    showBreathsToggle.setToggleState(settingsManager->getShowBreathsAndSibilance(),
+                                     juce::dontSendNotification);
+    brightnessSlider.setValue(settingsManager->getUiBrightnessPercent(),
+                              juce::dontSendNotification);
+    const auto [caution, fix] = settingsManager->getDeviationThresholds();
+    deviationSliders[0].setValue(caution, juce::dontSendNotification);
+    deviationSliders[1].setValue(fix, juce::dontSendNotification);
+    jumpIncludesCautionToggle.setToggleState(settingsManager->getJumpIncludesCaution(),
+                                             juce::dontSendNotification);
 
   }
 
@@ -1397,6 +1498,8 @@ void SettingsComponent::refreshLocalisedText()
   pitchDetectorLabel.setText(TR("settings.pitch_detector"),
                              juce::dontSendNotification);
 
+  refreshInterfaceText();
+
   gameChunksDebugLabel.setText(TR("settings.debug_game_chunks"),
                                juce::dontSendNotification);
   gameValuesDebugLabel.setText(TR("settings.debug_game_values"),
@@ -1450,3 +1553,32 @@ void SettingsComponent::refreshLocalisedText()
 }
 
 // SettingsOverlay and SettingsDialog implementations are in SettingsOverlay.cpp
+
+void SettingsComponent::refreshInterfaceText()
+{
+  languageLabel.setText(TR("panel.language"), juce::dontSendNotification);
+  refreshLanguageItems();
+  showBreathsLabel.setText(TR("param.show_breaths_and_sibilance"), juce::dontSendNotification);
+  brightnessLabel.setText(TR("param.brightness"), juce::dontSendNotification);
+  deviationLabels[0].setText(TR("param.deviation_caution"), juce::dontSendNotification);
+  deviationLabels[1].setText(TR("param.deviation_fix"), juce::dontSendNotification);
+  jumpIncludesCautionLabel.setText(TR("param.jump_includes_caution"), juce::dontSendNotification);
+}
+
+void SettingsComponent::refreshLanguageItems()
+{
+  // Rebuilt on every language change, since "System default" is translated.
+  const auto &languages = Localization::getInstance().getAvailableLanguages();
+  const auto code = Localization::getInstance().getPersistedLanguageCode();
+  languageComboBox.clear(juce::dontSendNotification);
+  languageComboBox.addItem(TR("lang.system_default"), 1);
+  int selectedId = 1;
+  for (size_t i = 0; i < languages.size(); ++i)
+  {
+    const int id = static_cast<int>(i) + 2;
+    languageComboBox.addItem(languages[i].nativeName, id);
+    if (languages[i].code == code)
+      selectedId = id;
+  }
+  languageComboBox.setSelectedId(selectedId, juce::dontSendNotification);
+}

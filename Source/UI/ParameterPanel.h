@@ -36,10 +36,6 @@ public:
     /** Re-applies every caption and tooltip after a language change. */
     void refreshLocalisedText();
 
-    void setUiBrightness(double brightnessPercent);
-    void setNoiseVisibility(bool show);
-    void setDeviationThresholds(double caution, double fix);
-    void setJumpIncludesCaution(bool include);
     void setHostTimelineState(double bpm, int numerator, int denominator);
     void setUndoManager(PitchUndoManager* mgr) { juce::ignoreUnused(mgr); }
     void setSelectedNote(Note* note);
@@ -64,10 +60,8 @@ public:
 
     std::function<void()> onParameterChanged;
 
-    // Fired with the code to persist ("auto", "en", "zh-TW", ...) whenever the
-    // language card changes. The panel applies the language itself; the owner
-    // only has to write the code to its settings.
-    std::function<void(const juce::String&)> onLanguageChanged;
+    // The button at the bottom of the panel; app settings live in that dialog.
+    std::function<void()> onShowSettingsClicked;
     std::function<void()> onPreferredHeightChanged;
     std::function<void()> onParameterEditFinished;
     std::function<void(int)> onScaleRootChanged;
@@ -81,10 +75,6 @@ public:
     std::function<void(double)> onTimelineTempoChanged;
     std::function<void(TimelineGridDivision)> onTimelineGridDivisionChanged;
     std::function<void(bool)> onTimelineSnapCycleChanged;
-    std::function<void(double)> onUiBrightnessChanged;
-    std::function<void(bool)> onNoiseVisibilityChanged;
-    std::function<void(double, double)> onDeviationThresholdsChanged;
-    std::function<void(bool)> onJumpIncludesCautionChanged;
     std::function<void(SynthesisEngineType)> onSynthesisEngineChanged;
     std::function<void(int)> onRenderDeviceChanged;
 
@@ -108,9 +98,6 @@ private:
     void timerCallback() override;
     void refreshNoteCard();
     void setupTextButton(juce::TextButton& button);
-    void showLanguageMenu();
-    void refreshLanguageButtonText();
-    void applyLanguageSelection(const juce::String& languageCode);
     void showDragSnapModeMenu();
     void showDoubleClickSnapModeMenu();
     void showTimelineBeatMenu();
@@ -163,10 +150,6 @@ private:
     juce::Rectangle<int> timeCardBounds;
     juce::Label synthesisSectionLabel;
     juce::Rectangle<int> synthesisCardBounds;
-    juce::Label languageSectionLabel;
-    juce::Rectangle<int> languageCardBounds;
-    juce::Label uiSectionLabel;
-    juce::Rectangle<int> uiCardBounds;
     MidiDragButton midiDragButton;
     juce::Rectangle<int> midiReferenceCardBounds;
     juce::Label midiReferenceSectionLabel;
@@ -175,11 +158,7 @@ private:
     StyledToggleButton midiReferenceVisibilityToggle;
     unsigned midiReferenceRevision = 0;
 
-    // Interface language. "auto" follows the system language; anything else is
-    // an explicit choice. The selector is a button that opens a ticked
-    // menu rather than a combo box.
-    ComboSelectionButton languageSelectorButton;
-    juce::String selectedLanguageCode { "auto" };
+    CompactSelectionButton settingsButton;
 
     SegmentedControl pitchModeControl; // Chromatic | Scale
 
@@ -212,14 +191,6 @@ private:
     juce::Label timelineGridLabel;
     CompactSelectionButton timelineGridButton { "1/4" };
     StyledToggleButton timelineSnapCycleToggle;
-    juce::Label brightnessLabel;
-    FloatingZoomSliderLookAndFeel brightnessSliderLookAndFeel;
-    juce::Slider brightnessSlider;
-    StyledToggleButton showBreathsAndSibilanceToggle;
-    // Caution and fix thresholds for note deviation, in cents.
-    std::array<juce::Label, 2> deviationLabels;
-    std::array<juce::Slider, 2> deviationSliders;
-    StyledToggleButton jumpIncludesCautionToggle;
 
     int selectedScaleRootNote = 0;
     ScaleMode selectedScaleMode = ScaleMode::Chromatic;
@@ -233,7 +204,6 @@ private:
     double timelineTempoBpm = 120.0;
     TimelineGridDivision timelineGridDivision = TimelineGridDivision::Quarter;
     bool timelineSnapCycle = false;
-    double uiBrightnessPercent = 100.0;
     SynthesisEngineType synthesisEngine = defaultSynthesisEngineType();
     bool aiResynthesisAvailable = true;
 

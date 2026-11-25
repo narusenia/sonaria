@@ -841,10 +841,8 @@ MainComponent::MainComponent(bool enableAudioDevice)
   pianoRoll.setUndoManager(undoManager);
   parameterPanel.setUndoManager(undoManager);
   parameterPanel.setPluginMode(isPluginMode());
-  parameterPanel.setUiBrightness(settingsManager->getUiBrightnessPercent());
   applyUiBrightness(settingsManager->getUiBrightnessPercent());
   const bool showBreathsAndSibilance = settingsManager->getShowBreathsAndSibilance();
-  parameterPanel.setNoiseVisibility(showBreathsAndSibilance);
   pianoRoll.setNoiseVisibility(showBreathsAndSibilance);
   parameterPanel.onProjectBound = [this](Project* project)
   {
@@ -858,56 +856,18 @@ MainComponent::MainComponent(bool enableAudioDevice)
   {
     workspace.refreshPanelContentHeight("parameters");
   };
-  parameterPanel.onUiBrightnessChanged = [this](double brightnessPercent)
-  {
-    settingsManager->setUiBrightnessPercent(brightnessPercent);
-    applyUiBrightness(brightnessPercent);
-  };
-  const auto applyDeviationThresholds = [this](double caution, double fix)
-  {
-    NoteDeviation::thresholds().caution = static_cast<float>(caution);
-    NoteDeviation::thresholds().fix = static_cast<float>(fix);
-    pianoRoll.repaint();
-    pianoRollView.refreshOverview();
-  };
   {
     const auto [caution, fix] = settingsManager->getDeviationThresholds();
-    parameterPanel.setDeviationThresholds(caution, fix);
     applyDeviationThresholds(caution, fix);
   }
-  parameterPanel.onDeviationThresholdsChanged = [this, applyDeviationThresholds](double caution, double fix)
-  {
-    settingsManager->setDeviationThresholds(caution, fix);
-    applyDeviationThresholds(caution, fix);
-  };
   NoteDeviation::thresholds().jumpIncludesCaution = settingsManager->getJumpIncludesCaution();
-  parameterPanel.setJumpIncludesCaution(settingsManager->getJumpIncludesCaution());
-  parameterPanel.onJumpIncludesCautionChanged = [this](bool include)
-  {
-    settingsManager->setJumpIncludesCaution(include);
-    NoteDeviation::thresholds().jumpIncludesCaution = include;
-    settingsManager->saveConfig();
-  };
-  parameterPanel.onNoiseVisibilityChanged = [this](bool show)
-  {
-    settingsManager->setNoiseVisibility(show);
-    pianoRoll.setNoiseVisibility(show);
-    settingsManager->saveConfig();
-  };
+  parameterPanel.onShowSettingsClicked = [this] { showSettings(); };
   parameterPanel.onCreateMidiDragFile = [this]() { return createMidiDragFile(); };
   parameterPanel.onExportMidiClicked = [this]() { exportMidiFile(); };
   parameterPanel.onOpenMidiReference = [this] { openMidiReference(); };
   parameterPanel.onMidiReferenceChanged = [this](const auto& notes, bool visible)
   { pianoRoll.setMidiReferenceNotes(notes, visible); };
   parameterPanel.onMidiReferenceEdited = [this] { notifyProjectDataChanged(); };
-  parameterPanel.onLanguageChanged = [this](const juce::String &languageCode)
-  {
-    // The panel has already switched the language; this only records it.
-    if (settingsManager == nullptr)
-      return;
-    settingsManager->setLanguage(languageCode);
-    settingsManager->saveConfig();
-  };
   parameterPanel.setSynthesisEngine(settingsManager->getSynthesisEngineType());
   parameterPanel.onSynthesisEngineChanged = [this](SynthesisEngineType type)
   {
@@ -3416,6 +3376,14 @@ void MainComponent::finishBackendRender(bool success)
   pianoRoll.repaint();
 }
 
+void MainComponent::applyDeviationThresholds(double caution, double fix)
+{
+  NoteDeviation::thresholds().caution = static_cast<float>(caution);
+  NoteDeviation::thresholds().fix = static_cast<float>(fix);
+  pianoRoll.repaint();
+  pianoRollView.refreshOverview();
+}
+
 void MainComponent::showSettings()
 {
   if (!settingsOverlay)
@@ -3443,6 +3411,35 @@ void MainComponent::showSettings()
       // Execution provider or device may have changed; both decide what the
       // Rendering card's device row offers.
       refreshRenderDeviceOptions();
+    };
+    auto *settings = settingsOverlay->getSettingsComponent();
+    settings->onLanguageChanged = [this](const juce::String &languageCode)
+    {
+      // The dialog has already switched the language; this only records it.
+      settingsManager->setLanguage(languageCode);
+      settingsManager->saveConfig();
+    };
+    settings->onUiBrightnessChanged = [this](double brightnessPercent)
+    {
+      settingsManager->setUiBrightnessPercent(brightnessPercent);
+      applyUiBrightness(brightnessPercent);
+    };
+    settings->onDeviationThresholdsChanged = [this](double caution, double fix)
+    {
+      settingsManager->setDeviationThresholds(caution, fix);
+      applyDeviationThresholds(caution, fix);
+    };
+    settings->onJumpIncludesCautionChanged = [this](bool include)
+    {
+      settingsManager->setJumpIncludesCaution(include);
+      NoteDeviation::thresholds().jumpIncludesCaution = include;
+      settingsManager->saveConfig();
+    };
+    settings->onNoiseVisibilityChanged = [this](bool show)
+    {
+      settingsManager->setNoiseVisibility(show);
+      pianoRoll.setNoiseVisibility(show);
+      settingsManager->saveConfig();
     };
     settingsOverlay->getSettingsComponent()->canChangeDevice = [this]()
     {

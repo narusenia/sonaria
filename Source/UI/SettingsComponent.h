@@ -6,6 +6,7 @@
 #include "../Utils/Localization.h"
 #include "Main/SettingsManager.h"
 #include "StyledComponents.h"
+#include <array>
 #include <functional>
 
 enum class Language; // Forward declaration
@@ -55,6 +56,14 @@ public:
   std::function<void(bool)> onShowCleanedF0DebugChanged;
   std::function<void(bool)> onShowVocoderF0DebugChanged;
   std::function<bool()> canChangeDevice;
+
+  // Interface settings. The dialog applies the language itself; the owner
+  // persists every value and applies the rest live.
+  std::function<void(const juce::String &)> onLanguageChanged;
+  std::function<void(double)> onUiBrightnessChanged;
+  std::function<void(bool)> onNoiseVisibilityChanged;
+  std::function<void(double, double)> onDeviationThresholdsChanged;
+  std::function<void(bool)> onJumpIncludesCautionChanged;
 
   // Load/save settings
   void loadSettings();
@@ -118,6 +127,8 @@ private:
     Audio
   };
 
+  void refreshInterfaceText();
+  void refreshLanguageItems();
   void updateDeviceList();
   void updateGPUDeviceList(const juce::String &deviceType);
   void updateAudioDeviceTypes();
@@ -164,6 +175,19 @@ private:
   juce::ToggleButton vocoderF0DebugToggle;
 
   juce::Label infoLabel;
+
+  // Interface settings, formerly the Language and UI cards of the side panel.
+  juce::Label languageLabel;
+  StyledComboBox languageComboBox; // id 1 = system default, 2 + i = language i
+  juce::Label showBreathsLabel;
+  juce::ToggleButton showBreathsToggle;
+  juce::Label brightnessLabel;
+  StyledSlider brightnessSlider;
+  // Caution and fix thresholds for note deviation, in cents.
+  std::array<juce::Label, 2> deviationLabels;
+  std::array<StyledSlider, 2> deviationSliders;
+  juce::Label jumpIncludesCautionLabel;
+  juce::ToggleButton jumpIncludesCautionToggle;
 
   // Audio device settings (standalone mode only)
   juce::Label audioDeviceTypeLabel;
