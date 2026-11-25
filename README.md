@@ -4,7 +4,9 @@
   <p>English | <a href="README.ja.md">日本語</a></p>
 </div>
 
-![Sonaria editor screenshot](docs/images/pitchnet-editor.png)
+![Sonaria editor with a note selected and the side panel open](docs/images/sonaria-editor.png)
+
+*The editor with a note selected: the Selected Note card shows its engine, deviation, volume and formant.*
 
 ## Origin, attribution, and license
 
@@ -35,6 +37,18 @@ The plan is in [docs/implementation/roadmap.md](docs/implementation/roadmap.md).
 Sonaria is a standalone app and audio plugin for editing vocal pitch in a piano roll. It analyzes audio using neural pitch detectors (RMVPE / FCPE), segments notes with the GAME model, and resynthesizes edits in real time through a neural vocoder (PC-NSF-HiFiGAN). Edits are previewed instantly with minimal latency and exported as audio or MIDI. The plugin supports both ARA hosts and a non-ARA capture workflow.
 
 ## Features
+
+Added in Sonaria:
+
+- Deviation colours: each note is coloured by how far it sits from the key's scale;
+  N / Shift + N jump to the next / previous note that needs fixing
+- Q / W quantize or straighten the selected notes, H shifts them by a scale degree
+- Per-note synthesis engine (Default / AI / Classic): press E, right-click a note,
+  or use the Selected Note card in the side panel
+- Live audition: hear a note while you drag it
+- App settings (language, display, deviation thresholds) in the Settings dialog
+
+![Sonaria settings dialog](docs/images/sonaria-settings.png)
 
 Inherited from PitchNet:
 
