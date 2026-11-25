@@ -581,7 +581,14 @@ void NoteRenderer::draw(juce::Graphics &g, Pass pass, bool splitModeActive,
         g.strokePath(bodyShape, juce::PathStrokeType(1.0f));
       }
 
-      if (showSelectionStatus && note.isSelected())
+      // Only the active region's renderer has a select handler; inactive and
+      // pinned regions keep the faint outline.
+      if (selectHandler != nullptr && note.isSelected())
+      {
+        g.setColour(APP_COLOR_NOTE_SELECTION_OUTLINE);
+        g.drawRoundedRectangle(noteVisualBounds.expanded(2.0f), 3.0f, 2.0f);
+      }
+      else if (showSelectionStatus && note.isSelected())
       {
         const auto outlineBounds = noteVisualBounds.expanded(1.0f);
         g.setColour(APP_COLOR_NOTE_SELECTION_OUTLINE.withAlpha(0.72f));
