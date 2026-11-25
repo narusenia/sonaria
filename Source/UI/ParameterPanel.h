@@ -152,10 +152,10 @@ private:
     SliderBox noteFormantSlider { "Formant" };
     juce::Label noteAlignLabel;
     SliderBox noteAlignSlider { "Strength" };
-    juce::TextButton noteAlignButton;
+    CompactSelectionButton noteAlignButton;
     juce::Label notePresetLabel;
     ComboSelectionButton notePresetButton;
-    juce::TextButton notePresetApplyButton, notePresetSaveButton, notePresetDeleteButton;
+    CompactSelectionButton notePresetApplyButton, notePresetSaveButton, notePresetDeleteButton;
     juce::StringArray presetNames;
     juce::String selectedPresetName;
     void showPresetMenu();
