@@ -68,6 +68,13 @@ std::shared_ptr<Project> makeRegionWindowProject(const Project &source,
 
   auto window = std::make_shared<Project>();
   window->setPitchReferenceHz(source.getPitchReferenceHz());
+  // The deviation colours measure against the key, so carry it over.
+  // setScaleMode may overwrite the region key, so it goes first.
+  window->setProjectKey(source.getProjectKeyRoot(), source.getProjectKeyMode());
+  window->setScaleMode(source.getScaleMode());
+  window->setScaleRootNote(source.getRegionKeyRoot());
+  window->setPreferredScaleMode(source.getRegionKeyMode());
+  window->setUseProjectKey(source.getUseProjectKey());
   auto &dst = window->getAudioData();
   dst.sampleRate = src.sampleRate;
 
