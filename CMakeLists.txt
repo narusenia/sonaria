@@ -128,7 +128,9 @@ else()
     set(ONNXRUNTIME_CACHE_DIR
         "${CMAKE_BINARY_DIR}/_deps/onnxruntime-${ONNXRUNTIME_VERSION}-src")
 endif()
-if(WIN32 AND USE_DIRECTML)
+# GitHub release archives of ONNX Runtime are gone; Windows (CPU / DirectML)
+# and macOS packages come from NuGet instead.
+if(WIN32 AND NOT USE_CUDA)
     set(ONNXRUNTIME_CACHE_HEADER "${ONNXRUNTIME_CACHE_DIR}/build/native/include/onnxruntime_cxx_api.h")
 else()
     set(ONNXRUNTIME_CACHE_HEADER "${ONNXRUNTIME_CACHE_DIR}/include/onnxruntime_cxx_api.h")
@@ -146,14 +148,14 @@ else()
             set(ONNXRUNTIME_URL "https://www.nuget.org/api/v2/package/Microsoft.ML.OnnxRuntime.DirectML/${ONNXRUNTIME_VERSION}")
             message(STATUS "Downloading ONNX Runtime DirectML package from NuGet (Windows)")
         else()
-            set(ONNXRUNTIME_URL "https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-win-x64-${ONNXRUNTIME_VERSION}.zip")
-            message(STATUS "Downloading ONNX Runtime CPU package (Windows)")
+            set(ONNXRUNTIME_URL "https://www.nuget.org/api/v2/package/Microsoft.ML.OnnxRuntime/${ONNXRUNTIME_VERSION}")
+            message(STATUS "Downloading ONNX Runtime CPU package from NuGet (Windows)")
         endif()
     elseif(APPLE)
         if(USE_GPU)
             message(WARNING "GPU acceleration is not supported on macOS, falling back to CPU")
         endif()
-        set(ONNXRUNTIME_URL "https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-osx-${ONNXRUNTIME_MACOS_PACKAGE}-${ONNXRUNTIME_VERSION}.tgz")
+        set(ONNXRUNTIME_URL "https://www.nuget.org/api/v2/package/Microsoft.ML.OnnxRuntime/${ONNXRUNTIME_VERSION}")
     else()
         if(USE_CUDA)
             set(ONNXRUNTIME_URL "https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-linux-x64-gpu_cuda13-${ONNXRUNTIME_VERSION}.tgz")
@@ -174,11 +176,37 @@ else()
     )
     FetchContent_MakeAvailable(onnxruntime)
     set(ONNXRUNTIME_ROOT ${onnxruntime_SOURCE_DIR})
+
+    if(APPLE)
+        # Rebuild the old release-archive layout (include/, lib/) from the
+        # NuGet package, joining the per-arch dylibs for a universal build.
+        set(_ort_native "${ONNXRUNTIME_ROOT}/runtimes")
+        set(_ort_dylib "${ONNXRUNTIME_ROOT}/lib/libonnxruntime.${ONNXRUNTIME_VERSION}.dylib")
+        file(MAKE_DIRECTORY "${ONNXRUNTIME_ROOT}/lib")
+        file(COPY "${ONNXRUNTIME_ROOT}/build/native/include/" DESTINATION "${ONNXRUNTIME_ROOT}/include")
+        if(ONNXRUNTIME_MACOS_PACKAGE STREQUAL "universal2")
+            execute_process(
+                COMMAND lipo -create
+                    "${_ort_native}/osx-arm64/native/libonnxruntime.dylib"
+                    "${_ort_native}/osx-x64/native/libonnxruntime.dylib"
+                    -output "${_ort_dylib}"
+                RESULT_VARIABLE _ort_lipo_result)
+            if(NOT _ort_lipo_result EQUAL 0)
+                message(FATAL_ERROR "lipo failed to join the ONNX Runtime dylibs")
+            endif()
+        elseif(ONNXRUNTIME_MACOS_PACKAGE STREQUAL "x86_64")
+            file(COPY_FILE "${_ort_native}/osx-x64/native/libonnxruntime.dylib" "${_ort_dylib}")
+        else()
+            file(COPY_FILE "${_ort_native}/osx-arm64/native/libonnxruntime.dylib" "${_ort_dylib}")
+        endif()
+        file(CREATE_LINK "libonnxruntime.${ONNXRUNTIME_VERSION}.dylib"
+            "${ONNXRUNTIME_ROOT}/lib/libonnxruntime.dylib" SYMBOLIC)
+    endif()
 endif()
 
-# Handle different directory structures for DirectML NuGet package vs regular packages
-if(WIN32 AND USE_DIRECTML)
-    # DirectML NuGet package has different structure: runtimes/win-x64/native/
+# Windows NuGet packages (CPU and DirectML) keep their own layout
+if(WIN32 AND NOT USE_CUDA)
+    # NuGet package structure: runtimes/win-x64/native/
     set(ONNXRUNTIME_INCLUDE_DIR ${ONNXRUNTIME_ROOT}/build/native/include)
     set(ONNXRUNTIME_LIBRARY ${ONNXRUNTIME_ROOT}/runtimes/win-x64/native/onnxruntime.lib)
     set(ONNXRUNTIME_DLL_DIR ${ONNXRUNTIME_ROOT}/runtimes/win-x64/native)
