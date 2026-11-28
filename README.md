@@ -75,9 +75,41 @@ Inherited from PitchNet:
 - GPU acceleration via CUDA or DirectML on Windows; CoreML on macOS
 - Multi-language UI (English, Spanish, Japanese, Korean, Portuguese, Russian, Chinese Simplified, Chinese Traditional)
 
-## Download
+## Install
 
-There are no Sonaria releases yet. Build from source as described below.
+Download the installer for your platform from
+[Releases](https://github.com/narusenia/sonaria/releases). The builds are not
+signed, so the OS warns about them the first time.
+
+macOS (`Sonaria-<version>-macOS.pkg`):
+
+1. Control-click (or right-click) the .pkg and choose Open, then Open again.
+   If macOS still blocks it, open System Settings > Privacy & Security and
+   click "Open Anyway".
+2. Pick the components: the standalone app goes to `/Applications`, the VST3
+   to `/Library/Audio/Plug-Ins/VST3` and the AU to
+   `/Library/Audio/Plug-Ins/Components`. The models are always installed to
+   `/Library/Application Support/NXE/Sonaria`.
+3. If a host still refuses to load the plugin, clear the quarantine flag and
+   rescan plugins in your DAW:
+
+   ```sh
+   sudo xattr -dr com.apple.quarantine /Library/Audio/Plug-Ins/VST3/Sonaria.vst3
+   sudo xattr -dr com.apple.quarantine /Library/Audio/Plug-Ins/Components/Sonaria.component
+   ```
+
+Windows (`Sonaria-<version>-Windows-Setup.exe`):
+
+1. If SmartScreen shows "Windows protected your PC", click "More info", then
+   "Run anyway".
+2. Pick the components: the standalone app goes to `C:\Program Files\Sonaria`
+   and the VST3 to `C:\Program Files\Common Files\VST3`. The models are
+   always installed to `C:\ProgramData\NXE\Sonaria\models`.
+3. Rescan plugins in your DAW.
+
+The `.zip` files hold the same files for a manual install. Keep the `models`
+folder next to the app, or copy it to the models folder above so the plugins
+find it.
 
 ## Requirements
 

@@ -55,9 +55,28 @@ PitchNet の機能はすべて残したうえで、次の 3 点に取り組み�
 - Windows では CUDA / DirectML、macOS では CoreML による GPU 処理
 - 多言語 UI（英語・スペイン語・日本語・韓国語・ポルトガル語・ロシア語・簡体字中国語・繁体字中国語）
 
-## ダウンロード
+## インストール
 
-Sonaria のリリースはまだありません。下の手順でソースからビルドしてください。
+[Releases](https://github.com/narusenia/sonaria/releases) から使っている OS のインストーラーをダウンロードします。署名していないビルドなので、初めて開くときに OS が警告を出します。
+
+macOS（`Sonaria-<version>-macOS.pkg`）:
+
+1. .pkg を Control キーを押しながらクリック（または右クリック）して「開く」を選び、もう一度「開く」を押します。それでも開けないときは、システム設定の「プライバシーとセキュリティ」で「このまま開く」を押します。
+2. 入れるものを選びます。スタンドアロンアプリは `/Applications`、VST3 は `/Library/Audio/Plug-Ins/VST3`、AU は `/Library/Audio/Plug-Ins/Components` に入ります。モデルは選択に関係なく `/Library/Application Support/NXE/Sonaria` に入ります。
+3. それでも DAW がプラグインを読み込まないときは、隔離属性を外してから DAW でプラグインを再スキャンします。
+
+   ```sh
+   sudo xattr -dr com.apple.quarantine /Library/Audio/Plug-Ins/VST3/Sonaria.vst3
+   sudo xattr -dr com.apple.quarantine /Library/Audio/Plug-Ins/Components/Sonaria.component
+   ```
+
+Windows（`Sonaria-<version>-Windows-Setup.exe`）:
+
+1. SmartScreen の「Windows によって PC が保護されました」が出たら、「詳細情報」を押してから「実行」を押します。
+2. 入れるものを選びます。スタンドアロンアプリは `C:\Program Files\Sonaria`、VST3 は `C:\Program Files\Common Files\VST3` に入ります。モデルは選択に関係なく `C:\ProgramData\NXE\Sonaria\models` に入ります。
+3. DAW でプラグインを再スキャンします。
+
+`.zip` には手動で入れるための同じファイルが入っています。`models` フォルダーはアプリと同じ場所に置くか、プラグインからも見つかるように上のモデルの置き場所へコピーしてください。
 
 ## 必要なもの
 
