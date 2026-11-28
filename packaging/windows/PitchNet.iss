@@ -1,7 +1,10 @@
 ﻿; Sonaria Windows installer.
+; Build: iscc /DMyAppVersion=<version> packaging\windows\PitchNet.iss
 
 #define MyAppName "Sonaria"
-#define MyAppVersion "0.8.1"
+#ifndef MyAppVersion
+  #define MyAppVersion "0.9.0"
+#endif
 #define MyAppPublisher "NXE"
 #define MyAppURL "https://github.com/narusenia/sonaria"
 #define MyAppExeName "Sonaria.exe"
@@ -9,7 +12,7 @@
 [Setup]
 ; This script lives in packaging\windows. SourceDir points back at the repository
 ; root so every relative path below (build\..., Resources\..., Output\...) is
-; resolved from the repo root, exactly as when the script sat there.
+; resolved from the repo root.
 SourceDir=..\..
 OutputDir=Output
 AppId={{723F4B65-11A4-4813-80A7-39BB7B9E095E}
@@ -19,85 +22,76 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
-DefaultDirName={code:getPreProgramPath}\{#MyAppName}
-DefaultGroupName={#MyAppPublisher}
+DefaultDirName={autopf}\{#MyAppName}
+DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
-OutputBaseFilename=Sonaria_Installer
+OutputBaseFilename=Sonaria-{#MyAppVersion}-Windows-Setup
+ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
+PrivilegesRequired=admin
 SetupIconFile=build\PitchNet_artefacts\JuceLibraryCode\icon.ico
-Compression=lzma
+UninstallDisplayIcon={app}\{#MyAppExeName}
+Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
+LicenseFile=LICENSE
 InfoBeforeFile=THIRD_PARTY_NOTICES.txt
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Types]
+Name: "full"; Description: "Full installation"
 Name: "custom"; Description: "Custom installation"; Flags: iscustom
 
 [Components]
-Name: "main"; Description: "Standalone application and runtime resources"; Types: custom; Flags: fixed
-Name: "vst3"; Description: "VST3"; Types: custom
-Name: "aax"; Description: "AAX"; Types: custom
+Name: "main"; Description: "Models, license and notices (required)"; Types: full custom; Flags: fixed
+Name: "standalone"; Description: "Standalone application"; Types: full
+Name: "vst3"; Description: "VST3 plug-in"; Types: full
+#ifdef WithAAX
+Name: "aax"; Description: "AAX plug-in"; Types: full
+#endif
 
 [Files]
-Source: "build\PitchNet_artefacts\Release\Sonaria.exe"; DestDir: "{app}"; Components: main; Flags: ignoreversion
-Source: "build\PitchNet_artefacts\Release\onnxruntime.dll"; DestDir: "{app}"; Components: main; Flags: ignoreversion
-Source: "build\PitchNetPlugin_artefacts\Release\VST3\Sonaria.vst3\*"; DestDir: "{code:getPreVST64Path}"; Components: vst3; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "build\PitchNetPlugin_artefacts\Release\AAX\Sonaria.aaxplugin\*"; DestDir: "{code:getPreAAXPath}"; Components: aax; Flags: ignoreversion recursesubdirs createallsubdirs
-; FCPE and its tables are debug-only; release builds use SwiftF0 (swift_f0.onnx).
-Source: "Resources\models\*"; Excludes: "fcpe.onnx,mel_filterbank.bin,cent_table.bin"; DestDir: "{commonappdata}\{#MyAppPublisher}\{#MyAppName}\models"; Components: main; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "LICENSE"; DestDir: "{app}"; Components: main; Flags: ignoreversion
+Source: "THIRD_PARTY_NOTICES.txt"; DestDir: "{app}"; Components: main; Flags: ignoreversion
+Source: "build\PitchNet_artefacts\Release\{#MyAppExeName}"; DestDir: "{app}"; Components: standalone; Flags: ignoreversion
+; onnxruntime.dll and onnxruntime_providers_shared.dll, copied next to the exe by CMake.
+Source: "build\PitchNet_artefacts\Release\*.dll"; DestDir: "{app}"; Components: standalone; Flags: ignoreversion
+Source: "build\PitchNetPlugin_artefacts\Release\VST3\Sonaria.vst3\*"; DestDir: "{code:getVST3Dir}"; Components: vst3; Flags: ignoreversion recursesubdirs createallsubdirs
+#ifdef WithAAX
+Source: "build\PitchNetPlugin_artefacts\Release\AAX\Sonaria.aaxplugin\*"; DestDir: "{commoncf64}\Avid\Audio\Plug-Ins\{#MyAppName}.aaxplugin"; Components: aax; Flags: ignoreversion recursesubdirs createallsubdirs
+#endif
+; Release builds load models from here first (Source/Utils/PlatformPaths.h).
+Source: "Resources\models\*"; DestDir: "{commonappdata}\{#MyAppPublisher}\{#MyAppName}\models"; Components: main; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "Resources\fonts\Montserrat-Medium.ttf"; DestDir: "{commonfonts}"; FontInstall: "Montserrat-Medium"; Components: main; Flags: onlyifdoesntexist uninsneveruninstall
 Source: "Resources\fonts\Montserrat-Regular.ttf"; DestDir: "{commonfonts}"; FontInstall: "Montserrat-Regular"; Components: main; Flags: onlyifdoesntexist uninsneveruninstall
-; NOTE: Don't use "Flags: ignoreversion" on any shared system files.
-
-[InstallDelete]
-; Models shipped by versions before the switch to SwiftF0.
-Type: files; Name: "{commonappdata}\{#MyAppPublisher}\{#MyAppName}\models\fcpe.onnx"
-Type: files; Name: "{commonappdata}\{#MyAppPublisher}\{#MyAppName}\models\mel_filterbank.bin"
-Type: files; Name: "{commonappdata}\{#MyAppPublisher}\{#MyAppName}\models\cent_table.bin"
 
 [Icons]
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Components: standalone
 
 [Code]
 var
-  Page64: TInputDirWizardPage;
-
-function getPreProgramPath(Param: String): String;
-begin
-  Result := 'C:\Program Files\{#MyAppPublisher}';
-end;
-
-function getPreVST64Path(Param: String): String;
-begin
-  Result := 'C:\Program Files\Common Files\VST3\{#MyAppPublisher}\{#MyAppName}.vst3';
-end;
-
-function getPreAAXPath(Param: String): String;
-begin
-  Result := 'C:\Program Files\Common Files\Avid\Audio\Plug-Ins\{#MyAppName}.aaxplugin';
-end;
-
-function getVST64Dir(Param: String): String;
-begin
-  if IsWin64 then
-    Result := Page64.Values[0];
-end;
+  VST3Page: TInputDirWizardPage;
 
 procedure InitializeWizard;
 begin
-  if IsWin64 then
-  begin
-    Page64 := CreateInputDirPage(wpSelectDir,
-      'Select VST3 Plugins Directory',
-      'Ignore and click next if you do not have a directory for VST3 plugins',
-      'Please choose the path of your VST3 plugins: (Ignore and click next if you do not have a directory for VST3 plugins)',
-      False, '');
+  VST3Page := CreateInputDirPage(wpSelectComponents,
+    'Select VST3 Plug-in Folder',
+    'Where should the VST3 plug-in be installed?',
+    'The VST3 plug-in will be installed in the following folder.',
+    False, '');
+  VST3Page.Add('');
+  VST3Page.Values[0] := ExpandConstant('{commoncf64}\VST3');
+end;
 
-    Page64.Add('');
-    Page64.Values[0] := ExpandConstant(getPreVST64Path(''));
-  end;
+function ShouldSkipPage(PageID: Integer): Boolean;
+begin
+  Result := (PageID = VST3Page.ID) and not WizardIsComponentSelected('vst3');
+end;
+
+function getVST3Dir(Param: String): String;
+begin
+  Result := AddBackslash(VST3Page.Values[0]) + '{#MyAppName}.vst3';
 end;
