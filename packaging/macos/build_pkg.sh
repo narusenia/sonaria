@@ -12,6 +12,8 @@ VERSION="$1"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 BUILD_DIR="$(cd "${2:-$ROOT_DIR/build}" && pwd)"
 OUT_DIR="${3:-$ROOT_DIR/dist}"
+mkdir -p "$OUT_DIR"
+OUT_DIR="$(cd "$OUT_DIR" && pwd)" # absolute: the zip step runs from another directory
 ID_PREFIX="one.nxeu.sonaria.pkg"
 
 APP="$BUILD_DIR/PitchNet_artefacts/Release/Sonaria.app"
