@@ -169,7 +169,7 @@ juce::String ToolbarComponent::getTooltip()
 #elif defined(PITCHNET_VERSION_STRING)
     const juce::String version = PITCHNET_VERSION_STRING;
 #else
-    const juce::String version = "0.8.1";
+    const juce::String version = "0.9.0";
 #endif
     return "Sonaria v" + version;
 }

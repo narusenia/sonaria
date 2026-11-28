@@ -148,7 +148,7 @@ public:
 
   const juce::String getApplicationName() override { return "Sonaria"; }
 
-  const juce::String getApplicationVersion() override { return "0.8.1"; }
+  const juce::String getApplicationVersion() override { return "0.9.0"; }
 
   bool moreThanOneInstanceAllowed() override { return true; }
 
